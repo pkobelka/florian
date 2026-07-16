@@ -788,6 +788,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .btn-toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.15s}
 .btn-toggle.on .sw{background:var(--blue)}
 .btn-toggle.on .sw::after{left:14px}
+.btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
   padding:8px 11px;font-size:12.5px;box-shadow:var(--shadow);line-height:1.7}
 .legend b{display:inline-flex;align-items:center;gap:6px;font-weight:600;margin-right:10px}
@@ -894,6 +895,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <button class="btn-toggle" id="covToggle"><span class="sw"></span> Pokrytí 200 m</button>
   <button class="btn-toggle" id="townBtn">🏘️ <span id="townLbl">Obce</span> ▾</button>
   <div class="town-panel" id="townPanel"></div>
+  <button class="btn-toggle btn-all" id="allBtn">Vše</button>
 </div>
 
 <div class="legend" id="legend"></div>
@@ -1006,11 +1008,14 @@ function buildTownFilter(){
   document.getElementById('townBtn').onclick=(e)=>{ e.stopPropagation(); panel.classList.toggle('open'); };
   panel.addEventListener('click', e=> e.stopPropagation());
   document.addEventListener('click', ()=> panel.classList.remove('open'));
-  document.getElementById('tpAll').onclick=()=>{
+  function resetAll(){
     selectedTowns=new Set();
     panel.querySelectorAll('input[type=checkbox]').forEach(c=> c.checked=false);
+    panel.classList.remove('open');
     updateLbl(); applyFilter();
-  };
+  }
+  document.getElementById('tpAll').onclick=resetAll;
+  document.getElementById('allBtn').onclick=resetAll;
   panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.onchange=()=>{
       if(cb.checked) selectedTowns.add(cb.value); else selectedTowns.delete(cb.value);
