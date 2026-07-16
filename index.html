@@ -1091,10 +1091,10 @@ function buildTownFilter(){
   document.getElementById('tpAll').onclick=()=>{ selectedTowns=new Set(); panel.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false); townLblUpd(); applyFilter(); };
   const search=document.getElementById('townSearch');
   search.oninput=()=>{
-    const q=search.value.trim().toLowerCase();
+    const q=fold(search.value.trim());
     let shown=0;
     panel.querySelectorAll('.tp-item').forEach(it=>{
-      const name=it.querySelector('span').textContent.toLowerCase();
+      const name=fold(it.querySelector('span').textContent);
       const ok=!q || name.indexOf(q)>=0; it.style.display= ok?'':'none'; if(ok) shown++;
     });
     panel.querySelector('.tp-empty').style.display = shown?'none':'block';
@@ -1229,6 +1229,7 @@ function townKey(h){
 }
 function town(h){ return townKey(h)||'—'; }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fold(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); } // bez diakritiky
 
 // ---- karta ----
 const backdrop = document.getElementById('backdrop');
