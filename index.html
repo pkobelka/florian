@@ -1054,7 +1054,9 @@ function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const backdrop = document.getElementById('backdrop');
 const card = document.getElementById('card');
 const cardBody = document.getElementById('cardBody');
-let miniMap = null, current = null, photoData = {};
+let miniMap = null, current = null;
+let photoData = {};
+try{ photoData = JSON.parse(localStorage.getItem('florian_photos')||'{}') || {}; }catch(e){ photoData = {}; }
 
 function openCard(h){
   current = h;
@@ -1095,12 +1097,13 @@ function openCard(h){
       '<div class="btns">'+
         '<label class="btn ghost" style="cursor:pointer">📷 Vyfotit<input id="fCam" type="file" accept="image/*" capture="environment" hidden></label>'+
         '<label class="btn ghost" style="cursor:pointer">🖼️ Z galerie<input id="fGal" type="file" accept="image/*" hidden></label>'+
+        (ph?'<button class="btn danger" id="fDel">🗑️ Odebrat</button>':'')+
       '</div></div>'+
     '<div class="actions">'+
       '<button class="btn line" id="btnPdf">📥 Stáhnout</button>'+
       '<button class="btn primary" id="btnPrint">🖨️ Tisk</button>'+
     '</div>'+
-    '<div class="note">Prototyp (Fáze 1): data jen pro čtení, fotky se zatím neukládají do cloudu.</div>';
+    '<div class="note">Prototyp: fotka se uloží jen v tomto telefonu (zatím ne do cloudu ani pro ostatní).</div>';
 
   backdrop.classList.add('open');
   requestAnimationFrame(()=> card.classList.add('open'));
@@ -1109,6 +1112,7 @@ function openCard(h){
   document.getElementById('btnPdf').onclick = ()=>{ alert('V dialogu tisku zvol „Uložit jako PDF".'); doPrint(h); };
   document.getElementById('fCam').onchange = (e)=> loadPhoto(e,h);
   document.getElementById('fGal').onchange = (e)=> loadPhoto(e,h);
+  var fDel=document.getElementById('fDel'); if(fDel) fDel.onclick = ()=> deletePhoto(h);
 
   setTimeout(()=> buildMini(h), 60);
 }
@@ -1141,8 +1145,32 @@ function loadPhoto(e,h){
   const f = e.target.files && e.target.files[0];
   if(!f) return;
   const rd = new FileReader();
-  rd.onload = ()=>{ photoData[h.id]=rd.result; openCard(h); };
+  rd.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      // zmenšení (ať se vejde do paměti telefonu)
+      const max = 1280;
+      let w = img.width, ht = img.height;
+      if(w>max || ht>max){ const k=Math.min(max/w, max/ht); w=Math.round(w*k); ht=Math.round(ht*k); }
+      const cv = document.createElement('canvas');
+      cv.width=w; cv.height=ht;
+      cv.getContext('2d').drawImage(img,0,0,w,ht);
+      photoData[h.id] = cv.toDataURL('image/jpeg', 0.8);
+      try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }
+      catch(err){ alert('Fotku se nepodařilo trvale uložit (plná paměť telefonu). Zobrazí se jen dočasně.'); }
+      openCard(h);
+    };
+    img.onerror = ()=>{ photoData[h.id]=rd.result; openCard(h); };
+    img.src = rd.result;
+  };
   rd.readAsDataURL(f);
+}
+function deletePhoto(h){
+  if(!photoData[h.id]) return;
+  if(!confirm('Odebrat fotografii?')) return;
+  delete photoData[h.id];
+  try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }catch(e){}
+  openCard(h);
 }
 
 function closeCard(){
