@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <defs>
+    <clipPath id="ring"><circle cx="50" cy="50" r="41"/></clipPath>
+  </defs>
+  <!-- pozadí (krémové, zaoblený čtverec) -->
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#f3efe6"/>
+  <g fill="none" stroke="#14608c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- vnější kruh -->
+    <circle cx="50" cy="50" r="41"/>
+    <g clip-path="url(#ring)">
+      <!-- hydrant: horní šroub a kopule -->
+      <rect x="46.5" y="21" width="7" height="5" rx="1.6"/>
+      <path d="M38 34 q12 -11 24 0"/>
+      <line x1="37" y1="34.5" x2="63" y2="34.5"/>
+      <!-- tělo -->
+      <path d="M42 34.5 L42 62 L58 62 L58 34.5"/>
+      <!-- žebrování těla -->
+      <line x1="47" y1="37" x2="47" y2="60"/>
+      <line x1="53" y1="37" x2="53" y2="60"/>
+      <!-- boční výstupy -->
+      <path d="M42 44 L36 44 L36 50 L42 50"/>
+      <circle cx="35.5" cy="47" r="2.4"/>
+      <path d="M58 44 L64 44 L64 50 L58 50"/>
+      <circle cx="64.5" cy="47" r="2.4"/>
+      <!-- středový ventil -->
+      <circle cx="50" cy="48" r="5"/>
+      <circle cx="50" cy="48" r="1.8"/>
+      <!-- patka -->
+      <path d="M39 62 L61 62 L61 65 L39 65 Z"/>
+      <!-- vlny -->
+      <path d="M20 68 q7.5 -6 15 0 t15 0 t15 0 t15 0"/>
+      <path d="M20 76 q7.5 -6 15 0 t15 0 t15 0 t15 0"/>
+    </g>
+  </g>
+</svg>
