@@ -1,0 +1,19 @@
+{
+  "id": "/florian/",
+  "name": "Florián – hydranty",
+  "short_name": "Florián",
+  "description": "Mapa požárních hydrantů s kartami a pokrytím – prototyp",
+  "start_url": "/florian/?pwa=1",
+  "scope": "/florian/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d47a1",
+  "theme_color": "#1565c0",
+  "lang": "cs",
+  "icons": [
+    { "src": "/florian/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/florian/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/florian/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/florian/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
