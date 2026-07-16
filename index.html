@@ -965,6 +965,14 @@ function meas(v){ v=(v||'').trim(); return (v===''||v==='0'||v==='0,0')?'—':v;
 function txt(v){ v=(v||'').trim(); return v===''?'—':v; }
 function csn(v){ return (v||'').trim()==='Ano' ? 'Ano ✓' : 'neuvedeno'; }
 function label(h){ return h.upresneni || h.umisteni || ('Hydrant '+h.id); }
+function town(h){
+  let u=(h.upresneni||'').trim();
+  if(!u) return '—';
+  u=u.replace(/^Moravsk\s+Třebová/,'Moravská Třebová'); // překlep v datech
+  let base=u.split(',')[0].trim();      // "Město, ulice" → město
+  base=base.replace(/\s+\d.*$/,'').trim(); // odstraň č.p. a poznámky za ním
+  return base||'—';
+}
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ---- karta ----
@@ -978,10 +986,9 @@ function openCard(h){
   const nad = h.typ==='nadzemní';
   const sym = nad?SVG_NAD:SVG_POD;
   const rowsDetail = [
+    ['Obec / město', town(h)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(h.dn)],
-    ['Výrobce', txt(h.vyrobce)],
-    ['Datum instalace', txt(h.datumInstalace)],
     ['Provozovatel', txt(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['Vlastník', txt(h.vlastnik)],
@@ -996,28 +1003,24 @@ function openCard(h){
     '<div class="chips">'+
       '<span class="chip '+(nad?'type-nad':'type-pod')+'">'+(nad?'Nadzemní':'Podzemní')+'</span>'+
       '<span class="chip ok">'+esc(txt(h.etapa))+'</span>'+
-      (h.datumRevize?'<span class="chip" style="background:#eef1f4;color:#37474f">Revize '+esc(h.datumRevize)+'</span>':'')+
+      (h.datumRevize?'<span class="chip" style="background:#eef1f4;color:#37474f">Poslední revize '+esc(h.datumRevize)+'</span>':'')+
     '</div>'+
     '<div class="metrics">'+
       '<div class="metric"><div class="v">'+meas(h.prutok)+'</div><div class="k">průtok l/s</div></div>'+
       '<div class="metric"><div class="v">'+meas(h.tlakStat)+'</div><div class="k">stat. tlak MPa</div></div>'+
       '<div class="metric"><div class="v">'+meas(h.tlakDyn)+'</div><div class="k">dyn. tlak MPa</div></div>'+
     '</div>'+
-    '<div id="mini" class="minimap"></div>'+
-    '<div class="sect"><h3>Soulad s ČSN 73 0873</h3><div class="rows">'+
-      '<div class="row"><span class="k">Splňuje tlak</span><span class="v">'+csn(h.splnujeTlak)+'</span></div>'+
-      '<div class="row"><span class="k">Splňuje průtok</span><span class="v">'+csn(h.splnujeProtok)+'</span></div>'+
+    '<div class="sect"><h3>Podrobnosti</h3><div class="rows">'+
+      rowsDetail.map(r=>'<div class="row"><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></div>').join('')+
+      '<div class="row"><span class="k">GPS</span><span class="v">'+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</span></div>'+
     '</div></div>'+
+    '<div id="mini" class="minimap"></div>'+
     '<div class="photo"><h3 class="sect" style="padding:0;margin:10px 0 6px">Fotografie</h3>'+
       (ph?'<img src="'+ph+'" alt="foto">':'<div class="box">📷 Zatím bez fotografie</div>')+
       '<div class="btns">'+
         '<label class="btn ghost" style="cursor:pointer">📷 Vyfotit<input id="fCam" type="file" accept="image/*" capture="environment" hidden></label>'+
         '<label class="btn ghost" style="cursor:pointer">🖼️ Z galerie<input id="fGal" type="file" accept="image/*" hidden></label>'+
       '</div></div>'+
-    '<div class="sect"><h3>Podrobnosti</h3><div class="rows">'+
-      rowsDetail.map(r=>'<div class="row"><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></div>').join('')+
-      '<div class="row"><span class="k">GPS</span><span class="v">'+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</span></div>'+
-    '</div></div>'+
     '<div class="actions">'+
       '<button class="btn line" id="btnPdf">📥 Stáhnout</button>'+
       '<button class="btn primary" id="btnPrint">🖨️ Tisk</button>'+
@@ -1079,6 +1082,7 @@ function doPrint(h){
   const rows = [
     ['Typ hydrantu', (nad?'nadzemní':'podzemní')],
     ['Funkce', txt(h.funkce)],
+    ['Obec / město', town(h)],
     ['Umístění', txt(h.umisteni)],
     ['Upřesnění polohy', txt(h.upresneni)],
     ['Stav', txt(h.etapa)],
@@ -1087,11 +1091,7 @@ function doPrint(h){
     ['Průtok [l/s]', meas(h.prutok)],
     ['Hydrostatický tlak [MPa]', meas(h.tlakStat)],
     ['Hydrodynamický tlak [MPa]', meas(h.tlakDyn)],
-    ['Splňuje tlak dle ČSN 73 0873', csn(h.splnujeTlak)],
-    ['Splňuje průtok dle ČSN 73 0873', csn(h.splnujeProtok)],
-    ['Datum revize', txt(h.datumRevize)],
-    ['Výrobce', txt(h.vyrobce)],
-    ['Datum instalace', txt(h.datumInstalace)],
+    ['Poslední revize', txt(h.datumRevize)],
     ['Vlastník', txt(h.vlastnik)],
     ['Provozovatel', txt(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
