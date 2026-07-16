@@ -1,8 +1,8 @@
 {
   "id": "/florian/",
-  "name": "Florián – hydranty",
-  "short_name": "Florián",
-  "description": "Mapa požárních hydrantů s kartami a pokrytím – prototyp",
+  "name": "Florián II – hydranty",
+  "short_name": "Florián II",
+  "description": "Mapa požárních hydrantů VHOS – karty, pokrytí, tisk",
   "start_url": "/florian/?pwa=1",
   "scope": "/florian/",
   "display": "standalone",
