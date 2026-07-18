@@ -34,6 +34,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - Přihlášení + role: provozovatel vidí semafor a úkoly; majitel/starosta vidí jen svoje
   hydranty (skutečný stav, ne falešné OK).
 - Zamknout Firebase pravidla na přihlášené uživatele.
+- **Push notifikace (PC i mobil) – TODO, chce uživatel:** při založení úkolu poslat
+  push vedoucímu/pracovišti (jako v AquaCtrl). Florián zatím push NEMÁ (žádné FCM).
+  Postup: zkopírovat mechaniku z **AquaCtrl** (běží na stejném Firebase `moje-budky`,
+  má `aquactrl_push_tokens` / `push_broadcast`) → přidat `firebase-messaging-sw.js`,
+  registraci FCM tokenu + odesílání (Cloud Function / stávající backend AquaCtrl).
 - Automatický e-mail/push před vypršením revize.
 
 ## Vývoj / build
