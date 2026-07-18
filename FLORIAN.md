@@ -6,7 +6,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.36**, cache `florian-v43`.
+- Nyní: **v1.37**, cache `florian-v44`.
 
 ## Co appka umí
 - Hydranty na mapě (🔴 nadzemní / 🔵 podzemní), clustering, pokrytí 200 m (ČSN 73 0873).
@@ -17,7 +17,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - **Kandidáti / „Ostatní hydranty"** (`kandidati.json`): hledání děr v pokrytí, označení
   „k doměření", doměření hodnot, povýšení na požární. Označené body jsou v mapě **vždy
   vidět** (vrstva `markedLayer`), i když je vrstva kandidátů vypnutá.
-- **Úkoly u hydrantů** (pro pracoviště) s termínem, foto, hlasovkou a komentáři/diskuzí.
+- **Úkoly u hydrantů** (pro pracoviště) s termínem, foto (Vyfotit/Z galerie), hlasovkou
+  a komentáři/diskuzí. Lišta „Uložit" je v kartě sticky (vždy vidět i s klávesnicí).
+- **Tým / lidé** (tlačítko 👥 Tým): editovatelný seznam lidí s **rolí** (Admin/TŘ/PŘ/Technik)
+  a **pracovištěm**. Uloženo ve Firebase `florian_lide`. Základ pro cílení úkolů a push.
+  Seed při prázdném uzlu: Bubák, Halva (role Technik). Provozovatel = p.kobelka (Admin+TŘ).
 
 ## Data a ukládání
 - `HYDRANTY` — požární hydranty inline v `index.html` (generováno z CSV VHOS,
@@ -25,7 +29,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `kandidati.json` — ostatní hydranty (lazy-load při zapnutí vrstvy).
 - **localStorage:** `florian_photos`, `florian_edits`, `florian_domereni`, `florian_kandidati`.
 - **Firebase (projekt `moje-budky`, RTDB + Storage) = sdílení mezi kolegy:**
-  - RTDB: `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly`.
+  - RTDB: `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly`, `florian_lide`.
   - Storage: `florian/foto/…`, `florian/ukol/…`, `florian/koment/…`.
   - **Pravidla musí povolovat tyto cesty** (RTDB i Storage), jinak `PERMISSION_DENIED`.
     Teď otevřená (`if true`) — jen interní fáze.
