@@ -6,7 +6,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.40**, cache `florian-v47`.
+- Nyní: **v1.41**, cache `florian-v48`.
 
 ## Co appka umí
 - Hydranty na mapě (🔴 nadzemní / 🔵 podzemní), clustering, pokrytí 200 m (ČSN 73 0873).
@@ -44,6 +44,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   má `aquactrl_push_tokens` / `push_broadcast`) → přidat `firebase-messaging-sw.js`,
   registraci FCM tokenu + odesílání (Cloud Function / stávající backend AquaCtrl).
 - Automatický e-mail/push před vypršením revize.
+
+## Zabezpečení (rozpracováno, v1.41) — přihlášení jako AquaCtrl
+- **Přihlašovací brána** v `index.html`: Firebase Auth e-mailovým odkazem (passwordless),
+  gate `flAuthGate` + overlay `flLoginOverlay`. Admin = ověřený claim `auth.token.admin`;
+  fallback povolení přes allowlist `florian_login_email`. Data se načtou (`flStartData`)
+  až po přihlášení. Admin-only sekce „Přístup (e-maily)" v panelu Tým.
+- **Firebase pravidla** = repo `pkobelka/mojebudky` → `database.rules.json` (deploy Action).
+  - **PR #105 (A)**: přidán `florian_login_email` (read: přihlášení, write: admin) + seed
+    (`seed_florian_login_email.py`, workflow). Bezpečné mergnout kdykoli.
+  - **PR #106 (B)**: zámek `florian_*` dat na `auth != null`. **Mergnout AŽ NAKONEC.**
+- Sdílený Firebase `moje-budky` → email-link provider i doména `pkobelka.github.io` už
+  zapnuté z AquaCtrl; secret `FIREBASE_SERVICE_ACCOUNT` je v `mojebudky`. Admin claim je
+  globální (kdo je admin v AquaCtrl přes stejný e-mail, je admin i ve Floriánovi).
+- **TODO ruční:** zpřísnit Firebase **Storage** pravidla pro `florian/…` na `auth != null`
+  (Storage se neřídí z repa, jen v konzoli). App Check je připravený (vypnutý, prázdný key).
 
 ## Vývoj / build
 - Edituje se přímo `index.html` v repu (data už jsou inline).
