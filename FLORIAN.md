@@ -6,7 +6,28 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.41**, cache `florian-v48`.
+- Nyní: **v1.53**, cache `florian-v60`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.42–1.53 (poslední session)
+- Značky: podzemní = modrý **ovál**; nadzemní = modrá **bublina s bílým H** (dřív červená kapka); štítek „Nadzemní" modrý.
+- Odznak úkolu u hydrantu = **červené kolečko s bílým rámečkem + 🛠️** (sjednoceno s menu).
+- Legenda: symbol se vejde do rámečku (`object-fit`), nepřekrývá text.
+- Role rozšířeny: **Vedoucí střediska**, **Vedoucí pracoviště** (+ Admin/TŘ/PŘ/Technik). Barvy odznaků přes bezpečné třídy (`roleCls`).
+- **Push hierarchie:** vedoucí střediska dostane push za celé středisko vč. podřízených pracovišť (`strediskoOf`, `ukolTargets`). Vedoucí pracoviště + technik jen své pracoviště.
+- Push v popředí přes **service worker** (`flShowFgNotif` → `reg.showNotification`) — funguje i na mobilu.
+- **K doměření filtr** dle vlastního `provozniStredisko` kandidáta (`markStred`/`markInSel`); body v neznámé obci se neschovávají.
+- **Sync fix:** kandidáti+doměření přes `.on` (počká na přihlášení); jednorázově nahraje lokální body do cloudu (co v cloudu chybí). Vyřešilo „nula na mobilu / 8 na PC".
+- Úkol bez pracoviště se v seznamu neschovává při zapnutém filtru.
+
+## Otevřené / rozdělané (pro nový chat)
+- **Semafor + editovaná revize (Smolná 17):** uživatel zadal revizi 6/2026, ale semafor ji „nenajde".
+  Podezření: `hydStatus(h)` čte **raw `h.datumRevize`**, ne editovanou hodnotu (edity regulárních
+  hydrantů jsou v `localStorage florian_edits`, možná se do `h` nepromítnou před výpočtem stavu).
+  → ověřit, jak se edity aplikují a jestli semafor/`hydStatus` bere editovaný datum revize. **Nedořešeno.**
+- **Úkol „Zkouška"** (bez pracoviště, neviditelný) — uživatel měl smazat konzolí na PC
+  (`_FDB.ref('florian_ukoly')…` snippet). Ověřit, že je pryč.
+- Storage pravidla pro `florian/…` zpřísnit na `auth != null` (ruční, Firebase konzole) — stále TODO.
+- Doplnit tým (Halva, Krombholz, Milan Horník=Vedoucí pracoviště) — přidává si uživatel sám v appce.
 
 ## Co appka umí
 - Hydranty na mapě (🔴 nadzemní / 🔵 podzemní), clustering, pokrytí 200 m (ČSN 73 0873).
