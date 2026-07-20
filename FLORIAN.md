@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.63**, cache `florian-v70`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.64**, cache `florian-v71`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.64 (tato session)
+- **Konkrétní dny místo „blíží se konec":** pruh revize ukazuje `revDaysText(h)` –
+  „Zbývá X dní" / „Po termínu o X dní" / „Končí dnes" / „Chybí datum revize"
+  (platnost revize = 365 dní). Status na vlastním řádku (nezalamuje se).
+- **Nastavitelný práh v semaforu:** `REV_WARN_DAYS` je nyní `let`, uložený v
+  localStorage `florian_rev_warn`. V legendě semaforu výběr 30/60/90/180 dní
+  („⏰ Upozornit … dní před koncem") + dynamický popisek „Blíží se (do X dní)".
 
 ## Hotovo v1.63 (tato session)
 - **Zvýrazněné datum revize:** výrazný barevný pruh `.revbig` nahoře v kartě, obarvený
