@@ -90,14 +90,26 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - Úkol bez pracoviště se v seznamu neschovává při zapnutém filtru.
 
 ## Otevřené / rozdělané (pro nový chat)
-- **Semafor + editovaná revize (Smolná 17):** uživatel zadal revizi 6/2026, ale semafor ji „nenajde".
-  Podezření: `hydStatus(h)` čte **raw `h.datumRevize`**, ne editovanou hodnotu (edity regulárních
-  hydrantů jsou v `localStorage florian_edits`, možná se do `h` nepromítnou před výpočtem stavu).
-  → ověřit, jak se edity aplikují a jestli semafor/`hydStatus` bere editovaný datum revize. **Nedořešeno.**
-- **Úkol „Zkouška"** (bez pracoviště, neviditelný) — uživatel měl smazat konzolí na PC
-  (`_FDB.ref('florian_ukoly')…` snippet). Ověřit, že je pryč.
+- **Notifikace před koncem revize (PLÁN, rozhodnuto):** appka sama push nerozešle
+  (běží jen když je otevřená) → potřeba **denní serverová úloha** (Cloud Function
+  v repu `pkobelka/mojebudky`, kde běží AquaCtrl push i Firebase pravidla).
+  - Práh: **GLOBÁLNÍ** (jednodušší než osobní), hodnoty **30/40/50 dní** (uloženo
+    `localStorage florian_rev_warn`, výběr v legendě semaforu).
+  - **Předpoklad:** datumy revizí jsou dnes jen inline v `index.html` → nutno je
+    dostat do Firebase (uzel `florian_revize`, id→datum), aby je server viděl.
+    Úpravy z appky (`florian_domereni`) už ve Firebase jsou.
+  - Kroky: (1) export revizí do Firebase, (2) denní Cloud Function: dny→práh→FCM push
+    odpovědnému pracovišti/středisku, hlídat „posláno jen jednou". (3) volitelně
+    osobní práh / vlastní připomínka u hydrantu.
+- **Export pro GIS (v1.56):** hotovo, uživatel testuje import v práci. Doladit sloupce
+  dle GISu podle výsledku.
+- **Úkol „Zkouška"** (bez pracoviště, neviditelný) — uživatel měl smazat konzolí na PC. Ověřit.
 - Storage pravidla pro `florian/…` zpřísnit na `auth != null` (ruční, Firebase konzole) — stále TODO.
 - Doplnit tým (Halva, Krombholz, Milan Horník=Vedoucí pracoviště) — přidává si uživatel sám v appce.
+
+## Vyřešeno (dřívější otevřené body)
+- ~~Smolná 17 semafor + editovaná revize~~ → **hotovo v1.56** (`revDate`/`hydStatus` přes
+  `candVal`, edity jsou v `florian_domereni`, ne `florian_edits`).
 
 ## Co appka umí
 - Hydranty na mapě (🔴 nadzemní / 🔵 podzemní), clustering, pokrytí 200 m (ČSN 73 0873).
