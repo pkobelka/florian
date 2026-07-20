@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.59**, cache `florian-v66`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.60**, cache `florian-v67`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.60 (tato session)
+- **Oprava filtru obcí:** nová `filterTown(h)` = obec z adresy (`townKey`), jinak
+  oficiální název dle kódu obce (`OBEC_NAME[h.obec]`). Použita v `matches()`,
+  `buildTownFilter()`, `visibleFireTowns()`. Po sestavení `OBEC_NAME` se jednou
+  překreslí filtr+mapa. Řeší **49 hydrantů bez adresy**, které dřív nešly ve filtru
+  obce vybrat a jakýkoliv filtr obce je schoval (např. hydrant „mizel" při zapnuté
+  obci). Ověřeno: +49 spárováno, 0 zůstalo bez obce, žádná obec ze seznamu nezmizela.
 
 ## Hotovo v1.59 (tato session)
 - **Zoom „+/–" nepřekrývá hlavičku:** `.leaflet-top.leaflet-left` margin-top pevných
