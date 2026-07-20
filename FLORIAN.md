@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.53**, cache `florian-v60`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.56**, cache `florian-v63`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.56 (tato session)
+- **Semafor bere editované hodnoty:** `revDate()` i `hydStatus()` čtou revizi a tlaky
+  přes `candVal()` (dřív četly raw `h.datumRevize`/`h.tlakStat` a editaci ignorovaly).
+  → oprava „Smolná 17: zadaná revize 6/2026 se v semaforu neprojeví".
+- **Export změn pro GIS (admin-only):** tlačítko „📤 Export změn (CSV pro GIS)" v panelu.
+  Projde `domereni`, vybere jen **požární hydranty z GISu** (id ∈ `HYDRANTY`, kandidáti se
+  vynechají) a jen ty, kde se hodnota **liší od originálu**. CSV (UTF-8 + BOM, oddělovač `;`):
+  všechny identifikátory (ID, IČME, kód obce/katastru, adresa, GPS) + nové hodnoty
+  editovaných polí + sloupec „Změny (staré → nové)" + kdo/kdy. `flExportZmenyCSV()`,
+  `flCollectExportRows()`, `FL_EXPORT_FIELDS`. Gate přes `flApplyAdminUI` (`exportBtn`).
+  Workflow: opravit ve Floriánovi → Export změn → naimportovat zpět do GISu.
 
 ## Hotovo v1.42–1.53 (poslední session)
 - Značky: podzemní = modrý **ovál**; nadzemní = modrá **bublina s bílým H** (dřív červená kapka); štítek „Nadzemní" modrý.
