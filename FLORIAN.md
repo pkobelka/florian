@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.62**, cache `florian-v69`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.63**, cache `florian-v70`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.63 (tato session)
+- **Zvýrazněné datum revize:** výrazný barevný pruh `.revbig` nahoře v kartě, obarvený
+  dle stavu revize (`revStatusOnly`): zelená OK, oranžová blíží se, červená po termínu,
+  fialová chybí. Datum velké a tučné. Revize odebrána z chipů (aby nebyla dvakrát).
 
 ## Hotovo v1.62 (tato session)
 - **Kompaktní karta hydrantu „vše v jednom okně" (bez rolování):** přestavěné
