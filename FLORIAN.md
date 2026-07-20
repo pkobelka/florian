@@ -6,7 +6,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.64**, cache `florian-v71`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.65**, cache `florian-v72`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.65 (tato session)
+- Práh semaforu: možnosti výběru **30/40/50 dní** (dřív 30/60/90/180), pojistka na
+  povolené hodnoty při načtení. Sladěno s budoucími notifikacemi před koncem revize.
 
 ## Hotovo v1.64 (tato session)
 - **Konkrétní dny místo „blíží se konec":** pruh revize ukazuje `revDaysText(h)` –
