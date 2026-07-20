@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.61**, cache `florian-v68`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.62**, cache `florian-v69`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.62 (tato session)
+- **Kompaktní karta hydrantu „vše v jednom okně" (bez rolování):** přestavěné
+  `openCard()` do gridu `.cardgrid` (na PC dva sloupce vedle sebe, na mobilu pod
+  sebou kompaktně). Podrobnosti jako sražená dvousloupcová mřížka `.facts`
+  (label nad hodnotou). **Mini-mapa odstraněna** (GPS je textově; poloha je na
+  hlavní mapě). **Malá fotka** (`.pimg` 96px) → klik = zvětšení přes celou obrazovku
+  (`#photoZoom`, `flZoomPhoto`). Úkoly + „Přidat úkol" ve vedlejším sloupci.
+  Karta `z-index` 960→1100, podložka 950→1050 (nad Leaflet ovládáním). Ověřeno
+  renderem: mobil 390×844 i PC se vejdou bez rolování (malé telefony ~SE odrolují cca 94px).
 
 ## Hotovo v1.61 (tato session)
 - **Hamburger 38→34 px** (ikona 16, radius 9), panel `.ctrl` posunut na `top +102`.
