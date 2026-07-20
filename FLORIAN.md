@@ -104,17 +104,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - Úkol bez pracoviště se v seznamu neschovává při zapnutém filtru.
 
 ## Otevřené / rozdělané (pro nový chat)
-- **Notifikace před koncem revize (PLÁN, rozhodnuto):** appka sama push nerozešle
-  (běží jen když je otevřená) → potřeba **denní serverová úloha** (Cloud Function
-  v repu `pkobelka/mojebudky`, kde běží AquaCtrl push i Firebase pravidla).
-  - Práh: **GLOBÁLNÍ** (jednodušší než osobní), hodnoty **30/40/50 dní** (uloženo
-    `localStorage florian_rev_warn`, výběr v legendě semaforu).
-  - **Předpoklad:** datumy revizí jsou dnes jen inline v `index.html` → nutno je
-    dostat do Firebase (uzel `florian_revize`, id→datum), aby je server viděl.
-    Úpravy z appky (`florian_domereni`) už ve Firebase jsou.
-  - Kroky: (1) export revizí do Firebase, (2) denní Cloud Function: dny→práh→FCM push
-    odpovědnému pracovišti/středisku, hlídat „posláno jen jednou". (3) volitelně
-    osobní práh / vlastní připomínka u hydrantu.
+- **Notifikace před koncem revize — PŘIPRAVENO, NASADIT AŽ PŘÍŠTÍ ROK.**
+  (Revize VHOS proběhnou na podzim, do té doby by funkce byla „tichá".)
+  - **Hotovo a nasazené:** Firebase pravidla `florian_revize` + `florian_config`
+    (zápis admin); appka (v1.66) má admin tlačítko „☁️ Nahrát revize do cloudu"
+    (`flUploadRevize` → uzel `florian_revize` = {id:{d,s,o,u,typ}}); appka (v1.67)
+    ukládá admin práh do `florian_config/rev_warn`. Práh **globální**, 30/40/50 dní.
+  - **Napsáno, ZATÍM NENASAZENO:** denní funkce **`florianRevizeCheck`** je na větvi
+    **`florian-revize-notifikace`** v `pkobelka/mojebudky` (`functions/index.js`).
+    Denně 07:00, okno [0,práh], efektivní datum = `florian_domereni[id].datumRevize`
+    || `florian_revize[id].d`, cílení jako úkoly (pracoviště/středisko+vedení), push
+    přes `florian_outbox`→`florianNotify`, „jen jednou" přes `florian_config/rev_notified`.
+  - **AKTIVACE (příští rok):** (1) admin klikne „Nahrát revize do cloudu" (až budou
+    revize aktuální), (2) mergnout větev `florian-revize-notifikace` → `main` v
+    `mojebudky` (Action `firebase-deploy.yml` nasadí funkci). (3) volitelně osobní
+    práh / vlastní připomínka u hydrantu.
 - **Export pro GIS (v1.56):** hotovo, uživatel testuje import v práci. Doladit sloupce
   dle GISu podle výsledku.
 - **Úkol „Zkouška"** (bez pracoviště, neviditelný) — uživatel měl smazat konzolí na PC. Ověřit.
