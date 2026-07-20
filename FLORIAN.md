@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.58**, cache `florian-v65`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.59**, cache `florian-v66`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.59 (tato session)
+- **Zoom „+/–" nepřekrývá hlavičku:** `.leaflet-top.leaflet-left` margin-top pevných
+  88px → `calc(env(safe-area-inset-top) + 100px)` — počítá s výřezem (notch) a dvouřádkovou
+  hlavičkou, takže „+" na mobilu neleze přes den/hodiny ve spodní liště.
 
 ## Hotovo v1.58 (tato session)
 - **Menší hamburger** na mobilu: `.ctrl-burger` 46×46 → **38×38 px**, ikona 22→18,
