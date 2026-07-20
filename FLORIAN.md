@@ -6,7 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.56**, cache `florian-v63`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.57**, cache `florian-v64`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.57 (tato session)
+- **Živé překreslení semaforu po úpravě:** po uložení editace (`edSave`) i po příchodu
+  dat z Firebase (`florian_domereni` `.on`) se volá `rebuildMarkersBadges()`. Dřív se
+  značka/semafor přebarvil až po reloadu appky (uživatel hlásil „hydrant nesvítil, zmizel,
+  až po 3. načtení zelený").
 
 ## Hotovo v1.56 (tato session)
 - **Semafor bere editované hodnoty:** `revDate()` i `hydStatus()` čtou revizi a tlaky
