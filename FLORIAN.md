@@ -6,7 +6,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.66**, cache `florian-v73`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.67**, cache `florian-v74`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.67 (tato session)
+- Práh semaforu: když ho **admin** změní, uloží se i do Firebase `florian_config/rev_warn`
+  (global práh pro denní notifikace). Server (florianRevizeCheck) ho odtud čte.
 
 ## Hotovo v1.66 (tato session) — KROK 1 notifikací revizí
 - **Nahrání revizí do Firebase (admin):** tlačítko „☁️ Nahrát revize do cloudu"
