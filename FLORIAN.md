@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.65**, cache `florian-v72`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.66**, cache `florian-v73`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.66 (tato session) — KROK 1 notifikací revizí
+- **Nahrání revizí do Firebase (admin):** tlačítko „☁️ Nahrát revize do cloudu"
+  (`revUploadBtn`, gate `flApplyAdminUI`). `flUploadRevize()` zapíše uzel
+  `florian_revize` = { id: {d:raw datum revize, s:středisko, o:obec, u:adresa, typ} }
+  pro všechny hydranty. Server pak efektivní datum = `florian_domereni[id].datumRevize`
+  || `florian_revize[id].d`. Podklad pro denní `florianRevizeCheck` (krok 2).
+- Backend `pkobelka/mojebudky` přidán do session: `functions/index.js` má už
+  `florianNotify` (push přes frontu `florian_outbox`) + scheduled `aquaUkolyCheck`
+  (`every 15 minutes`) → šablona pro denní kontrolu revizí.
 
 ## Hotovo v1.65 (tato session)
 - Práh semaforu: možnosti výběru **30/40/50 dní** (dřív 30/60/90/180), pojistka na
