@@ -6,7 +6,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.57**, cache `florian-v64`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.58**, cache `florian-v65`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.58 (tato session)
+- **Menší hamburger** na mobilu: `.ctrl-burger` 46×46 → **38×38 px**, ikona 22→18,
+  radius 12→10; panel `.ctrl` posunut `top` +116 → +106, `max-height` -180 → -170.
 
 ## Hotovo v1.57 (tato session)
 - **Živé překreslení semaforu po úpravě:** po uložení editace (`edSave`) i po příchodu
