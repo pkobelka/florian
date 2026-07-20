@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.60**, cache `florian-v67`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.61**, cache `florian-v68`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.61 (tato session)
+- **Hamburger 38→34 px** (ikona 16, radius 9), panel `.ctrl` posunut na `top +102`.
+- **Přibližovací +/– se posadí pod hlavičku dynamicky:** `flPlaceZoom()` změří
+  `.topbar` výšku a nastaví `.leaflet-top.leaflet-left` `margin-top = výška+12`.
+  Volá se při načtení (rAF + 200/600/1400 ms), `resize`, `orientationchange` a při
+  změně „Online" (`flRenderOnline`). Řeší přetrvávající překryv „+" přes den, i když
+  se spodní lišta zalomí na víc řádků. CSS záloha zvýšena na `safe + 118px`.
 
 ## Hotovo v1.60 (tato session)
 - **Oprava filtru obcí:** nová `filterTown(h)` = obec z adresy (`townKey`), jinak

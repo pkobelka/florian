@@ -1,6 +1,6 @@
 // Florián – samostatný service worker pro /florian/
 // Účel: vlastní scope (oddělení od dalších PWA) a instalace na plochu.
-const CACHE = 'florian-v67';
+const CACHE = 'florian-v68';
 const ASSETS = [
   './',
   './index.html',
