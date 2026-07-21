@@ -6,7 +6,16 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.67**, cache `florian-v74`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.74**, cache `florian-v81`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.74 (tato session) — reklasifikace bodu 2524
+- **Přeřazen kandidát `id 2524` na požární hydrant.** Bod na `lat 49.670512 / lon 16.742473`
+  (středisko Jevíčko, katastr 652725 Chornice) byl ve zdroji `kandidati.json` jako
+  `funkce: "bez rozlišení"`, takže se v appce trvale tvářil jako „k doměření".
+  In-app „povýšení" (`domereni[id].povyseno`) je jen runtime stav (localStorage/Firebase),
+  do zdrojových dat ani do reportu změn nezasahuje — proto přeřazení muselo proběhnout
+  přímo v datech: záznam odebrán z `kandidati.json` a přidán do `HYDRANTY` v `index.html`
+  i do `hydranty.json` s `funkce: "požární hydrant"` (773 → 774 požárních).
 
 ## Hotovo v1.67 (tato session)
 - Práh semaforu: když ho **admin** změní, uloží se i do Firebase `florian_config/rev_warn`
