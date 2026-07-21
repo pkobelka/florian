@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.75**, cache `florian-v82`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.76**, cache `florian-v83`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.76 (tato session) — zvoneček pro všechny + oprava vykreslení povýšených
+- **🔔 Oznámení – nové tlačítko v toolbaru dostupné VŠEM** (ne jen adminovi). Doteď byl
+  jediný přepínač notifikací schovaný v panelu „👥 Tým", který `flApplyAdminUI()` skrývá
+  ne-adminům — takže PŘ/technici neměli kde push zapnout. Nový panel `pushPanel`
+  (`buildPushPanel`) nabízí „vyber sebe" + „Povolit notifikace" + „Zkušební push".
+  `flPushStav()` teď píše do všech `.fl-push-stav` (funguje v obou panelech).
+- **Oprava: povýšený kandidát se kreslil jako zelené „k doměření" s H-číslem.**
+  `renderMarked()` (vždy viditelná vrstva) nekontrolovala `povyseno` → povýšený bod měl
+  zelený symbol, zelený kruh a odznak „H7". Nově se povýšený kandidát v `renderMarked`
+  kreslí jako **požární hydrant** (modrý symbol + modrý kruh, bez H-čísla), stejně jako
+  v `renderCand`. `promoteCand`/`unpromoteCand` navíc překreslují i `renderMarked`.
 
 ## Hotovo v1.75 (tato session) — povýšení kandidáta jde do reportu změn
 - **Povýšení kandidáta na požární se teď promítne do „📤 Export změn (CSV pro GIS)".**
