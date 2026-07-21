@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.74**, cache `florian-v81`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.75**, cache `florian-v82`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.75 (tato session) — povýšení kandidáta jde do reportu změn
+- **Povýšení kandidáta na požární se teď promítne do „📤 Export změn (CSV pro GIS)".**
+  `promoteCand()` nově zapisuje `funkce='požární hydrant'`, původní klasifikaci
+  (`funkcePuvodni`) a `by`/`ts`, aby povýšení mělo v reportu autora i datum.
+- `flCollectExportRows()` už nebere jen požární z `HYDRANTY`, ale i **povýšené kandidáty**
+  z `KAND` (`domereni[id].povyseno`). Do reportu přidá řádek
+  `Klasifikace: <původní> → požární hydrant` (+ případné doměřené hodnoty prutok/tlak/…).
+- `flExportZmenyCSV()` si přes `ensureKand()` dotáhne `kandidati.json`, aby povýšení
+  byla v exportu i bez zapnuté vrstvy „Ostatní hydranty".
+- Pozn.: appka je statická (GitHub Pages), do zdrojových `kandidati.json`/`hydranty.json`
+  zapisovat neumí — „trvalá změna" = záznam v Firebase + export do GIS, odkud se
+  reklasifikace přenese do zdrojových dat (jako u bodu 2524).
 
 ## Hotovo v1.74 (tato session) — reklasifikace bodu 2524
 - **Přeřazen kandidát `id 2524` na požární hydrant.** Bod na `lat 49.670512 / lon 16.742473`
