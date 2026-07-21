@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.76**, cache `florian-v83`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.77**, cache `florian-v84`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.77 (tato session) — kruh povýšeného + reklasifikované body v mapě
+- **Kruh pokrytí u povýšeného bodu už nesvítí natrvalo.** Kreslil se bezpodmínečně;
+  nově se řídí přepínačem „Pokrytí" (`coverageOn`, default vyplý), stejně jako u
+  ostatních požárních. `covToggle` navíc překresluje `renderMarked`/`renderCand`.
+- **Reklasifikované body se nekreslí dvakrát.** Bod, který už je reálně požární v datech
+  (v `HYDRANTY`), ale zůstal po něm starý `kandMarked`/`domereni.povyseno` stav (typicky
+  2524 = „H7" v Chornicích po přesunu v PR #1), se ve `renderCand`/`renderMarked`
+  přeskočí (`FIRE_IDS`) — kreslí ho jen hlavní vrstva. Konec duplicit, zeleného kruhu
+  i „H7" odznaku. Nedestruktivní: starý stav se nemaže, jen nekreslí.
+- Pozn. k exportu změn: bod už v `HYDRANTY` (reklasifikovaný v datech) není „čekající
+  změna", takže v „Export změn (CSV pro GIS)" není záměrně. Povýšení kandidáta, který
+  je JEŠTĚ v `kandidati.json`, se v exportu objeví (řádek „Klasifikace → požární").
 
 ## Hotovo v1.76 (tato session) — zvoneček pro všechny + oprava vykreslení povýšených
 - **🔔 Oznámení – nové tlačítko v toolbaru dostupné VŠEM** (ne jen adminovi). Doteď byl
