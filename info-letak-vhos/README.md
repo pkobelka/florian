@@ -1,33 +1,39 @@
-# Info-leták VHOS
+# Info-leták VHOS a.s.
 
-Statický informační web (leták) pro zákazníky VHOS. Vysvětluje, **jak se
-orientovat na našem webu** a **jak nahlásit havárii**.
+Statická webová stránka (leták) pro zákazníky **VHOS a.s.** Shrnuje na jednom
+místě to nejdůležitější:
+
+- 🚨 **Nahlášení havárie** – havarijní linka **722 659 171** (NONSTOP 24/7)
+- 🏘️ **MOJE OBEC** – informace o vodě ve vaší obci (havárie, odstávky, kvalita
+  vody, ceny, kontakty, dokumenty)
+- 👤 **MŮJ ÚČET** – zákaznická zóna k odběrnému místu (faktury, zálohy, platby,
+  historie spotřeby, požadavky, aktuality)
+- 🏗️ **Vyjadřovací portál** – pro stavbu / rekonstrukci
+- ☎️ Kontakty – Zákaznické centrum **461 357 154**, Zákaznická linka
+  **461 357 111** (Po–Pá 7:00–15:00), web **www.vhos.cz**
 
 ## Soubory
 
-| Soubor          | Popis                                             |
-|-----------------|---------------------------------------------------|
-| `index.html`    | Hlavní stránka letáku                             |
-| `style.css`     | Styly                                             |
-| `manifest.json` | PWA manifest (název, barvy)                        |
-| `README.md`     | Tento popis                                        |
+| Soubor          | Popis                                    |
+|-----------------|------------------------------------------|
+| `index.html`    | Hlavní stránka letáku                    |
+| `style.css`     | Styly (firemní modrá + červený akcent)   |
+| `manifest.json` | PWA manifest (název, barvy)              |
+| `README.md`     | Tento popis                              |
 
-## Co je potřeba doplnit
+## Poznámky
 
-Na stránce jsou označená místa `[DOPLŇTE …]`, která je nutné vyplnit
-skutečnými údaji. Konkrétní čísla a odkazy nejsou vymyšlené záměrně –
-aby zákazníci nedostali chybnou informaci. Doplňte prosím:
-
-- **Havarijní telefonní číslo** (`index.html` – sekce „Havárii hlaste ihned"
-  a krok 2 postupu; upravte i `href="tel:..."`).
-- **Názvy sekcí / odkazy** v kartách (faktury, odečty, odstávky, přepis, kvalita vody).
-- **Odkaz na online formulář** pro nahlášení poruchy.
-- **Kontakty v patičce** (telefon a e-mail zákaznického centra).
+- Odkazy „Otevřít / Přihlásit se" míří na `www.vhos.cz`. Až budou známé přesné
+  URL podstránek (MOJE OBEC, MŮJ ÚČET, Vyjadřovací portál, přihlášení k odběru),
+  stačí je doplnit do `href` v `index.html`.
+- Původní tištěné letáky obsahovaly QR kód pro přihlášení k odběru upozornění na
+  havárie a odstávky. Zde je nahrazen tlačítkem/odkazem na web; pokud chceš QR
+  kód zachovat i tady, dodej cílovou URL a doplním jej.
 
 ## Spuštění
 
-Jde o čistě statický web – stačí otevřít `index.html` v prohlížeči,
-nebo nasadit na libovolný hosting (např. GitHub Pages).
+Čistě statický web – stačí otevřít `index.html` v prohlížeči, nebo nasadit na
+libovolný hosting (např. GitHub Pages).
 
 ```bash
 # lokální náhled (volitelně)

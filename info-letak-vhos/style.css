@@ -1,129 +1,192 @@
 :root {
-  --brand: #0a5ca8;
-  --brand-dark: #084a86;
-  --brand-light: #e8f2fb;
-  --alert: #c0392b;
-  --alert-bg: #fdecea;
-  --ink: #1c2733;
-  --ink-soft: #55616e;
+  --blue: #0072bc;
+  --blue-dark: #005a96;
+  --blue-soft: #e9f3fb;
+  --red: #d6001c;
+  --red-dark: #a80016;
+  --red-soft: #fdecee;
+  --ink: #1b2733;
+  --ink-soft: #5a6674;
+  --line: #e2e8ef;
   --bg: #ffffff;
-  --bg-alt: #f4f7fa;
-  --border: #dde5ec;
-  --radius: 14px;
-  --shadow: 0 6px 24px rgba(10, 92, 168, 0.08);
+  --bg-alt: #f5f8fb;
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(0, 114, 188, 0.10);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
-
 body {
   margin: 0;
   font-family: var(--font);
   color: var(--ink);
-  background: var(--bg);
+  background: var(--bg-alt);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
+h1, h2, h3 { line-height: 1.2; }
+a { color: var(--blue); }
+img { max-width: 100%; }
 
-h1, h2, h3 { line-height: 1.25; }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 1.25rem; }
 
-a { color: var(--brand); }
+/* ---------- LOGO ---------- */
+.logo { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--ink); }
+.logo__text { font-size: 1.35rem; letter-spacing: 0.02em; }
+.logo__text strong { color: var(--blue); font-weight: 800; }
+.logo__text em { color: var(--red); font-style: italic; font-weight: 700; }
 
-/* ---------- HERO ---------- */
+/* ---------- TOPBAR ---------- */
+.topbar { background: var(--bg); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+.topbar__inner { display: flex; align-items: center; justify-content: space-between; padding-block: 0.7rem; }
+.topbar__web { font-weight: 600; text-decoration: none; }
+.topbar__web:hover { text-decoration: underline; }
+
+/* ---------- HERO / HAVÁRIE ---------- */
 .hero {
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
-  color: #fff;
-  padding: 3rem 1.25rem 3.5rem;
+  background: linear-gradient(135deg, #fff 0%, var(--red-soft) 100%);
+  border-bottom: 3px solid var(--red);
+  padding: 3rem 0 3.25rem;
+  text-align: center;
 }
-.hero__inner { max-width: 860px; margin: 0 auto; }
-.brand { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
-.brand__logo { font-size: 1.6rem; }
-.brand__name { font-weight: 800; letter-spacing: 0.12em; font-size: 1.25rem; }
-.hero h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); margin: 0 0 0.75rem; }
-.hero__lead { font-size: 1.15rem; max-width: 42ch; margin: 0; opacity: 0.95; }
-
-/* ---------- LAYOUT ---------- */
-main { max-width: 100%; }
-.section__inner, .alert__inner, .footer__inner {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 1.25rem;
-}
-.section { padding: 3rem 0; }
-.section--alt { background: var(--bg-alt); border-block: 1px solid var(--border); }
-.section__lead { color: var(--ink-soft); max-width: 55ch; }
-.section h2, .alert h2 { font-size: clamp(1.4rem, 3.5vw, 1.9rem); margin-top: 0; }
-
-/* ---------- ALERT / HAVÁRIE ---------- */
-.alert { background: var(--alert-bg); border-block: 2px solid var(--alert); }
-.alert__inner { display: flex; gap: 1rem; padding-block: 2rem; }
-.alert__icon { font-size: 2.4rem; line-height: 1; }
-.alert h2 { color: var(--alert); }
-.alert__phone {
+.hero__eyebrow { font-size: 1.25rem; font-weight: 700; color: var(--ink); margin: 0 0 0.4rem; }
+.hero h1 { font-size: clamp(2rem, 7vw, 3.4rem); margin: 0; color: var(--red-dark); }
+.hero__phone { color: var(--red-dark); text-decoration: none; white-space: nowrap; }
+.hero__phone:hover { text-decoration: underline; }
+.hero__badge {
   display: inline-block;
-  margin: 0.5rem 0;
-  padding: 0.7rem 1.4rem;
-  background: var(--alert);
+  margin: 0.9rem 0 0;
+  padding: 0.35rem 1.1rem;
+  background: var(--red);
   color: #fff;
-  font-size: 1.3rem;
-  font-weight: 700;
-  text-decoration: none;
-  border-radius: var(--radius);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  font-size: 0.95rem;
 }
-.alert__phone:hover { background: #a5301f; }
-.alert__note { margin: 0.25rem 0 0; color: var(--ink-soft); }
+.hero__sub { max-width: 46ch; margin: 1rem auto 0; color: var(--ink-soft); }
 
-/* ---------- CARDS ---------- */
-.cards {
+/* ---------- SERVICES ---------- */
+.services {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1rem;
-  margin-top: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin: 2.5rem 0;
 }
-.card {
+.service {
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.4rem;
+  padding: 1.8rem;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
 }
-.card__icon { font-size: 1.8rem; }
-.card h3 { margin: 0.6rem 0 0.4rem; font-size: 1.1rem; }
-.card p { margin: 0; color: var(--ink-soft); }
-
-/* ---------- STEPS ---------- */
-.steps { list-style: none; counter-reset: step; margin: 1.75rem 0 0; padding: 0; }
-.step { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
-.step:last-child { border-bottom: none; }
-.step__num {
-  flex: 0 0 auto;
-  width: 2.2rem; height: 2.2rem;
+.service__head { display: flex; align-items: center; gap: 0.7rem; }
+.service__icon {
+  width: 3rem; height: 3rem; flex: 0 0 auto;
   display: grid; place-items: center;
-  background: var(--brand);
-  color: #fff;
-  font-weight: 700;
-  border-radius: 50%;
+  background: var(--blue-soft);
+  border-radius: 12px;
+  font-size: 1.5rem;
 }
-.step h3 { margin: 0.2rem 0 0.3rem; font-size: 1.1rem; }
-.step p { margin: 0; color: var(--ink-soft); }
+.service h2 { margin: 0; font-size: 1.5rem; color: var(--blue-dark); letter-spacing: 0.03em; }
+.service__tag { color: var(--ink-soft); font-weight: 600; margin: 0.75rem 0 0.6rem; }
+.service p { margin: 0 0 0.9rem; }
 
-.tip {
-  margin-top: 2rem;
-  padding: 1rem 1.25rem;
-  background: var(--brand-light);
-  border-left: 4px solid var(--brand);
+.chips { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chips li {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+}
+
+.ticklist { list-style: none; padding: 0; margin: 0 0 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
+.ticklist li { position: relative; padding-left: 1.6rem; font-weight: 500; }
+.ticklist li::before {
+  content: "✓";
+  position: absolute; left: 0;
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.notice {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  background: var(--blue-soft);
+  border-left: 4px solid var(--blue);
   border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin: 0 0 1.2rem;
 }
+.notice p { margin: 0; font-size: 0.95rem; }
 
-/* ---------- FOOTER ---------- */
-.footer { background: var(--ink); color: #cfd8e0; padding: 2.5rem 0; text-align: center; }
-.footer__brand { font-weight: 800; letter-spacing: 0.1em; font-size: 1.1rem; margin: 0 0 0.5rem; color: #fff; }
-.footer p { margin: 0.3rem 0; }
-.footer__small { font-size: 0.85rem; opacity: 0.7; margin-top: 1rem; }
+.btn {
+  margin-top: auto;
+  display: inline-block;
+  text-align: center;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.8rem 1.4rem;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+.btn:hover { background: var(--blue-dark); }
+
+/* ---------- BANNER (VYJADŘOVACÍ PORTÁL) ---------- */
+.banner {
+  display: flex; align-items: center; gap: 1.2rem;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 1.6rem 1.8rem;
+  margin-bottom: 2.5rem;
+}
+.banner__icon { font-size: 2.4rem; }
+.banner h2 { margin: 0 0 0.3rem; font-size: 1.3rem; }
+.banner p { margin: 0; opacity: 0.95; }
+.banner a { color: #fff; font-weight: 700; }
+
+/* ---------- KONTAKTY ---------- */
+.contacts { margin-bottom: 3rem; }
+.contacts h2 { text-align: center; font-size: 1.6rem; color: var(--ink); margin-bottom: 1.4rem; }
+.contacts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}
+.contact {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease;
+}
+.contact:hover { transform: translateY(-2px); }
+.contact__label { font-size: 0.85rem; color: var(--ink-soft); font-weight: 600; }
+.contact__num { font-size: 1.35rem; font-weight: 800; color: var(--blue-dark); }
+.contact__note { font-size: 0.8rem; color: var(--ink-soft); }
+.contact--urgent { border-color: var(--red); background: var(--red-soft); }
+.contact--urgent .contact__num { color: var(--red-dark); }
+
+/* ---------- PATIČKA ---------- */
+.footer { background: var(--ink); color: #cdd6df; padding: 2.2rem 0; text-align: center; }
+.logo--footer { justify-content: center; margin-bottom: 0.6rem; }
+.logo--footer .logo__text { color: #fff; }
+.logo--footer .logo__text strong { color: #fff; }
+.footer__small { font-size: 0.85rem; opacity: 0.75; max-width: 52ch; margin: 0 auto; }
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width: 480px) {
-  .alert__inner { flex-direction: column; }
+@media (max-width: 520px) {
+  .banner { flex-direction: column; text-align: center; }
+  .ticklist { grid-template-columns: 1fr; }
 }
