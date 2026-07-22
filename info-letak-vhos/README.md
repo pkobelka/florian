@@ -14,12 +14,28 @@ místě to nejdůležitější:
 
 ## Soubory
 
-| Soubor          | Popis                                    |
-|-----------------|------------------------------------------|
-| `index.html`    | Hlavní stránka letáku                    |
-| `style.css`     | Styly (firemní modrá + červený akcent)   |
-| `manifest.json` | PWA manifest (název, barvy)              |
-| `README.md`     | Tento popis                              |
+| Soubor              | Popis                                                     |
+|---------------------|-----------------------------------------------------------|
+| `index.html`        | Webová verze letáku (2× A5, k tisku i online)             |
+| `style.css`         | Styly (firemní modrá + červený akcent)                   |
+| `manifest.json`     | PWA manifest (název, barvy)                              |
+| `VHOS-letak-A5.docx`| **Editovatelná Word verze** (2× A5) s rámečky na screeny |
+| `vhos-letak-A5.pdf` | PDF náhled webové verze                                  |
+| `logo-vhos.png`     | Logo VHOS a.s. vyrenderované z SVG                        |
+| `build_docx.js`     | Skript, který generuje Word (`node build_docx.js`)       |
+| `logo_render.html`  | Předloha pro vyrenderování loga do PNG                    |
+| `README.md`         | Tento popis                                              |
+
+### Word verze – vkládání vlastních screenů
+
+V dokumentu `VHOS-letak-A5.docx` jsou dva modré čárkované rámečky s textem
+„SEM VLOŽTE SCREEN". Klikněte do rámečku a přes **Vložit → Obrázek** vložte svůj
+screenshot webu (strana 1 = MOJE OBEC / vyhledávač obce, strana 2 = MŮJ ÚČET).
+Texty i čísla lze libovolně přepsat.
+
+> Pozn.: `build_docx.js` vyžaduje balíček `docx` (`npm install docx`). PDF náhled
+> Wordu se v tomto prostředí nepodařilo vyrenderovat (LibreOffice zde nefunguje),
+> samotný `.docx` je však platný a otevře se ve Wordu správně.
 
 ## Poznámky
 

@@ -11,6 +11,26 @@
 </head>
 <body>
 
+  <!-- ===================== SDÍLENÉ LOGO (SVG symbol) ===================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <radialGradient id="vhosSphere" cx="36%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#bfe6fa"/>
+        <stop offset="35%" stop-color="#3aa0da"/>
+        <stop offset="72%" stop-color="#0f6fb0"/>
+        <stop offset="100%" stop-color="#0a3f6b"/>
+      </radialGradient>
+      <symbol id="vhosMark" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="57" fill="url(#vhosSphere)"/>
+        <ellipse cx="46" cy="34" rx="30" ry="16" fill="#ffffff" opacity="0.28"/>
+        <!-- bílá vlna -->
+        <path d="M6 70 Q33 54 60 66 Q87 78 114 62 L114 74 Q87 90 60 78 Q33 66 6 82 Z" fill="#ffffff"/>
+        <!-- červená vlna -->
+        <path d="M6 62 Q33 78 60 62 Q87 46 114 60" fill="none" stroke="#e2001a" stroke-width="8" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <!-- ============================================================= -->
   <!-- STRANA 1 – HAVÁRIE + MOJE OBEC                                 -->
   <!-- ============================================================= -->
@@ -18,10 +38,7 @@
 
     <header class="head">
       <span class="logo">
-        <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
-          <circle cx="50" cy="50" r="48" fill="#0072bc"/>
-          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
-        </svg>
+        <svg class="logo__mark" viewBox="0 0 120 120" width="52" height="52" aria-hidden="true"><use href="#vhosMark"/></svg>
         <span class="logo__text"><strong>VHOS</strong> <em>a.s.</em></span>
       </span>
     </header>
@@ -80,10 +97,7 @@
 
     <header class="head">
       <span class="logo">
-        <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
-          <circle cx="50" cy="50" r="48" fill="#0072bc"/>
-          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
-        </svg>
+        <svg class="logo__mark" viewBox="0 0 120 120" width="52" height="52" aria-hidden="true"><use href="#vhosMark"/></svg>
         <span class="logo__text"><strong>VHOS</strong> <em>a.s.</em></span>
       </span>
     </header>
