@@ -7,186 +7,152 @@
   --red-soft: #fdecee;
   --ink: #1b2733;
   --ink-soft: #5a6674;
-  --line: #e2e8ef;
-  --bg: #ffffff;
-  --bg-alt: #f5f8fb;
-  --radius: 16px;
-  --shadow: 0 10px 30px rgba(0, 114, 188, 0.10);
+  --line: #dbe4ec;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
   font-family: var(--font);
   color: var(--ink);
-  background: var(--bg-alt);
-  line-height: 1.6;
+  background: #6b7885;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  padding: 12mm 0;
 }
-h1, h2, h3 { line-height: 1.2; }
-a { color: var(--blue); }
-img { max-width: 100%; }
 
-.wrap { max-width: 980px; margin: 0 auto; padding-inline: 1.25rem; }
+/* ---------- A5 STRÁNKA ---------- */
+.page {
+  width: 148mm;
+  min-height: 210mm;
+  background: #fff;
+  margin: 0 auto 10mm;
+  padding: 12mm 13mm 10mm;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+.page:last-of-type { margin-bottom: 0; }
 
-/* ---------- LOGO ---------- */
-.logo { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--ink); }
-.logo__text { font-size: 1.35rem; letter-spacing: 0.02em; }
+/* ---------- HLAVIČKA ---------- */
+.head { display: flex; justify-content: center; margin-bottom: 6mm; }
+.logo { display: inline-flex; align-items: center; gap: 8px; }
+.logo__text { font-size: 20px; letter-spacing: 0.02em; }
 .logo__text strong { color: var(--blue); font-weight: 800; }
 .logo__text em { color: var(--red); font-style: italic; font-weight: 700; }
 
-/* ---------- TOPBAR ---------- */
-.topbar { background: var(--bg); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
-.topbar__inner { display: flex; align-items: center; justify-content: space-between; padding-block: 0.7rem; }
-.topbar__web { font-weight: 600; text-decoration: none; }
-.topbar__web:hover { text-decoration: underline; }
-
-/* ---------- HERO / HAVÁRIE ---------- */
-.hero {
-  background: linear-gradient(135deg, #fff 0%, var(--red-soft) 100%);
-  border-bottom: 3px solid var(--red);
-  padding: 3rem 0 3.25rem;
-  text-align: center;
-}
-.hero__eyebrow { font-size: 1.25rem; font-weight: 700; color: var(--ink); margin: 0 0 0.4rem; }
-.hero h1 { font-size: clamp(2rem, 7vw, 3.4rem); margin: 0; color: var(--red-dark); }
-.hero__phone { color: var(--red-dark); text-decoration: none; white-space: nowrap; }
-.hero__phone:hover { text-decoration: underline; }
-.hero__badge {
+/* ---------- HAVÁRIE ---------- */
+.havarie { text-align: center; }
+.havarie__q { font-size: 17px; font-weight: 700; color: var(--red-dark); margin: 0 0 2mm; }
+.havarie__call { font-size: 30px; font-weight: 800; color: var(--ink); margin: 0; }
+.havarie__num { color: var(--red-dark); white-space: nowrap; }
+.havarie__badge {
   display: inline-block;
-  margin: 0.9rem 0 0;
-  padding: 0.35rem 1.1rem;
+  margin: 3mm 0 0;
+  padding: 4px 16px;
   background: var(--red);
   color: #fff;
   font-weight: 800;
   letter-spacing: 0.08em;
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: 13px;
 }
-.hero__sub { max-width: 46ch; margin: 1rem auto 0; color: var(--ink-soft); }
+.havarie__sub { max-width: 42ch; margin: 3mm auto 0; color: var(--ink-soft); font-size: 12.5px; }
 
-/* ---------- SERVICES ---------- */
-.services {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin: 2.5rem 0;
-}
-.service {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.8rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-}
-.service__head { display: flex; align-items: center; gap: 0.7rem; }
-.service__icon {
-  width: 3rem; height: 3rem; flex: 0 0 auto;
+/* ---------- ODDĚLOVAČ ---------- */
+.rule { border: none; border-top: 1px solid var(--line); margin: 7mm 0; }
+
+/* ---------- BLOK ---------- */
+.block__head { display: flex; align-items: center; gap: 10px; margin-bottom: 3mm; }
+.block__icon {
+  width: 46px; height: 46px; flex: 0 0 auto;
   display: grid; place-items: center;
   background: var(--blue-soft);
   border-radius: 12px;
-  font-size: 1.5rem;
+  font-size: 24px;
 }
-.service h2 { margin: 0; font-size: 1.5rem; color: var(--blue-dark); letter-spacing: 0.03em; }
-.service__tag { color: var(--ink-soft); font-weight: 600; margin: 0.75rem 0 0.6rem; }
-.service p { margin: 0 0 0.9rem; }
+.block h2 { margin: 0; font-size: 22px; color: var(--blue-dark); letter-spacing: 0.03em; }
+.block__tag { margin: 1px 0 0; color: var(--ink-soft); font-weight: 600; font-size: 12.5px; }
+.block__text { margin: 0 0 4mm; font-size: 13.5px; }
 
-.chips { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+/* ---------- CHIPS ---------- */
+.chips { list-style: none; padding: 0; margin: 0 0 5mm; display: flex; flex-wrap: wrap; gap: 6px; }
 .chips li {
   background: var(--blue-soft);
   color: var(--blue-dark);
   font-weight: 600;
-  font-size: 0.9rem;
-  padding: 0.35rem 0.8rem;
+  font-size: 12.5px;
+  padding: 5px 12px;
   border-radius: 999px;
 }
 
-.ticklist { list-style: none; padding: 0; margin: 0 0 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
-.ticklist li { position: relative; padding-left: 1.6rem; font-weight: 500; }
-.ticklist li::before {
-  content: "✓";
-  position: absolute; left: 0;
-  color: var(--blue);
-  font-weight: 800;
-}
+/* ---------- TICKLIST ---------- */
+.ticklist { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+.ticklist li { position: relative; padding-left: 22px; font-weight: 500; font-size: 14px; }
+.ticklist li::before { content: "✓"; position: absolute; left: 0; color: var(--blue); font-weight: 800; }
 
+/* ---------- NOTICE ---------- */
 .notice {
-  display: flex; gap: 0.6rem; align-items: flex-start;
+  display: flex; gap: 8px; align-items: flex-start;
   background: var(--blue-soft);
   border-left: 4px solid var(--blue);
   border-radius: 8px;
-  padding: 0.8rem 1rem;
-  margin: 0 0 1.2rem;
+  padding: 8px 12px;
 }
-.notice p { margin: 0; font-size: 0.95rem; }
+.notice__icon { font-size: 18px; line-height: 1.3; }
+.notice p { margin: 0; font-size: 12.5px; }
 
-.btn {
-  margin-top: auto;
-  display: inline-block;
-  text-align: center;
-  background: var(--blue);
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
-  padding: 0.8rem 1.4rem;
-  border-radius: 12px;
-  transition: background 0.15s ease;
-}
-.btn:hover { background: var(--blue-dark); }
-
-/* ---------- BANNER (VYJADŘOVACÍ PORTÁL) ---------- */
-.banner {
-  display: flex; align-items: center; gap: 1.2rem;
+/* ---------- VYJADŘOVACÍ PORTÁL ---------- */
+.portal {
+  display: flex; align-items: center; gap: 12px;
   background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
   color: #fff;
-  border-radius: var(--radius);
-  padding: 1.6rem 1.8rem;
-  margin-bottom: 2.5rem;
+  border-radius: 12px;
+  padding: 5mm 6mm;
+  margin: 6mm 0;
 }
-.banner__icon { font-size: 2.4rem; }
-.banner h2 { margin: 0 0 0.3rem; font-size: 1.3rem; }
-.banner p { margin: 0; opacity: 0.95; }
-.banner a { color: #fff; font-weight: 700; }
+.portal__icon { font-size: 30px; }
+.portal h3 { margin: 0 0 2px; font-size: 15px; }
+.portal p { margin: 0; font-size: 12px; opacity: 0.95; }
 
 /* ---------- KONTAKTY ---------- */
-.contacts { margin-bottom: 3rem; }
-.contacts h2 { text-align: center; font-size: 1.6rem; color: var(--ink); margin-bottom: 1.4rem; }
-.contacts__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1rem;
-}
+.contacts-title { text-align: center; font-size: 18px; color: var(--ink); margin: 0 0 4mm; }
+.contacts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .contact {
-  display: flex; flex-direction: column; gap: 0.15rem;
-  background: var(--bg);
+  display: flex; flex-direction: column; gap: 2px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1.1rem 1.2rem;
-  text-decoration: none;
-  color: var(--ink);
-  box-shadow: var(--shadow);
-  transition: transform 0.12s ease;
+  border-radius: 10px;
+  padding: 9px 10px;
 }
-.contact:hover { transform: translateY(-2px); }
-.contact__label { font-size: 0.85rem; color: var(--ink-soft); font-weight: 600; }
-.contact__num { font-size: 1.35rem; font-weight: 800; color: var(--blue-dark); }
-.contact__note { font-size: 0.8rem; color: var(--ink-soft); }
+.contact__label { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+.contact__num { font-size: 17px; font-weight: 800; color: var(--blue-dark); }
+.contact__note { font-size: 10.5px; color: var(--ink-soft); }
 .contact--urgent { border-color: var(--red); background: var(--red-soft); }
 .contact--urgent .contact__num { color: var(--red-dark); }
 
 /* ---------- PATIČKA ---------- */
-.footer { background: var(--ink); color: #cdd6df; padding: 2.2rem 0; text-align: center; }
-.logo--footer { justify-content: center; margin-bottom: 0.6rem; }
-.logo--footer .logo__text { color: #fff; }
-.logo--footer .logo__text strong { color: #fff; }
-.footer__small { font-size: 0.85rem; opacity: 0.75; max-width: 52ch; margin: 0 auto; }
+.foot {
+  margin-top: auto;
+  padding-top: 5mm;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--ink-soft); font-weight: 600;
+}
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 520px) {
-  .banner { flex-direction: column; text-align: center; }
-  .ticklist { grid-template-columns: 1fr; }
+/* ---------- TISK ---------- */
+@page { size: A5; margin: 0; }
+
+@media print {
+  body { background: #fff; padding: 0; }
+  .page {
+    width: 148mm; height: 210mm; min-height: 210mm;
+    margin: 0; box-shadow: none;
+    page-break-after: always; break-after: page;
+  }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
+  .contact--urgent, .havarie__badge, .portal, .chips li, .block__icon, .notice {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
 }

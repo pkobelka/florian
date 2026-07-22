@@ -3,155 +3,156 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="VHOS a.s. – jak nahlásit havárii, informace o vodě ve vaší obci (MOJE OBEC) a přehled odběrného místa (MŮJ ÚČET)." />
+  <meta name="description" content="VHOS a.s. – informační leták pro zákazníky (2× A5): nahlášení havárie, MOJE OBEC a MŮJ ÚČET." />
   <meta name="theme-color" content="#0072bc" />
-  <title>VHOS a.s. – informace pro zákazníky</title>
-  <link rel="manifest" href="manifest.json" />
+  <title>VHOS a.s. – informační leták (2× A5)</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230072bc'/><path d='M12 60 Q35 40 55 55 T92 52' stroke='white' stroke-width='9' fill='none' stroke-linecap='round'/></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ===================== HLAVIČKA ===================== -->
-  <header class="topbar">
-    <div class="wrap topbar__inner">
-      <a class="logo" href="https://www.vhos.cz" aria-label="VHOS a.s.">
-        <svg class="logo__mark" viewBox="0 0 100 100" width="46" height="46" aria-hidden="true">
+  <!-- ============================================================= -->
+  <!-- STRANA 1 – HAVÁRIE + MOJE OBEC                                 -->
+  <!-- ============================================================= -->
+  <section class="page">
+
+    <header class="head">
+      <span class="logo">
+        <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
           <circle cx="50" cy="50" r="48" fill="#0072bc"/>
-          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
         </svg>
         <span class="logo__text"><strong>VHOS</strong> <em>a.s.</em></span>
-      </a>
-      <a class="topbar__web" href="https://www.vhos.cz">www.vhos.cz</a>
-    </div>
-  </header>
+      </span>
+    </header>
 
-  <!-- ===================== HAVÁRIE (HERO) ===================== -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap">
-      <p class="hero__eyebrow">Potřebujete nahlásit havárii?</p>
-      <h1 id="hero-title">Volejte <a class="hero__phone" href="tel:+420722659171">722&nbsp;659&nbsp;171</a></h1>
-      <p class="hero__badge">🔴 NONSTOP 24/7</p>
-      <p class="hero__sub">
-        Prasklé potrubí, únik vody, zápach nebo přerušená dodávka?
-        Havarijní linka je vám k dispozici kdykoli, dny i noci.
-      </p>
+    <!-- HAVÁRIE -->
+    <div class="havarie">
+      <p class="havarie__q">Potřebujete nahlásit havárii?</p>
+      <p class="havarie__call">Volejte <span class="havarie__num">722&nbsp;659&nbsp;171</span></p>
+      <p class="havarie__badge">NONSTOP 24/7</p>
+      <p class="havarie__sub">Prasklé potrubí, únik vody, zápach nebo přerušená dodávka? Havarijní linka je vám k dispozici dnem i nocí.</p>
     </div>
+
+    <hr class="rule" />
+
+    <!-- MOJE OBEC -->
+    <div class="block">
+      <div class="block__head">
+        <span class="block__icon">🏘️</span>
+        <div>
+          <h2>MOJE OBEC</h2>
+          <p class="block__tag">Informace o vodě ve vaší obci</p>
+        </div>
+      </div>
+
+      <p class="block__text">
+        Na <strong>www.vhos.cz</strong> napište název své obce
+        (např. <strong>Polička&nbsp;–&nbsp;Město</strong>) a hned uvidíte vše důležité:
+      </p>
+
+      <ul class="chips">
+        <li>Havárie</li>
+        <li>Odstávky</li>
+        <li>Kvalita vody</li>
+        <li>Ceny</li>
+        <li>Kontakty</li>
+        <li>Dokumenty</li>
+      </ul>
+
+      <div class="notice">
+        <span class="notice__icon">🔔</span>
+        <p>Chcete být upozorněni na <strong>havárie a plánované odstávky</strong>? Přihlaste se k odběru zpráv přímo na webu.</p>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <span>www.vhos.cz</span>
+      <span>Havárie: 722 659 171 · NONSTOP</span>
+    </footer>
+
   </section>
 
-  <main class="wrap">
+  <!-- ============================================================= -->
+  <!-- STRANA 2 – MŮJ ÚČET + PORTÁL + KONTAKTY                        -->
+  <!-- ============================================================= -->
+  <section class="page">
 
-    <!-- ===================== DVĚ HLAVNÍ SLUŽBY ===================== -->
-    <section class="services" aria-label="Online služby VHOS">
+    <header class="head">
+      <span class="logo">
+        <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="#0072bc"/>
+          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span class="logo__text"><strong>VHOS</strong> <em>a.s.</em></span>
+      </span>
+    </header>
 
-      <!-- MOJE OBEC -->
-      <article class="service">
-        <div class="service__head">
-          <span class="service__icon" aria-hidden="true">🏘️</span>
-          <h2>MOJE OBEC</h2>
-        </div>
-        <p class="service__tag">Informace o vodě ve vaší obci</p>
-        <p>
-          Na <a href="https://www.vhos.cz">www.vhos.cz</a> napište název své obce
-          (např. <strong>Polička – Město</strong>) a hned uvidíte vše důležité:
-        </p>
-        <ul class="chips">
-          <li>Havárie</li>
-          <li>Odstávky</li>
-          <li>Kvalita vody</li>
-          <li>Ceny</li>
-          <li>Kontakty</li>
-          <li>Dokumenty</li>
-        </ul>
-        <div class="notice">
-          <span aria-hidden="true">🔔</span>
-          <p>Chcete být upozorněni na <strong>havárie a plánované odstávky</strong>?
-             Přihlaste se k odběru zpráv přímo na webu.</p>
-        </div>
-        <a class="btn" href="https://www.vhos.cz">Otevřít MOJE OBEC</a>
-      </article>
-
-      <!-- MŮJ ÚČET -->
-      <article class="service">
-        <div class="service__head">
-          <span class="service__icon" aria-hidden="true">👤</span>
+    <!-- MŮJ ÚČET -->
+    <div class="block">
+      <div class="block__head">
+        <span class="block__icon">👤</span>
+        <div>
           <h2>MŮJ ÚČET</h2>
+          <p class="block__tag">Zákaznická zóna k vašemu odběrnému místu</p>
         </div>
-        <p class="service__tag">Zákaznická zóna k vašemu odběrnému místu</p>
-        <p>
-          Po přihlášení do zákaznického servisu máte vše přehledně na jednom místě:
-        </p>
-        <ul class="ticklist">
-          <li>Odběrná místa</li>
-          <li>Faktury</li>
-          <li>Zálohy</li>
-          <li>Platby</li>
-          <li>Historie spotřeby</li>
-          <li>Požadavky</li>
-          <li>Aktuality</li>
-        </ul>
-        <a class="btn" href="https://www.vhos.cz">Přihlásit se do MŮJ ÚČET</a>
-      </article>
-
-    </section>
-
-    <!-- ===================== VYJADŘOVACÍ PORTÁL ===================== -->
-    <section class="banner" aria-labelledby="portal-title">
-      <span class="banner__icon" aria-hidden="true">🏗️</span>
-      <div>
-        <h2 id="portal-title">Stavíte nebo rekonstruujete?</h2>
-        <p>Vyjádření k existenci vodohospodářských sítí zařídíte online přes
-           <strong>Vyjadřovací portál</strong> na <a href="https://www.vhos.cz">www.vhos.cz</a>.</p>
       </div>
-    </section>
 
-    <!-- ===================== KONTAKTY ===================== -->
-    <section class="contacts" aria-labelledby="contacts-title">
-      <h2 id="contacts-title">Spojte se s námi</h2>
-      <div class="contacts__grid">
+      <p class="block__text">
+        Po přihlášení do zákaznického servisu na <strong>www.vhos.cz</strong>
+        máte vše přehledně na jednom místě:
+      </p>
 
-        <a class="contact contact--urgent" href="tel:+420722659171">
+      <ul class="ticklist">
+        <li>Odběrná místa</li>
+        <li>Faktury</li>
+        <li>Zálohy</li>
+        <li>Platby</li>
+        <li>Historie spotřeby</li>
+        <li>Požadavky</li>
+        <li>Aktuality</li>
+      </ul>
+    </div>
+
+    <!-- VYJADŘOVACÍ PORTÁL -->
+    <div class="portal">
+      <span class="portal__icon">🏗️</span>
+      <div>
+        <h3>Stavíte nebo rekonstruujete?</h3>
+        <p>Vyjádření k existenci vodohospodářských sítí zařídíte online přes <strong>Vyjadřovací portál</strong> na www.vhos.cz.</p>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- KONTAKTY -->
+    <div class="block">
+      <h2 class="contacts-title">Spojte se s námi</h2>
+      <div class="contacts">
+        <div class="contact contact--urgent">
           <span class="contact__label">🚨 Havarijní linka</span>
           <span class="contact__num">722 659 171</span>
           <span class="contact__note">NONSTOP 24/7</span>
-        </a>
-
-        <a class="contact" href="tel:+420461357154">
+        </div>
+        <div class="contact">
           <span class="contact__label">🏢 Zákaznické centrum</span>
           <span class="contact__num">461 357 154</span>
           <span class="contact__note">&nbsp;</span>
-        </a>
-
-        <a class="contact" href="tel:+420461357111">
+        </div>
+        <div class="contact">
           <span class="contact__label">☎️ Zákaznická linka</span>
           <span class="contact__num">461 357 111</span>
           <span class="contact__note">Po–Pá 7:00–15:00</span>
-        </a>
-
-        <a class="contact" href="https://www.vhos.cz">
-          <span class="contact__label">🌐 Web</span>
-          <span class="contact__num">www.vhos.cz</span>
-          <span class="contact__note">MOJE OBEC · MŮJ ÚČET</span>
-        </a>
-
+        </div>
       </div>
-    </section>
-
-  </main>
-
-  <!-- ===================== PATIČKA ===================== -->
-  <footer class="footer">
-    <div class="wrap">
-      <div class="logo logo--footer">
-        <svg viewBox="0 0 100 100" width="34" height="34" aria-hidden="true">
-          <circle cx="50" cy="50" r="48" fill="#ffffff"/>
-          <path d="M10 62 Q34 40 55 55 T94 50" stroke="#0072bc" stroke-width="10" fill="none" stroke-linecap="round"/>
-        </svg>
-        <span class="logo__text"><strong>VHOS</strong> <em>a.s.</em></span>
-      </div>
-      <p class="footer__small">Informace pro zákazníky – nahlášení havárie, informace o vodě ve vaší obci a přehled odběrného místa.</p>
     </div>
-  </footer>
+
+    <footer class="foot">
+      <span>www.vhos.cz</span>
+      <span>MOJE OBEC · MŮJ ÚČET</span>
+    </footer>
+
+  </section>
 
 </body>
 </html>
