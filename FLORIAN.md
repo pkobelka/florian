@@ -6,7 +6,26 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.80**, cache `florian-v87`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.81**, cache `florian-v88`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.81 (tato session) — klikací semafor + filtr stavu + „moje pracoviště"
+- **Počty v semaforu jsou aktivní tlačítka.** V režimu 🚦 Revize se z počtů (Po termínu /
+  Blíží se / Chybí / OK) staly pilulky `.revfilt`. Klik → `revStatusFilter` = daný stav →
+  mapa ukáže **jen hydranty toho stavu** (v `applyFilter`: `matches(h) && hydStatus===filtr`),
+  fitBounds na ně. Druhý klik / „Zavřít" filtr zruší. Počty se počítají z `matches()` (bez
+  stavového filtru), takže jdou přepínat. Vypnutí semaforu filtr i seznam zruší.
+- **Seznam H k danému stavu** (`flRevList` → panel `revListPanel`): nejhorší (nejvíc po termínu)
+  první, každý řádek `📍 obec · Po termínu o X dní`, klik = skok na mapu + karta. Panel má „Zavřít".
+- **„Moje pracoviště" podle přihlášení (měkké předvyplnění).** `flMyPracSet()` z vybraného
+  jména v Týmu (`flMe`→`lide`): vedení (Admin/TŘ/PŘ) = vše; **vedoucí střediska = celé středisko
+  vč. pracovišť pod ním** (přes `strediskoOf`: Vykydal MT → MT+Svitavy, Rada Polička →
+  Polička+Litomyšl); ostatní = jen své pracoviště. `flApplyMyPracDefault()` (volá se po načtení
+  `florian_lide` a při výběru sebe) **jednou za session** předvyplní `selectedStrediska`, pokud
+  uživatel sám nefiltruje. Filtr jde kdykoli zrušit (Pracoviště→Vše nebo „Všechny požární H"),
+  pak se znovu nenastaví (`flPracDefaulted`).
+- Pozn.: „jen k doměření" — díky předvyplnění je seznam „📋 K doměření" i vrstva označených
+  automaticky omezené na moje pracoviště (`markInSel`). Samostatný mapový přepínač „jen k
+  doměření" (skrýt vše ostatní) zatím NENÍ — kandidát na příště.
 
 ## Hotovo v1.80 (tato session) — karta kandidáta v novém designu (jako požární)
 - **`openCandCard` přestavěná do stejného „nového" layoutu jako `openCard`** (kompaktní
