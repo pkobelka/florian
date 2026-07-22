@@ -1,0 +1,11 @@
+{
+  "name": "Info-leták VHOS",
+  "short_name": "Info VHOS",
+  "description": "Informace pro zákazníky – orientace na webu a hlášení havárií.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a5ca8",
+  "lang": "cs",
+  "icons": []
+}
