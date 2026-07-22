@@ -6,7 +6,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.79**, cache `florian-v86`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.80**, cache `florian-v87`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.80 (tato session) — karta kandidáta v novém designu (jako požární)
+- **`openCandCard` přestavěná do stejného „nového" layoutu jako `openCard`** (kompaktní
+  grid `.cardgrid`/`.cg-main`/`.cg-side`): dlaždice metrik (průtok/tlaky), mřížka faktů
+  `.facts`, foto + mini-mapa vedle sebe (`.media2`), úkoly ve vedlejším sloupci, akce dole.
+  Zachovány kandidátní specifika: chipy (dosah/díra, k doměření, povýšeno), doměření jako
+  metriky, akce Vybrat/Doměřit/Povýšit/Vrátit. Revizní pruh `.revbig` jen když má datum revize.
+- **Kandidát má nově i foto** (Vyfotit/Galerie/smazat), stejně jako požární hydrant
+  (`loadPhoto`/`deletePhoto`/`fbUploadFoto` jsou keyed přes `h.id`, funguje i pro kandidáty).
+- **Foto funkce překreslují přes `reopenCard(h)` místo natvrdo `openCard(h)`** (`loadPhoto`,
+  `deletePhoto`, cloud upload callback) — u kandidáta se tak po fotce nepřehodí na
+  požární kartu; `reopenCard` vybere kartu dle `funkce`. `openCandCard` teď nastavuje `current`.
+- Mini-mapa kandidáta = `buildCandMini` (oranžový přerušovaný kruh „díry" + ikona kandidáta),
+  ne `buildMini` (ten kreslí modrý kruh pokrytí, což je pro kandidáta zavádějící).
 
 ## Hotovo v1.79 (tato session) — mapa omezená na oblast hydrantů (nejde odjet na Evropu)
 - **Mapa se už nedá oddálit/odjet na celou Evropu.** Nová `flConstrainMap()` spočítá
