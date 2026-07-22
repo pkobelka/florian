@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.81**, cache `florian-v88`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.82**, cache `florian-v89`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.82 (tato session) — filtr stavu revize schová i „k doměření"
+- **Oprava k v1.81:** filtr stavu semaforu (`revStatusFilter`) se aplikoval jen na požární
+  vrstvu, ale zelené body „k doměření"/kandidáti (`renderMarked`/`renderCand`) svítily dál.
+  Nově obě funkce při aktivním `revStatusFilter` vrstvu vyprázdní a nekreslí; `applyFilter`
+  volá `renderMarked()` (s pojistkou na pořadí definice), takže se při přepnutí filtru
+  překreslí. Po zrušení filtru se „k doměření" i kandidáti vrátí.
 
 ## Hotovo v1.81 (tato session) — klikací semafor + filtr stavu + „moje pracoviště"
 - **Počty v semaforu jsou aktivní tlačítka.** V režimu 🚦 Revize se z počtů (Po termínu /
