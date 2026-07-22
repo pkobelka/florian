@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.77**, cache `florian-v84`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.78**, cache `florian-v85`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.78 (tato session) — klik na úkol u kandidáta konečně otevře kartu
+- **Oprava: klik na úkol v seznamu „Otevřené úkoly" u „ostatního hydrantu" (kandidáta)
+  nic nezobrazil.** Handler v `buildUkolyMenu` volal `_hById(hid)` a kartu otevřel jen
+  `if(h)`. `_hById` hledá v `HYDRANTY` a pak v `KAND`, ale kandidáti (`kandidati.json`) se
+  načítají líně (až po zapnutí vrstvy „Ostatní hydranty") → u úkolu na kandidátovi bylo
+  `h==null` a panel se jen zavřel (typicky „Zkouška Tom…", „Zkouška 24.7. Jevíčko").
+- **Nová `openUkolTarget(hid)`**: když bod není v `HYDRANTY` ani v načtených `KAND`,
+  donačte kandidáty přes `ensureKand()` a zkusí `_hById` znovu; teprve pak `reopenCard`
+  (ta sама pozná požární vs. kandidát). Když bod v datech opravdu není, srozumitelný alert.
 
 ## Hotovo v1.77 (tato session) — kruh povýšeného + reklasifikované body v mapě
 - **Kruh pokrytí u povýšeného bodu už nesvítí natrvalo.** Kreslil se bezpodmínečně;
