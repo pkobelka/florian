@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.78**, cache `florian-v85`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.79**, cache `florian-v86`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.79 (tato session) — mapa omezená na oblast hydrantů (nejde odjet na Evropu)
+- **Mapa se už nedá oddálit/odjet na celou Evropu.** Nová `flConstrainMap()` spočítá
+  `FL_DATA_BOUNDS` = bounding box všech `HYDRANTY` rozšířený o 20 % a nastaví
+  `map.setMaxBounds()` + `map.setMinZoom(getBoundsZoom(bounds))` (dál oddálit nejde).
+  `L.map` má `maxBoundsViscosity:1.0` (tvrdý doraz při posunu). Přepočítá se na
+  `resize` a `orientationchange` (getBoundsZoom závisí na rozměru mapy). Počáteční
+  `fitBounds` je zjemnělejší (víc přiblížený) než minZoom, takže se nepere s omezením.
 
 ## Hotovo v1.78 (tato session) — klik na úkol u kandidáta konečně otevře kartu
 - **Oprava: klik na úkol v seznamu „Otevřené úkoly" u „ostatního hydrantu" (kandidáta)
