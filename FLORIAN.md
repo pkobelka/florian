@@ -6,7 +6,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.85**, cache `florian-v92`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.86**, cache `florian-v93`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.86 (tato session) — „k doměření" se shlukují (zelené kolečko) + cache-busting faviconu
+- **„k doměření" body se teď shlukují do zeleného kolečka** (jako požární do modrého).
+  `markedLayer` byl prostý `L.layerGroup` → nově `L.markerClusterGroup` s ikonou
+  `.cluster.markcl` (zelená #16a34a) + odznak úkolu 🛠️ na clusteru (přes `_h` na markerech).
+  Kruhy pokrytí přesunuty do samostatné `markedCovLayer` (cluster nesmí shlukovat kroužky).
+  `rebuildMarkersBadges` volá `renderMarked()` i když je vrstva kandidátů vyplá (živý odznak).
+- **Favicon cache-busting (příprava na výměnu ikon před rozesláním):**
+  - `<link rel=icon>` má nově `icon-16/32.png?v=1`, apple-touch `icon-180.png?v=1`;
+    manifest ikony `icon-192/512.png?v=1`. Do `sw.js` ASSETS přidány icon-16/32/180.
+  - **Postup při výměně faviconu:** (1) nahradit PNG soubory, (2) **zvýšit `?v=` číslo**
+    u všech odkazů (index.html + manifest.json), (3) bump `APP_VERSION` + `CACHE`.
+    Query `?v=` zlomí lepivý browser-cache faviconu v záložce. **POZOR:** ikona už
+    NAINSTALOVANÉ PWA na ploše se tím nepřekreslí — to jde jen přeinstalem (omezení PWA).
 
 ## Hotovo v1.85 (tato session) — pokrytí doměřovaných je defaultně vyplé (jen na klik)
 - **Oprava:** `domCovOn` (🟢 Pokrytí doměřovaných) měl default `true`, takže se zelené
