@@ -1,4 +1,4 @@
-# Florián II — poznámky k projektu (stav pro pokračování)
+# Florián 2.0 — poznámky k projektu (stav pro pokračování)
 
 PWA mapa **požárních hydrantů** VHOS, a.s. Sesterská appka k AquaCtrl.
 Vše v jednom `index.html` (inline CSS+JS+data+Leaflet). Hostováno na **GitHub Pages**:
@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.87**, cache `florian-v94`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.88**, cache `florian-v95`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.88 (tato session) — přejmenování „Florián II" → „Florián 2.0"
+- **Brandový název všude přejmenován** na „Florián 2.0" (title, hlavička, kredit, sdílení,
+  manifest `name`+`short_name`). Skloňované tvary ve větách („do Floriána", „Přihlášení do
+  Floriána") ponechány — to je gramatika, ne brand. `<title>` = „Florián 2.0 – hydranty".
 
 ## Hotovo v1.87 (tato session) — nový favicon / ikony (hydrant + vlnka)
 - **Vyměněny ikony** za nový design (bílý hydrant na modrém, červeno-bílá vlnka). Sada
