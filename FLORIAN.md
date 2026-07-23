@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.86**, cache `florian-v93`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.87**, cache `florian-v94`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.87 (tato session) — nový favicon / ikony (hydrant + vlnka)
+- **Vyměněny ikony** za nový design (bílý hydrant na modrém, červeno-bílá vlnka). Sada
+  `icon-16/32/180/192/512.png` vygenerována ze zdroje 180×192 (192/512 lehce doostřené
+  upscalem — pro ostřejší velké ikony příště dodat zdroj 512×512 / SVG). `?v=` zvednuto
+  na **2** (index.html + manifest) → zlomí lepivý browser-cache faviconu v záložce.
+  Ikona nainstalované PWA na ploše se u stávajících uživatelů projeví až přeinstalem.
 
 ## Hotovo v1.86 (tato session) — „k doměření" se shlukují (zelené kolečko) + cache-busting faviconu
 - **„k doměření" body se teď shlukují do zeleného kolečka** (jako požární do modrého).
