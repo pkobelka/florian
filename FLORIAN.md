@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.83**, cache `florian-v90`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.84**, cache `florian-v91`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.84 (tato session) — odznak úkolu 🛠️ i na sloučeném clusteru
+- **Cluster (sloučené kolečko počtu) teď ukazuje červený odznak 🛠️**, když má aspoň
+  jeden hydrant uvnitř otevřený úkol. V `iconCreateFunction` obou clusterů (požární
+  `cluster` i kandidátní `candCluster`) se přes `c.getAllChildMarkers().some(m =>
+  hasOpenUkol(m._h.id))` zjistí úkol a přidá `<span class="uk-badge">` (cluster div má
+  nově `position:relative`, aby odznak seděl v rohu jako u jednotlivého bodu).
+- Kandidátní markery v `renderCand` nově nesou `m._h=h` (dřív neměly), aby šlo v jejich
+  clusteru úkol zjistit. Překreslení řeší `cluster.refreshClusters()` v `rebuildMarkersBadges`
+  (volá se z `refreshUkolBadge` při změně úkolů).
 
 ## Hotovo v1.83 (tato session) — „k doměření" se filtruje jako požární H (obec i pracoviště)
 - **Oprava:** vrstva označených „k doměření" (`renderMarked`) filtrovala jen podle
