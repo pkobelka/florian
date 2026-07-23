@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.84**, cache `florian-v91`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.85**, cache `florian-v92`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.85 (tato session) — pokrytí doměřovaných je defaultně vyplé (jen na klik)
+- **Oprava:** `domCovOn` (🟢 Pokrytí doměřovaných) měl default `true`, takže se zelené
+  kruhy pokrytí „k doměření" ukazovaly hned po každém načtení/aktualizaci. Default je teď
+  `false` — pokrytí se zapne až kliknutím na přepínač, stejně jako „Pokrytí" u požárních.
 
 ## Hotovo v1.84 (tato session) — odznak úkolu 🛠️ i na sloučeném clusteru
 - **Cluster (sloučené kolečko počtu) teď ukazuje červený odznak 🛠️**, když má aspoň
