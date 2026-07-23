@@ -79,10 +79,14 @@ def extract_pdf(path, druh):
                 num = cell(r_num)
                 if not num or num.lower().startswith('číslo'):
                     continue
-                # nadpis skupiny? číslo buňka obsahuje název (ne jen X.Y.)
+                # nadpis skupiny objektů (ne řádek opatření X.Y.)
                 if not MEAS.match(num):
-                    # bere se jako skupina jen pokud vypadá jako "1. něco"
-                    if re.match(r'^\d+[a-z]?[\.\)]\s+\S', num) or (r_evt and not cell(r_evt)):
+                    if re.match(r'^\d+[a-z]?[\.\)]$', num):
+                        # samotné číslo sekce ("1a."), název je ve sloupci událost
+                        name = cell(r_evt)
+                        cur_group = (num + ' ' + name).strip()
+                    elif re.match(r'^\d+[a-z]?[\.\)]\s+\S', num):
+                        # název je celý ve sloupci číslo ("1. vrt Cl-1")
                         cur_group = num
                     continue
                 measure = cell(r_meas)
