@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.88**, cache `florian-v95`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.89**, cache `florian-v96`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.89 (tato session) — počet „ostatních" v horním počítadle
+- **Horní pill badge počítá i „ostatní hydranty"**, když je vrstva zapnutá:
+  `640 hydrantů · +N ostatních`. Nové `flVisibleFireCount()` (požární dle filtrů+stavu),
+  `candShownCount()` (kandidáti mimo `FIRE_IDS`, respektuje `visibleObecSet`) a
+  `flRenderCount()` (skládá text). Volá se z `applyFilter`, konce `renderCand` a
+  `hideCandLayers` → počet se osvěží při filtrech i zapnutí/vypnutí vrstvy.
 
 ## Hotovo v1.88 (tato session) — přejmenování „Florián II" → „Florián 2.0"
 - **Brandový název všude přejmenován** na „Florián 2.0" (title, hlavička, kredit, sdílení,
