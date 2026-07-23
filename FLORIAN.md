@@ -6,7 +6,22 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.82**, cache `florian-v89`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.83**, cache `florian-v90`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.83 (tato session) — „k doměření" se filtruje jako požární H (obec i pracoviště)
+- **Oprava:** vrstva označených „k doměření" (`renderMarked`) filtrovala jen podle
+  pracoviště (`markInSel` → `markStred`, a i to měkce „neznámé se neschovává"), **filtr
+  obce úplně ignorovala** → body svítily dál i po výběru obce. Naopak `renderCand`
+  (zapnutá vrstva kandidátů) už filtroval správně přes množinu obcí viditelných požárních.
+- **Sjednoceno na jeden zdroj pravdy `visibleObecSet()`** = obec-kódy požárních H, které
+  projdou `matches()` (pracoviště+obec+vlastník); `null` = žádný filtr → vše. `markInSel(id,
+  obecSet)` teď vrací, zda je `markObec(id)` v té množině (nová `markObec` = uložená obec →
+  dohledání v KAND). Tedy „k doměření" bod se ukáže **jen když je v jeho obci vidět aspoň
+  jeden požární H** — stejně jako `renderCand`.
+- Použito i v `updDomCount` a `buildDomereniList` (počet i seznam „📋 K doměření"), takže
+  seznam/počítadlo respektují i filtr obce. Pozor: `markInSel` se už NESMÍ předat přímo do
+  `.filter(markInSel)` (index by přišel jako `obecSet`) — všude se volá `markInSel(id,_os)`.
+- `markStred` ponechána (nevyužitá, ale neškodí; případně pro budoucí striktnější logiku).
 
 ## Hotovo v1.82 (tato session) — filtr stavu revize schová i „k doměření"
 - **Oprava k v1.81:** filtr stavu semaforu (`revStatusFilter`) se aplikoval jen na požární
