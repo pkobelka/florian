@@ -333,16 +333,27 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   - **Pravidla musí povolovat tyto cesty** (RTDB i Storage), jinak `PERMISSION_DENIED`.
     Teď otevřená (`if true`) — jen interní fáze.
 
+## Push notifikace — ✅ HOTOVO a NASAZENO (klient + server)
+Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v repu
+`pkobelka/mojebudky`, běhy 18.–21. 7. 2026 „success"). **Není co dodělávat, jen otestovat.**
+- **Klient (index.html):** panel `🔔 Oznámení` (`buildPushPanel`) — výběr sebe + „Povolit
+  notifikace" (`flEnablePush`: povolení → FCM token přes `FL_VAPID` → uloží do
+  `florian_push_tokens/<devId>`) + „Zkušební push sobě" (`flTestPush`). Vznik úkolu →
+  `flSendUkolPush` → zápis do fronty `florian_outbox` (cílení `ukolTargets` = pracoviště +
+  vedení). Foreground `flShowFgNotif`, background `firebase-messaging-sw.js` (scope
+  `/florian/fcm/`), auto-obnova tokenu `flPushAutoRenew`.
+- **Server (`mojebudky/functions/index.js`):** `florianNotify` (trigger na `florian_outbox/{id}`
+  → dohledá tokeny cílů → `admin.messaging().sendEach` → čistí neplatné tokeny → označí
+  `status:sent`). `florianRevizeCheck` (plánovač „every day 07:00 Europe/Prague") = denní
+  přehled blížících se / prošlých revizí → zase přes `florian_outbox`.
+- **DB pravidla (`mojebudky/database.rules.json`):** `florian_outbox` / `florian_push_tokens`
+  zápis `auth != null`; `florian_revize` / `florian_config` zápis jen admin. **Pozor:** klient
+  musí být přihlášený (Firebase Auth), jinak zápis tokenu/fronty selže → push nedorazí.
+
 ## Fáze 2 (plán, zatím neuděláno)
 - Přihlášení + role: provozovatel vidí semafor a úkoly; majitel/starosta vidí jen svoje
   hydranty (skutečný stav, ne falešné OK).
 - Zamknout Firebase pravidla na přihlášené uživatele.
-- **Push notifikace (PC i mobil) – TODO, chce uživatel:** při založení úkolu poslat
-  push vedoucímu/pracovišti (jako v AquaCtrl). Florián zatím push NEMÁ (žádné FCM).
-  Postup: zkopírovat mechaniku z **AquaCtrl** (běží na stejném Firebase `moje-budky`,
-  má `aquactrl_push_tokens` / `push_broadcast`) → přidat `firebase-messaging-sw.js`,
-  registraci FCM tokenu + odesílání (Cloud Function / stávající backend AquaCtrl).
-- Automatický e-mail/push před vypršením revize.
 
 ## Zabezpečení (rozpracováno, v1.41) — přihlášení jako AquaCtrl
 - **Přihlašovací brána** v `index.html`: Firebase Auth e-mailovým odkazem (passwordless),
