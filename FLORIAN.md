@@ -6,7 +6,28 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.97**, cache `florian-v104`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.99**, cache `florian-v106`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.99 (tato session) — auto-vyhodnocení průtoku dle ČSN (≥ 4 l/s)
+- **Průtok se vyhodnocuje automaticky dle hodnoty** (jako tlak). Práh `PRUTOK_MIN = 4` l/s
+  (ČSN 73 0873, rodinné domy / objekty do 120 m², v=0,8 m/s). `prutokStav(val)` →
+  `'ok'`/`'bad'`/`''`. (ČSN je tabulka dle kategorie: RD 4 · 120–1000 m² 6 · 1000–2500 m² 9,5 ·
+  >2500 m² 14 l/s při v=0,8; zvolen práh 4.)
+- **Edit formulář:** ruční select „Splňuje průtok dle ČSN" → živý readout `#edCsnPauto`
+  (oninput z `edProtok`), pole zčervená (`.ed-bad`). Při uložení `splnujeProtok` auto.
+- **Karta:** dlaždice průtoku (`prutokTile`) zčervená + „min 4 l/s ✗" při nesplnění; pod
+  hodnotou zůstává m³/h. ČSN chip v `openCard` bere i průtok z hodnoty (`_flowFail`).
+
+## Hotovo v1.98 (tato session) — Mistr do cílení úkolů · poznámky v tisku · poznámky jen z domereni
+- **Poznámky JEN z `domereni`** (uživatelské): `poznText`/`hasPozn` už neberou zdrojové
+  `h.poznamka` — to je balast (64× jen číslo „35"/„58"… + pár nesmyslů „HYP"), NEjsou to
+  poznámky. Radišovské poznámky jsou ve Firebase `domereni` → zobrazí se správně. **Opravuje
+  chybu z v1.95**, kde se 72 zdrojových „poznámek" ukazovalo jako odznaky/štítky.
+- **Poznámky v tisku mapy:** markery v `printGroup` dostanou trvalý štítek `.pozn-tip`
+  (permanent tooltip) pro hydranty s poznámkou → v tisku vidět stejně jako na displeji.
+- **Mistr do cílení úkolů (klient `ukolTargets`):** explicitně zařazen k „Vedoucí pracoviště"
+  (úkoly za své pracoviště). Serverová část (denní přehled revizí) přidána v `mojebudky`
+  (`florianRevizeCheck`, role Mistr = jako Vedoucí pracoviště) — nasazeno přes GitHub Actions.
 
 ## Hotovo v1.97 (tato session) — selektor poloměru zúžen na ČSN hodnoty 100/150/200 m
 - Nabídka `#covRadius` změněna z 150/200/250/300 na **100/150/200** (default 200) — jen
