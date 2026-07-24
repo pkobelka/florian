@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.102**, cache `florian-v109`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.103**, cache `florian-v110`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.103 (tato session) — kratší hamburger · landscape · poprosit i pro vedení · oprava nejbližší H
+- **Kratší hamburger:** dvojice tlačítek vedle sebe přes `.ctrl-row` (flex) — **Svazek+Obce**
+  a **Tým+Oznámení**. Skrytý člen dvojice (např. Tým u nadmina) nechá druhého roztáhnout na
+  celou šířku. Panely (`.town-panel`) přesunuty za řádek; pozicování drží (`offsetTop` je vůči
+  `.ctrl`, `.ctrl-row` je static).
+- **Otočení na šířku:** `manifest.json` `orientation` `portrait`→`any` (odemkne PWA). Mobilní
+  layout (hamburger + spodní panely + rolovací `.ctrl`) se pouští i při nízké výšce:
+  `@media (max-width:640px), (max-height:480px)` → landscape na telefonu se nerozbije.
+- **„Poprosit o nahrání" i pro vedení a admina:** `flApplyRoleUI` — export vidí GIS+admin,
+  poprosit vidí kdokoli KROMĚ GIS (tj. i vedoucí, i admin). Jen GIS člověk reálně nahrává.
+- **Oprava chipu „nejbližší H":** zeleně nově při **vzdálenost ≤ 2× poloměr pokrytí** (kruhy se
+  překrývají = rozestup OK), ne ≤ poloměr. Při poloměru 150 m = právě 300 m dle ČSN.
 
 ## Hotovo v1.102 (tato session) — GIS část A: poprosit o nahrání + počítadlo změn + export
 - **Koordinace nahrávání změn do GISu.** Tlačítka podle role (hamburger neroste — každý vidí
