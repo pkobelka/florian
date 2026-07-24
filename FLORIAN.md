@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.94**, cache `florian-v101`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.95**, cache `florian-v102`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.95 (tato session) — poznámky na mapě (odznak 📝 + hover + přepínač)
+- **Hydranty s poznámkou** (`hasPozn(h)` = `candVal(h,'poznamka')` neprázdné — bere i živou
+  editaci z `domereni` i `h.poznamka` z dat) mají **odznak 📝** (`.pozn-badge`, pravý horní
+  roh, jantar; přidán do `iconForItem` do obou variant vč. revMode).
+- **Hover tooltip** s textem poznámky na každém markeru s poznámkou (`applyPoznTooltips`,
+  Leaflet `bindTooltip`, třída `.pozn-tip` – krémový štítek, `esc()` proti HTML injection).
+- **Přepínač „📝 Poznámky"** v hamburgeru (`poznToggle`, `poznOn`) → přepne tooltipy na
+  **trvalé štítky** (permanent) na mapě (viditelné po rozpadnutí clusteru / na mobilu bez hoveru).
+  Rebind řeší `applyPoznTooltips()` volané i z `rebuildMarkersBadges` (živá editace poznámky).
+- **Fix:** `candVal` je nově odolné vůči nenainicializovanému `domereni` (`applyPoznTooltips`
+  se volá při loadu dřív, než se `domereni` naplní na ř. ~1980) — jinak skript spadl při startu.
 
 ## Hotovo v1.94 (tato session) — vzdálenost k nejbližšímu H v kartě
 - **Chip „📏 nejbližší H · X m" v hlavičce karty** (vedle ČSN chipu, v požární i kandidátní).
