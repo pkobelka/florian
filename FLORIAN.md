@@ -6,7 +6,32 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.94**, cache `florian-v101`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.97**, cache `florian-v104`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.97 (tato session) — selektor poloměru zúžen na ČSN hodnoty 100/150/200 m
+- Nabídka `#covRadius` změněna z 150/200/250/300 na **100/150/200** (default 200) — jen
+  hodnoty odpovídající ČSN „vzdálenost od objektu". (Mezi hydranty = 2×: 200/300/400 m.)
+
+## Hotovo v1.96 (tato session) — volitelný poloměr pokrytí (nyní 100/150/200 m)
+- **`COVERAGE_RADIUS` je nově `let`** (dřív const) + inline `<select id="covRadius">`
+  (150/200/250/300) v tlačítku „Pokrytí … m". `setCoverageRadius(r)`: `it.c.setRadius(r)` na
+  hlavní kruhy + `renderMarked`/`renderCand`/`rebuildMarkersBadges` (ostatní kruhy se
+  překreslují). Selektor má `stopPropagation` (klik nezapne/nevypne vrstvu). nearestHChip
+  práh sladěn na `COVERAGE_RADIUS`. **Pozn.: kruh je POLOMĚR** (r), ne průměr.
+  ČSN 73 0873: vzdálenost hydrantu od objektu = poloměr (100/150/200 m dle kategorie),
+  mezi hydranty = dvojnásobek (200/300/400 m); běžně 150 m od objektu / 300 m mezi H, Q≥6 l/s.
+
+## Hotovo v1.95 (tato session) — poznámky na mapě (odznak 📝 + hover + přepínač)
+- **Hydranty s poznámkou** (`hasPozn(h)` = `candVal(h,'poznamka')` neprázdné — bere i živou
+  editaci z `domereni` i `h.poznamka` z dat) mají **odznak 📝** (`.pozn-badge`, pravý horní
+  roh, jantar; přidán do `iconForItem` do obou variant vč. revMode).
+- **Hover tooltip** s textem poznámky na každém markeru s poznámkou (`applyPoznTooltips`,
+  Leaflet `bindTooltip`, třída `.pozn-tip` – krémový štítek, `esc()` proti HTML injection).
+- **Přepínač „📝 Poznámky"** v hamburgeru (`poznToggle`, `poznOn`) → přepne tooltipy na
+  **trvalé štítky** (permanent) na mapě (viditelné po rozpadnutí clusteru / na mobilu bez hoveru).
+  Rebind řeší `applyPoznTooltips()` volané i z `rebuildMarkersBadges` (živá editace poznámky).
+- **Fix:** `candVal` je nově odolné vůči nenainicializovanému `domereni` (`applyPoznTooltips`
+  se volá při loadu dřív, než se `domereni` naplní na ř. ~1980) — jinak skript spadl při startu.
 
 ## Hotovo v1.94 (tato session) — vzdálenost k nejbližšímu H v kartě
 - **Chip „📏 nejbližší H · X m" v hlavičce karty** (vedle ČSN chipu, v požární i kandidátní).
