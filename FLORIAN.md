@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.101**, cache `florian-v108`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.102**, cache `florian-v109`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.102 (tato session) — GIS část A: poprosit o nahrání + počítadlo změn + export
+- **Koordinace nahrávání změn do GISu.** Tlačítka podle role (hamburger neroste — každý vidí
+  jen jedno): technik → **🔼 Poprosit o nahrání do GISu (N)**, GIS/Admin → **📤 Export změn (N)**.
+- **Počítadlo (N)** = změny požárních H od posledního exportu (`flPendingCount`: `domereni` s
+  `ts > florian_last_export`, porovnání proti `FL_EXPORT_FIELDS`, povýšení dle příznaku).
+  Export uloží `florian_last_export=now` → počítadlo se vynuluje. Živě přes domereni listener.
+- **Poprosit** (`flPoprositNahrani`) → push do `florian_outbox` cílený na role GIS+Admin
+  (`flGisTargets`) → přes `florianNotify` dorazí správci GIS. Text: „Kdo prosí… · čeká N změn".
+- Viditelnost řeší `flApplyRoleUI` (z `flApplyAdminUI`, `flSetMe`, lide listeneru). `exportBtn`
+  už není admin-only (řídí ho role GIS/Admin). **Část B (import z GISu) parkuje — plán B2.**
 
 ## Hotovo v1.101 (tato session) — Revize: přepínač Termíny / ČSN v jednom tlačítku
 - **Semafor Revize má dva rozměry** přepínané selektorem `#revDimSel` (Termíny/ČSN) přímo
