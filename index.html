@@ -796,6 +796,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 /* coverage toggle + legend */
 .ctrl{position:absolute;z-index:900;right:10px;top:calc(env(safe-area-inset-top) + 62px);
   display:flex;flex-direction:column;gap:8px}
+.ctrl-row{display:flex;gap:8px}
+.ctrl-row>button{flex:1;min-width:0;justify-content:center}
 .btn-toggle{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;
   font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow);cursor:pointer;display:flex;align-items:center;gap:7px}
 .btn-toggle .sw{width:30px;height:18px;border-radius:999px;background:#cfd4da;position:relative;transition:.15s}
@@ -1051,7 +1053,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .ed-auto.bad{background:#fdecea;color:#b71c1c;border-color:#f3b6b0}
 .cand-prev{background:#e0f7fa;color:#075985;border:1px solid #7dd3fc;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;font-size:15px}
 .ctrl-burger{display:none}
-@media (max-width:640px){
+@media (max-width:640px), (max-height:480px){
   .ctrl-burger{display:grid;place-items:center;position:absolute;z-index:902;right:10px;top:calc(env(safe-area-inset-top) + 62px);width:34px;height:34px;border-radius:9px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);font-size:16px;cursor:pointer}
   .ctrl-burger.on{background:var(--blue);color:#fff;border-color:var(--blue)}
   .ctrl{display:none;top:calc(env(safe-area-inset-top) + 102px);max-height:calc(100dvh - 166px);overflow:auto;padding:2px}
@@ -1114,17 +1116,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="menuPanel"></div>
   <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
   <div class="town-panel" id="ukolPanel"></div>
-  <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
+  <div class="ctrl-row">
+    <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
+    <button class="btn-toggle" id="pushBtn">🔔 Oznámení</button>
+  </div>
   <div class="town-panel" id="lidePanel"></div>
-  <button class="btn-toggle" id="pushBtn">🔔 Oznámení</button>
   <div class="town-panel" id="pushPanel"></div>
   <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
   <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
   <div class="town-panel" id="stredPanel"></div>
-  <button class="btn-toggle" id="ownBtn">🏢 <span id="ownLbl">Svazek</span> ▾</button>
+  <div class="ctrl-row">
+    <button class="btn-toggle" id="ownBtn">🏢 <span id="ownLbl">Svazek</span> ▾</button>
+    <button class="btn-toggle" id="townBtn">🏘️ <span id="townLbl">Obce</span> ▾</button>
+  </div>
   <div class="town-panel" id="ownPanel"></div>
-  <button class="btn-toggle" id="townBtn">🏘️ <span id="townLbl">Obce</span> ▾</button>
   <div class="town-panel" id="townPanel"></div>
   <button class="btn-toggle btn-all" id="allBtn">Všechny požární H</button>
   <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
@@ -1173,7 +1179,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.102';
+const APP_VERSION = '1.103';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1745,8 +1751,10 @@ function nearestFireH(h){ if(h.lat==null||h.lon==null||typeof HYDRANTY==='undefi
   return best; }
 /* chip „nejbližší H" do hlavičky karty; ≤200 m zeleně (kruhy pokrytí se překrývají), jinak jantar */
 function nearestHChip(h){ var n=nearestFireH(h); if(!n) return '';
-  var ok=n.d<=COVERAGE_RADIUS; var col=ok?'#e8f5e9;color:#1b5e20':'#fff3e0;color:#b45309';
-  return '<span class="chip" style="background:'+col+'" title="Vzdušná vzdálenost k nejbližšímu požárnímu hydrantu">📏 nejbližší H · '+fmtDist(n.d)+'</span>'; }
+  // zeleně, když se kruhy pokrytí překrývají = rozestup dle ČSN OK (vzdálenost ≤ 2× poloměr;
+  // při poloměru 150 m je to právě 300 m mezi hydranty)
+  var lim=2*COVERAGE_RADIUS; var ok=n.d<=lim; var col=ok?'#e8f5e9;color:#1b5e20':'#fff3e0;color:#b45309';
+  return '<span class="chip" style="background:'+col+'" title="Vzdušná vzdálenost k nejbližšímu požárnímu hydrantu (zeleně ≤ 2× poloměr pokrytí = '+lim+' m)">📏 nejbližší H · '+fmtDist(n.d)+'</span>'; }
 function provoz(v){ return txt(v).replace(/vhos/ig,'VHOS'); }
 function csn(v){ return (v||'').trim()==='Ano' ? 'Ano ✓' : 'neuvedeno'; }
 function label(h){ return h.upresneni || h.umisteni || ('Hydrant '+h.id); }
@@ -2777,9 +2785,10 @@ function flPoprositNahrani(){ try{
 }catch(e){ alert('Chyba: '+(e&&e.message||e)); } }
 (function(){ var b=document.getElementById('poprosBtn'); if(b) b.onclick=function(e){ e.stopPropagation(); flPoprositNahrani(); }; })();
 // zobrazení tlačítek dle role: GIS/Admin → Export; ostatní → Poprosit o nahrání
-function flApplyRoleUI(){ var gis = !!window._FL_ADMIN || flMyRole()==='GIS';
-  var eb=document.getElementById('exportBtn'); if(eb) eb.style.display=gis?'':'none';
-  var pb=document.getElementById('poprosBtn'); if(pb) pb.style.display=gis?'none':'';
+function flApplyRoleUI(){ var isGis = flMyRole()==='GIS'; var admin=!!window._FL_ADMIN;
+  // Export/upload dělá jen GIS (a admin jako záloha); poprosit může kdokoli KROMĚ GIS (i vedoucí, i admin)
+  var eb=document.getElementById('exportBtn'); if(eb) eb.style.display=(isGis||admin)?'':'none';
+  var pb=document.getElementById('poprosBtn'); if(pb) pb.style.display=isGis?'none':'';
   flUpdChangeCount(); }
 // ---- Nahrání revizí do Firebase (uzel florian_revize) pro denní notifikace ----
 // Základní (raw) datum revize + středisko + obec/adresa. Server merguje živé editace
