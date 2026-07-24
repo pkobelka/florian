@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.100**, cache `florian-v107`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.101**, cache `florian-v108`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.101 (tato session) — Revize: přepínač Termíny / ČSN v jednom tlačítku
+- **Semafor Revize má dva rozměry** přepínané selektorem `#revDimSel` (Termíny/ČSN) přímo
+  v tlačítku „🚦 Revize" (jako selektor metrů u Pokrytí — bez nového tlačítka, hamburger neroste).
+  - **Termíny** = dosavadní datumový stav (`hydStatus`: Po termínu/Blíží se/Chybí/OK) + „⏰ Upozornit".
+  - **ČSN** = stav hodnot (`csnStatus`: Nevyhovuje/Neměřeno/Vyhovuje) z `tlakDynStav`+`prutokStav`.
+- Generalizace přes `revDim` + `dimStatus/dimColor/dimOrder/dimLabel` — napojeno v `iconForItem`
+  (barva markeru), cluster (nejhorší stav), `applyFilter` (filtr stavu), `renderLegend` (počty/
+  barvy/popisky + „Upozornit" jen u Termínů), `flRevList`, `flVisibleFireCount`. Konstanty
+  `CSN_COLOR/LABEL/ORDER`. Přepnutí selektoru resetuje `revStatusFilter` a překreslí.
 
 ## Hotovo v1.100 (tato session) — role „GIS" + online jako počet s rozklikem
 - **Nová role „GIS"** (`ROLE_LIST`, odznak `.r-gis` tyrkys). GIS **vidí všechna pracoviště**
