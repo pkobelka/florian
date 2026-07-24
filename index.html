@@ -798,6 +798,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   display:flex;flex-direction:column;gap:8px}
 .ctrl-row{display:flex;gap:8px}
 .ctrl-row>button{flex:1;min-width:0;justify-content:center}
+.gis-hist{font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 10px;box-shadow:var(--shadow)}
+.gis-hhead{cursor:pointer;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:5px}
+.gis-hist .gis-caret{font-size:9px;opacity:.7;transition:transform .15s;margin-left:auto}
+.gis-hist.open .gis-caret{transform:rotate(180deg)}
+.gis-hlist{display:none;margin-top:6px;border-top:1px solid var(--line);padding-top:5px}
+.gis-hist.open .gis-hlist{display:block}
+.gis-hr{padding:2px 0;font-size:11px;line-height:1.35}
 .btn-toggle{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;
   font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow);cursor:pointer;display:flex;align-items:center;gap:7px}
 .btn-toggle .sw{width:30px;height:18px;border-radius:999px;background:#cfd4da;position:relative;transition:.15s}
@@ -1112,9 +1119,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <button class="btn-toggle" id="candToggle">➕ Ostatní hydranty</button>
   <button class="btn-toggle" id="gapToggle">💡 Nepokrytá oblast</button>
   <button class="btn-toggle" id="poznToggle"><span class="sw"></span> 📝 Poznámky</button>
-  <button class="btn-toggle" id="menuBtn">📋 K doměření <span id="domCount"></span></button>
+  <div class="ctrl-row">
+    <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
+    <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
+  </div>
   <div class="town-panel" id="menuPanel"></div>
-  <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
   <div class="town-panel" id="ukolPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
@@ -1137,6 +1146,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <button class="btn-toggle btn-share" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share" id="exportBtn" style="display:none">📤 Export změn (CSV pro GIS) <span id="exportCount"></span></button>
   <button class="btn-toggle" id="poprosBtn" style="display:none">🔼 Poprosit o nahrání do GISu <span id="poprosCount"></span></button>
+  <div id="gisReqHist" class="gis-hist" style="display:none"></div>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
 </div>
 
@@ -1179,7 +1189,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.103';
+const APP_VERSION = '1.104';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -2753,6 +2763,7 @@ function flExportZmenyCSV(){
   document.body.appendChild(a); a.click();
   setTimeout(function(){ try{ document.body.removeChild(a); }catch(_){ } URL.revokeObjectURL(url); },600);
   try{ localStorage.setItem('florian_last_export', String(Date.now())); }catch(_){}  // od teď se počítají jen novější změny
+  try{ if(window._FDB) _FDB.ref('florian_gis_requests').push({ type:'done', by:(flMeName()||'GIS'), ts:Date.now() }); }catch(_){} // zapiš do historie „nahráno"
   if(typeof flUpdChangeCount==='function') flUpdChangeCount();
   var mp=document.getElementById('menuPanel'); if(mp) mp.classList.remove('open');
   try{ var cp=document.querySelector('.ctrl'); if(cp) cp.classList.remove('open'); }catch(_){ }
@@ -2781,6 +2792,7 @@ function flPoprositNahrani(){ try{
   var targets=flGisTargets(); if(!targets.length){ alert('V týmu zatím není nikdo s rolí GIS. Přidej správce GIS v panelu 👥 Tým.'); return; }
   var n=flPendingCount(); var kdo=flMeName()||'Někdo';
   _FDB.ref('florian_outbox').push({ title:'🔼 Žádost o nahrání do GISu', body:kdo+' prosí o nahrání změn do GISu'+(n?(' · čeká '+n+' změn'):''), targets:targets, ts:Date.now() });
+  try{ _FDB.ref('florian_gis_requests').push({ type:'req', by:kdo, pid:flMe(), n:n, ts:Date.now() }); }catch(_){} // historie žádostí
   alert('✅ Odesláno správci GIS.'+(n?(' Čeká '+n+' změn.'):''));
 }catch(e){ alert('Chyba: '+(e&&e.message||e)); } }
 (function(){ var b=document.getElementById('poprosBtn'); if(b) b.onclick=function(e){ e.stopPropagation(); flPoprositNahrani(); }; })();
@@ -2790,6 +2802,18 @@ function flApplyRoleUI(){ var isGis = flMyRole()==='GIS'; var admin=!!window._FL
   var eb=document.getElementById('exportBtn'); if(eb) eb.style.display=(isGis||admin)?'':'none';
   var pb=document.getElementById('poprosBtn'); if(pb) pb.style.display=isGis?'none':'';
   flUpdChangeCount(); }
+// ---- historie žádostí/nahrání do GISu (viditelná všem, ať se neprosí zbytečně dvakrát) ----
+function fmtDateTime(ts){ if(!ts) return ''; try{ var d=new Date(ts); return d.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
+function flRenderGisReq(list){ var el=document.getElementById('gisReqHist'); if(!el) return;
+  if(!list||!list.length){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='';
+  var last=list[list.length-1];
+  var lab=function(r){ return (r.type==='done'?'✅ nahráno':'🔼 '+(r.by||'?'))+' · '+fmtDateTime(r.ts)+((r.type!=='done'&&r.n)?(' · '+r.n+' zm.'):''); };
+  var head='🕘 '+lab(last);
+  var rows=list.slice(-10).reverse().map(function(r){ return '<div class="gis-hr">'+esc(lab(r))+'</div>'; }).join('');
+  el.innerHTML='<div class="gis-hhead">'+esc(head)+' <span class="gis-caret">▾</span></div><div class="gis-hlist">'+rows+'</div>';
+  el.querySelector('.gis-hhead').onclick=function(e){ e.stopPropagation(); el.classList.toggle('open'); };
+}
 // ---- Nahrání revizí do Firebase (uzel florian_revize) pro denní notifikace ----
 // Základní (raw) datum revize + středisko + obec/adresa. Server merguje živé editace
 // z florian_domereni (efektivní datum = domereni[id].datumRevize || revize[id].d).
@@ -2950,6 +2974,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       Object.keys(v).forEach(function(id){ kandMarked[id]=v[id]; }); try{localStorage.setItem('florian_kandidati',JSON.stringify(kandMarked));}catch(e){} if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof candOn!=='undefined'&&candOn)renderCand(); }, function(){});
     _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; }); }, function(){});
     _FDB.ref('florian_ukoly').on('value',function(sn){ ukoly=sn.val()||{}; if(typeof refreshUkolBadge==='function')refreshUkolBadge(); }, function(){});
+    _FDB.ref('florian_gis_requests').limitToLast(30).on('value',function(sn){ var out=[]; sn.forEach(function(c){ var v=c.val()||{}; if(v.ts) out.push(v); }); out.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); if(typeof flRenderGisReq==='function') flRenderGisReq(out); }, function(){});
     var _lideFirst=true;
     _FDB.ref('florian_lide').on('value',function(sn){ lide=sn.val()||{}; var lp=document.getElementById('lidePanel'); if(lp&&lp.classList.contains('open')&&typeof buildLidePanel==='function') buildLidePanel(); try{ flApplyMyPracDefault(); }catch(_){} try{ flApplyRoleUI(); }catch(_){} if(_lideFirst){ _lideFirst=false; if(typeof flPushAutoRenew==='function') setTimeout(flPushAutoRenew,800); try{ flPresencePush(); }catch(_){} } }, function(){});
     // jednorázový seed týmu (jen když je uzel úplně prázdný)
