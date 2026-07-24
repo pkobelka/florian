@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.109**, cache `florian-v116`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.110**, cache `florian-v117`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.110 (tato session) — oprava: tlačítko polohy překrývalo panel
+- `.locate` mělo `z-index:900` stejně jako `.ctrl`, a bylo v DOM později → kreslilo se
+  nad rozbaleným panelem (Pokrytí ap.). Sníženo na **`z-index:899`** (pod lištu, stále nad
+  mapou) → panel je teď nad tlačítkem polohy.
 
 ## Hotovo v1.109 (tato session) — pokrytí sjednoceno do jednoho panelu
 - **Tři tlačítka pokrytí** (Pokrytí+selektor, Pokrytí doměřovaných, Pokrytí ostatních)
