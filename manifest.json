@@ -1,7 +1,7 @@
 {
   "id": "/florian/",
-  "name": "Florián II – hydranty",
-  "short_name": "Florián II",
+  "name": "Florián 2.0 – hydranty",
+  "short_name": "Florián 2.0",
   "description": "Mapa požárních hydrantů VHOS – karty, pokrytí, tisk",
   "start_url": "/florian/?pwa=1",
   "scope": "/florian/",
@@ -11,9 +11,9 @@
   "theme_color": "#1565c0",
   "lang": "cs",
   "icons": [
-    { "src": "/florian/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/florian/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/florian/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/florian/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/florian/icon-192.png?v=2", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/florian/icon-192.png?v=2", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/florian/icon-512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/florian/icon-512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

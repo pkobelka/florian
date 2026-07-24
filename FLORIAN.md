@@ -1,4 +1,4 @@
-# Florián II — poznámky k projektu (stav pro pokračování)
+# Florián 2.0 — poznámky k projektu (stav pro pokračování)
 
 PWA mapa **požárních hydrantů** VHOS, a.s. Sesterská appka k AquaCtrl.
 Vše v jednom `index.html` (inline CSS+JS+data+Leaflet). Hostováno na **GitHub Pages**:
@@ -6,7 +6,185 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.67**, cache `florian-v74`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.90**, cache `florian-v97`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.90 (tato session) — legenda nadzemní/podzemní jsou klikací filtry typu
+- **Symboly „nadzemní"/„podzemní" v legendě (vlevo dole) jsou teď přepínatelné pilulky**
+  (třída `.symfilt`, stejný styl jako `.revfilt`). Klik na typ ho **skryje z mapy**, tlačítko
+  zbledne (`.off` = `opacity:.42` + přeškrtnutí + `grayscale` symbolu) → poznat, že je filtr
+  vyplý. Druhý klik zase zapne. Nové `typeOff={nad,pod}`; filtr přidán do `matches()`
+  (`okType`, prázdný typ = podzemní jako u markeru) → propíše se i do horního počítadla,
+  clusterů a fitBounds přes `applyFilter`. Reset „Všechny požární H" (`allBtn`) vrací
+  `typeOff` na výchozí a překresluje legendu. Handlery se navěšují v `renderLegend`
+  (`e.stopPropagation()`, pak `renderLegend()`+`applyFilter()`).
+
+## Hotovo v1.89 (tato session) — počet „ostatních" v horním počítadle
+- **Horní pill badge počítá i „ostatní hydranty"**, když je vrstva zapnutá:
+  `640 hydrantů · +N ostatních`. Nové `flVisibleFireCount()` (požární dle filtrů+stavu),
+  `candShownCount()` (kandidáti mimo `FIRE_IDS`, respektuje `visibleObecSet`) a
+  `flRenderCount()` (skládá text). Volá se z `applyFilter`, konce `renderCand` a
+  `hideCandLayers` → počet se osvěží při filtrech i zapnutí/vypnutí vrstvy.
+
+## Hotovo v1.88 (tato session) — přejmenování „Florián II" → „Florián 2.0"
+- **Brandový název všude přejmenován** na „Florián 2.0" (title, hlavička, kredit, sdílení,
+  manifest `name`+`short_name`). Skloňované tvary ve větách („do Floriána", „Přihlášení do
+  Floriána") ponechány — to je gramatika, ne brand. `<title>` = „Florián 2.0 – hydranty".
+
+## Hotovo v1.87 (tato session) — nový favicon / ikony (hydrant + vlnka)
+- **Vyměněny ikony** za nový design (bílý hydrant na modrém, červeno-bílá vlnka). Sada
+  `icon-16/32/180/192/512.png` vygenerována ze zdroje 180×192 (192/512 lehce doostřené
+  upscalem — pro ostřejší velké ikony příště dodat zdroj 512×512 / SVG). `?v=` zvednuto
+  na **2** (index.html + manifest) → zlomí lepivý browser-cache faviconu v záložce.
+  Ikona nainstalované PWA na ploše se u stávajících uživatelů projeví až přeinstalem.
+
+## Hotovo v1.86 (tato session) — „k doměření" se shlukují (zelené kolečko) + cache-busting faviconu
+- **„k doměření" body se teď shlukují do zeleného kolečka** (jako požární do modrého).
+  `markedLayer` byl prostý `L.layerGroup` → nově `L.markerClusterGroup` s ikonou
+  `.cluster.markcl` (zelená #16a34a) + odznak úkolu 🛠️ na clusteru (přes `_h` na markerech).
+  Kruhy pokrytí přesunuty do samostatné `markedCovLayer` (cluster nesmí shlukovat kroužky).
+  `rebuildMarkersBadges` volá `renderMarked()` i když je vrstva kandidátů vyplá (živý odznak).
+- **Favicon cache-busting (příprava na výměnu ikon před rozesláním):**
+  - `<link rel=icon>` má nově `icon-16/32.png?v=1`, apple-touch `icon-180.png?v=1`;
+    manifest ikony `icon-192/512.png?v=1`. Do `sw.js` ASSETS přidány icon-16/32/180.
+  - **Postup při výměně faviconu:** (1) nahradit PNG soubory, (2) **zvýšit `?v=` číslo**
+    u všech odkazů (index.html + manifest.json), (3) bump `APP_VERSION` + `CACHE`.
+    Query `?v=` zlomí lepivý browser-cache faviconu v záložce. **POZOR:** ikona už
+    NAINSTALOVANÉ PWA na ploše se tím nepřekreslí — to jde jen přeinstalem (omezení PWA).
+
+## Hotovo v1.85 (tato session) — pokrytí doměřovaných je defaultně vyplé (jen na klik)
+- **Oprava:** `domCovOn` (🟢 Pokrytí doměřovaných) měl default `true`, takže se zelené
+  kruhy pokrytí „k doměření" ukazovaly hned po každém načtení/aktualizaci. Default je teď
+  `false` — pokrytí se zapne až kliknutím na přepínač, stejně jako „Pokrytí" u požárních.
+
+## Hotovo v1.84 (tato session) — odznak úkolu 🛠️ i na sloučeném clusteru
+- **Cluster (sloučené kolečko počtu) teď ukazuje červený odznak 🛠️**, když má aspoň
+  jeden hydrant uvnitř otevřený úkol. V `iconCreateFunction` obou clusterů (požární
+  `cluster` i kandidátní `candCluster`) se přes `c.getAllChildMarkers().some(m =>
+  hasOpenUkol(m._h.id))` zjistí úkol a přidá `<span class="uk-badge">` (cluster div má
+  nově `position:relative`, aby odznak seděl v rohu jako u jednotlivého bodu).
+- Kandidátní markery v `renderCand` nově nesou `m._h=h` (dřív neměly), aby šlo v jejich
+  clusteru úkol zjistit. Překreslení řeší `cluster.refreshClusters()` v `rebuildMarkersBadges`
+  (volá se z `refreshUkolBadge` při změně úkolů).
+
+## Hotovo v1.83 (tato session) — „k doměření" se filtruje jako požární H (obec i pracoviště)
+- **Oprava:** vrstva označených „k doměření" (`renderMarked`) filtrovala jen podle
+  pracoviště (`markInSel` → `markStred`, a i to měkce „neznámé se neschovává"), **filtr
+  obce úplně ignorovala** → body svítily dál i po výběru obce. Naopak `renderCand`
+  (zapnutá vrstva kandidátů) už filtroval správně přes množinu obcí viditelných požárních.
+- **Sjednoceno na jeden zdroj pravdy `visibleObecSet()`** = obec-kódy požárních H, které
+  projdou `matches()` (pracoviště+obec+vlastník); `null` = žádný filtr → vše. `markInSel(id,
+  obecSet)` teď vrací, zda je `markObec(id)` v té množině (nová `markObec` = uložená obec →
+  dohledání v KAND). Tedy „k doměření" bod se ukáže **jen když je v jeho obci vidět aspoň
+  jeden požární H** — stejně jako `renderCand`.
+- Použito i v `updDomCount` a `buildDomereniList` (počet i seznam „📋 K doměření"), takže
+  seznam/počítadlo respektují i filtr obce. Pozor: `markInSel` se už NESMÍ předat přímo do
+  `.filter(markInSel)` (index by přišel jako `obecSet`) — všude se volá `markInSel(id,_os)`.
+- `markStred` ponechána (nevyužitá, ale neškodí; případně pro budoucí striktnější logiku).
+
+## Hotovo v1.82 (tato session) — filtr stavu revize schová i „k doměření"
+- **Oprava k v1.81:** filtr stavu semaforu (`revStatusFilter`) se aplikoval jen na požární
+  vrstvu, ale zelené body „k doměření"/kandidáti (`renderMarked`/`renderCand`) svítily dál.
+  Nově obě funkce při aktivním `revStatusFilter` vrstvu vyprázdní a nekreslí; `applyFilter`
+  volá `renderMarked()` (s pojistkou na pořadí definice), takže se při přepnutí filtru
+  překreslí. Po zrušení filtru se „k doměření" i kandidáti vrátí.
+
+## Hotovo v1.81 (tato session) — klikací semafor + filtr stavu + „moje pracoviště"
+- **Počty v semaforu jsou aktivní tlačítka.** V režimu 🚦 Revize se z počtů (Po termínu /
+  Blíží se / Chybí / OK) staly pilulky `.revfilt`. Klik → `revStatusFilter` = daný stav →
+  mapa ukáže **jen hydranty toho stavu** (v `applyFilter`: `matches(h) && hydStatus===filtr`),
+  fitBounds na ně. Druhý klik / „Zavřít" filtr zruší. Počty se počítají z `matches()` (bez
+  stavového filtru), takže jdou přepínat. Vypnutí semaforu filtr i seznam zruší.
+- **Seznam H k danému stavu** (`flRevList` → panel `revListPanel`): nejhorší (nejvíc po termínu)
+  první, každý řádek `📍 obec · Po termínu o X dní`, klik = skok na mapu + karta. Panel má „Zavřít".
+- **„Moje pracoviště" podle přihlášení (měkké předvyplnění).** `flMyPracSet()` z vybraného
+  jména v Týmu (`flMe`→`lide`): vedení (Admin/TŘ/PŘ) = vše; **vedoucí střediska = celé středisko
+  vč. pracovišť pod ním** (přes `strediskoOf`: Vykydal MT → MT+Svitavy, Rada Polička →
+  Polička+Litomyšl); ostatní = jen své pracoviště. `flApplyMyPracDefault()` (volá se po načtení
+  `florian_lide` a při výběru sebe) **jednou za session** předvyplní `selectedStrediska`, pokud
+  uživatel sám nefiltruje. Filtr jde kdykoli zrušit (Pracoviště→Vše nebo „Všechny požární H"),
+  pak se znovu nenastaví (`flPracDefaulted`).
+- Pozn.: „jen k doměření" — díky předvyplnění je seznam „📋 K doměření" i vrstva označených
+  automaticky omezené na moje pracoviště (`markInSel`). Samostatný mapový přepínač „jen k
+  doměření" (skrýt vše ostatní) zatím NENÍ — kandidát na příště.
+
+## Hotovo v1.80 (tato session) — karta kandidáta v novém designu (jako požární)
+- **`openCandCard` přestavěná do stejného „nového" layoutu jako `openCard`** (kompaktní
+  grid `.cardgrid`/`.cg-main`/`.cg-side`): dlaždice metrik (průtok/tlaky), mřížka faktů
+  `.facts`, foto + mini-mapa vedle sebe (`.media2`), úkoly ve vedlejším sloupci, akce dole.
+  Zachovány kandidátní specifika: chipy (dosah/díra, k doměření, povýšeno), doměření jako
+  metriky, akce Vybrat/Doměřit/Povýšit/Vrátit. Revizní pruh `.revbig` jen když má datum revize.
+- **Kandidát má nově i foto** (Vyfotit/Galerie/smazat), stejně jako požární hydrant
+  (`loadPhoto`/`deletePhoto`/`fbUploadFoto` jsou keyed přes `h.id`, funguje i pro kandidáty).
+- **Foto funkce překreslují přes `reopenCard(h)` místo natvrdo `openCard(h)`** (`loadPhoto`,
+  `deletePhoto`, cloud upload callback) — u kandidáta se tak po fotce nepřehodí na
+  požární kartu; `reopenCard` vybere kartu dle `funkce`. `openCandCard` teď nastavuje `current`.
+- Mini-mapa kandidáta = `buildCandMini` (oranžový přerušovaný kruh „díry" + ikona kandidáta),
+  ne `buildMini` (ten kreslí modrý kruh pokrytí, což je pro kandidáta zavádějící).
+
+## Hotovo v1.79 (tato session) — mapa omezená na oblast hydrantů (nejde odjet na Evropu)
+- **Mapa se už nedá oddálit/odjet na celou Evropu.** Nová `flConstrainMap()` spočítá
+  `FL_DATA_BOUNDS` = bounding box všech `HYDRANTY` rozšířený o 20 % a nastaví
+  `map.setMaxBounds()` + `map.setMinZoom(getBoundsZoom(bounds))` (dál oddálit nejde).
+  `L.map` má `maxBoundsViscosity:1.0` (tvrdý doraz při posunu). Přepočítá se na
+  `resize` a `orientationchange` (getBoundsZoom závisí na rozměru mapy). Počáteční
+  `fitBounds` je zjemnělejší (víc přiblížený) než minZoom, takže se nepere s omezením.
+
+## Hotovo v1.78 (tato session) — klik na úkol u kandidáta konečně otevře kartu
+- **Oprava: klik na úkol v seznamu „Otevřené úkoly" u „ostatního hydrantu" (kandidáta)
+  nic nezobrazil.** Handler v `buildUkolyMenu` volal `_hById(hid)` a kartu otevřel jen
+  `if(h)`. `_hById` hledá v `HYDRANTY` a pak v `KAND`, ale kandidáti (`kandidati.json`) se
+  načítají líně (až po zapnutí vrstvy „Ostatní hydranty") → u úkolu na kandidátovi bylo
+  `h==null` a panel se jen zavřel (typicky „Zkouška Tom…", „Zkouška 24.7. Jevíčko").
+- **Nová `openUkolTarget(hid)`**: když bod není v `HYDRANTY` ani v načtených `KAND`,
+  donačte kandidáty přes `ensureKand()` a zkusí `_hById` znovu; teprve pak `reopenCard`
+  (ta sама pozná požární vs. kandidát). Když bod v datech opravdu není, srozumitelný alert.
+
+## Hotovo v1.77 (tato session) — kruh povýšeného + reklasifikované body v mapě
+- **Kruh pokrytí u povýšeného bodu už nesvítí natrvalo.** Kreslil se bezpodmínečně;
+  nově se řídí přepínačem „Pokrytí" (`coverageOn`, default vyplý), stejně jako u
+  ostatních požárních. `covToggle` navíc překresluje `renderMarked`/`renderCand`.
+- **Reklasifikované body se nekreslí dvakrát.** Bod, který už je reálně požární v datech
+  (v `HYDRANTY`), ale zůstal po něm starý `kandMarked`/`domereni.povyseno` stav (typicky
+  2524 = „H7" v Chornicích po přesunu v PR #1), se ve `renderCand`/`renderMarked`
+  přeskočí (`FIRE_IDS`) — kreslí ho jen hlavní vrstva. Konec duplicit, zeleného kruhu
+  i „H7" odznaku. Nedestruktivní: starý stav se nemaže, jen nekreslí.
+- Pozn. k exportu změn: bod už v `HYDRANTY` (reklasifikovaný v datech) není „čekající
+  změna", takže v „Export změn (CSV pro GIS)" není záměrně. Povýšení kandidáta, který
+  je JEŠTĚ v `kandidati.json`, se v exportu objeví (řádek „Klasifikace → požární").
+
+## Hotovo v1.76 (tato session) — zvoneček pro všechny + oprava vykreslení povýšených
+- **🔔 Oznámení – nové tlačítko v toolbaru dostupné VŠEM** (ne jen adminovi). Doteď byl
+  jediný přepínač notifikací schovaný v panelu „👥 Tým", který `flApplyAdminUI()` skrývá
+  ne-adminům — takže PŘ/technici neměli kde push zapnout. Nový panel `pushPanel`
+  (`buildPushPanel`) nabízí „vyber sebe" + „Povolit notifikace" + „Zkušební push".
+  `flPushStav()` teď píše do všech `.fl-push-stav` (funguje v obou panelech).
+- **Oprava: povýšený kandidát se kreslil jako zelené „k doměření" s H-číslem.**
+  `renderMarked()` (vždy viditelná vrstva) nekontrolovala `povyseno` → povýšený bod měl
+  zelený symbol, zelený kruh a odznak „H7". Nově se povýšený kandidát v `renderMarked`
+  kreslí jako **požární hydrant** (modrý symbol + modrý kruh, bez H-čísla), stejně jako
+  v `renderCand`. `promoteCand`/`unpromoteCand` navíc překreslují i `renderMarked`.
+
+## Hotovo v1.75 (tato session) — povýšení kandidáta jde do reportu změn
+- **Povýšení kandidáta na požární se teď promítne do „📤 Export změn (CSV pro GIS)".**
+  `promoteCand()` nově zapisuje `funkce='požární hydrant'`, původní klasifikaci
+  (`funkcePuvodni`) a `by`/`ts`, aby povýšení mělo v reportu autora i datum.
+- `flCollectExportRows()` už nebere jen požární z `HYDRANTY`, ale i **povýšené kandidáty**
+  z `KAND` (`domereni[id].povyseno`). Do reportu přidá řádek
+  `Klasifikace: <původní> → požární hydrant` (+ případné doměřené hodnoty prutok/tlak/…).
+- `flExportZmenyCSV()` si přes `ensureKand()` dotáhne `kandidati.json`, aby povýšení
+  byla v exportu i bez zapnuté vrstvy „Ostatní hydranty".
+- Pozn.: appka je statická (GitHub Pages), do zdrojových `kandidati.json`/`hydranty.json`
+  zapisovat neumí — „trvalá změna" = záznam v Firebase + export do GIS, odkud se
+  reklasifikace přenese do zdrojových dat (jako u bodu 2524).
+
+## Hotovo v1.74 (tato session) — reklasifikace bodu 2524
+- **Přeřazen kandidát `id 2524` na požární hydrant.** Bod na `lat 49.670512 / lon 16.742473`
+  (středisko Jevíčko, katastr 652725 Chornice) byl ve zdroji `kandidati.json` jako
+  `funkce: "bez rozlišení"`, takže se v appce trvale tvářil jako „k doměření".
+  In-app „povýšení" (`domereni[id].povyseno`) je jen runtime stav (localStorage/Firebase),
+  do zdrojových dat ani do reportu změn nezasahuje — proto přeřazení muselo proběhnout
+  přímo v datech: záznam odebrán z `kandidati.json` a přidán do `HYDRANTY` v `index.html`
+  i do `hydranty.json` s `funkce: "požární hydrant"` (773 → 774 požárních).
 
 ## Hotovo v1.67 (tato session)
 - Práh semaforu: když ho **admin** změní, uloží se i do Firebase `florian_config/rev_warn`
@@ -155,16 +333,27 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   - **Pravidla musí povolovat tyto cesty** (RTDB i Storage), jinak `PERMISSION_DENIED`.
     Teď otevřená (`if true`) — jen interní fáze.
 
+## Push notifikace — ✅ HOTOVO a NASAZENO (klient + server)
+Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v repu
+`pkobelka/mojebudky`, běhy 18.–21. 7. 2026 „success"). **Není co dodělávat, jen otestovat.**
+- **Klient (index.html):** panel `🔔 Oznámení` (`buildPushPanel`) — výběr sebe + „Povolit
+  notifikace" (`flEnablePush`: povolení → FCM token přes `FL_VAPID` → uloží do
+  `florian_push_tokens/<devId>`) + „Zkušební push sobě" (`flTestPush`). Vznik úkolu →
+  `flSendUkolPush` → zápis do fronty `florian_outbox` (cílení `ukolTargets` = pracoviště +
+  vedení). Foreground `flShowFgNotif`, background `firebase-messaging-sw.js` (scope
+  `/florian/fcm/`), auto-obnova tokenu `flPushAutoRenew`.
+- **Server (`mojebudky/functions/index.js`):** `florianNotify` (trigger na `florian_outbox/{id}`
+  → dohledá tokeny cílů → `admin.messaging().sendEach` → čistí neplatné tokeny → označí
+  `status:sent`). `florianRevizeCheck` (plánovač „every day 07:00 Europe/Prague") = denní
+  přehled blížících se / prošlých revizí → zase přes `florian_outbox`.
+- **DB pravidla (`mojebudky/database.rules.json`):** `florian_outbox` / `florian_push_tokens`
+  zápis `auth != null`; `florian_revize` / `florian_config` zápis jen admin. **Pozor:** klient
+  musí být přihlášený (Firebase Auth), jinak zápis tokenu/fronty selže → push nedorazí.
+
 ## Fáze 2 (plán, zatím neuděláno)
 - Přihlášení + role: provozovatel vidí semafor a úkoly; majitel/starosta vidí jen svoje
   hydranty (skutečný stav, ne falešné OK).
 - Zamknout Firebase pravidla na přihlášené uživatele.
-- **Push notifikace (PC i mobil) – TODO, chce uživatel:** při založení úkolu poslat
-  push vedoucímu/pracovišti (jako v AquaCtrl). Florián zatím push NEMÁ (žádné FCM).
-  Postup: zkopírovat mechaniku z **AquaCtrl** (běží na stejném Firebase `moje-budky`,
-  má `aquactrl_push_tokens` / `push_broadcast`) → přidat `firebase-messaging-sw.js`,
-  registraci FCM tokenu + odesílání (Cloud Function / stávající backend AquaCtrl).
-- Automatický e-mail/push před vypršením revize.
 
 ## Zabezpečení (rozpracováno, v1.41) — přihlášení jako AquaCtrl
 - **Přihlašovací brána** v `index.html`: Firebase Auth e-mailovým odkazem (passwordless),
