@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.92**, cache `florian-v99`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.93**, cache `florian-v100`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.93 (tato session) — auto-vyhodnocení hydrodynamického tlaku (ČSN ≥0,2 MPa)
+- **Hydrodynamický tlak se vyhodnocuje automaticky dle hodnoty**, ne ručním výběrem.
+  Práh `TLAK_DYN_MIN = 0.2` MPa (ČSN 73 0873). Helpery `parseNum`, `tlakDynStav(val)`
+  → `'ok'` (≥0,2), `'bad'` (naměřeno <0,2), `''` (neměřeno / „0" / prázdné).
+- **Edit formulář:** ruční select „Splňuje tlak dle ČSN" nahrazen **živým readoutem**
+  `#edCsnTauto` (aktualizuje se `oninput` z `edTlakD`): zeleně „✓ Vyhovuje (≥0,2 MPa)",
+  červeně „✗ Nevyhovuje (<0,2 MPa)", pole `edTlakD` dostane `.ed-bad`. Při uložení se
+  `splnujeTlak` nastaví automaticky (`'Ano'`/`'Ne'`/`''`). Průtok (`splnujeProtok`) zůstává ruční.
+- **Karta:** dlaždice hydrodynamického tlaku zčervená (`.metric.bad`) + „min 0,2 MPa ✗"
+  (`.mwarn`) při nesplnění (`tlakDynTile(h)`, obě karty). ČSN chip v `openCard` se řídí
+  hodnotou (`_tlakFail`: naměřeno <0,2 = nevyhovuje; neměřeno = respektuj ruční `splnujeTlak`).
+- **Enter u obce** nově po výběru **zavře roletku** (`panel.classList.remove('open')`).
 
 ## Hotovo v1.92 (tato session) — Enter u obce · výraznější legenda · Průtok m³/h v kartě
 - **Enter potvrdí obec:** ve vyhledávání filtru obcí (`townSearch`) — když po vyfiltrování
