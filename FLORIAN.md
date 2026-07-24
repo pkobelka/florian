@@ -6,7 +6,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.90**, cache `florian-v97`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.91**, cache `florian-v98`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.91 (tato session) — role „Mistr" + editovatelné jméno v týmu
+- **Nová role „Mistr"** v `ROLE_LIST` (mezi „Vedoucí pracoviště" a „Technik"), odznak
+  `.r-mistr` (růžový #fce4ec/#ad1457) v `roleCls`. Pro cílení se chová jako Technik
+  (úkoly jen pro své pracoviště; **denní přehled revizí `florianRevizeCheck` na serveru
+  Mistr NEDOSTÁVÁ** — kdyby měl, přidat 'Mistr' do větve „Vedoucí pracoviště" v
+  `mojebudky/functions/index.js`).
+- **Jméno člena týmu je nově editovatelné** přímo v panelu 👥 Tým (dřív statický text).
+  `.ld-name` → flex, uvnitř `<input class="ld-name-in">`, uloží se na `change`/Enter přes
+  `lideSet(pid,'jmeno',v)` (prázdné jméno se neuloží, vrátí se původní). Live listener
+  `florian_lide.on('value')` panel překreslí. **Změna existujících dat (Bubák→Aleš Bubák,
+  role Mistr Bubákovi i Halvovi) se dělá v appce** — Firebase data nejdou z repa.
+- Seed v kódu (fallback při prázdném `florian_lide`) sladěn na `[['Aleš Bubák','Mistr'],
+  ['Halva','Mistr']]` (platí jen pro čistou instalaci).
 
 ## Hotovo v1.90 (tato session) — legenda nadzemní/podzemní jsou klikací filtry typu
 - **Symboly „nadzemní"/„podzemní" v legendě (vlevo dole) jsou teď přepínatelné pilulky**
