@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.97**, cache `florian-v104`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.98**, cache `florian-v105`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.98 (tato session) — Mistr do cílení úkolů · poznámky v tisku · poznámky jen z domereni
+- **Poznámky JEN z `domereni`** (uživatelské): `poznText`/`hasPozn` už neberou zdrojové
+  `h.poznamka` — to je balast (64× jen číslo „35"/„58"… + pár nesmyslů „HYP"), NEjsou to
+  poznámky. Radišovské poznámky jsou ve Firebase `domereni` → zobrazí se správně. **Opravuje
+  chybu z v1.95**, kde se 72 zdrojových „poznámek" ukazovalo jako odznaky/štítky.
+- **Poznámky v tisku mapy:** markery v `printGroup` dostanou trvalý štítek `.pozn-tip`
+  (permanent tooltip) pro hydranty s poznámkou → v tisku vidět stejně jako na displeji.
+- **Mistr do cílení úkolů (klient `ukolTargets`):** explicitně zařazen k „Vedoucí pracoviště"
+  (úkoly za své pracoviště). Serverová část (denní přehled revizí) přidána v `mojebudky`
+  (`florianRevizeCheck`, role Mistr = jako Vedoucí pracoviště) — nasazeno přes GitHub Actions.
 
 ## Hotovo v1.97 (tato session) — selektor poloměru zúžen na ČSN hodnoty 100/150/200 m
 - Nabídka `#covRadius` změněna z 150/200/250/300 na **100/150/200** (default 200) — jen
