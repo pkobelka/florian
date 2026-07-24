@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.89**, cache `florian-v96`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.90**, cache `florian-v97`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.90 (tato session) — legenda nadzemní/podzemní jsou klikací filtry typu
+- **Symboly „nadzemní"/„podzemní" v legendě (vlevo dole) jsou teď přepínatelné pilulky**
+  (třída `.symfilt`, stejný styl jako `.revfilt`). Klik na typ ho **skryje z mapy**, tlačítko
+  zbledne (`.off` = `opacity:.42` + přeškrtnutí + `grayscale` symbolu) → poznat, že je filtr
+  vyplý. Druhý klik zase zapne. Nové `typeOff={nad,pod}`; filtr přidán do `matches()`
+  (`okType`, prázdný typ = podzemní jako u markeru) → propíše se i do horního počítadla,
+  clusterů a fitBounds přes `applyFilter`. Reset „Všechny požární H" (`allBtn`) vrací
+  `typeOff` na výchozí a překresluje legendu. Handlery se navěšují v `renderLegend`
+  (`e.stopPropagation()`, pak `renderLegend()`+`applyFilter()`).
 
 ## Hotovo v1.89 (tato session) — počet „ostatních" v horním počítadle
 - **Horní pill badge počítá i „ostatní hydranty"**, když je vrstva zapnutá:
