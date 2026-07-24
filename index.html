@@ -1118,7 +1118,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="lidePanel"></div>
   <button class="btn-toggle" id="pushBtn">🔔 Oznámení</button>
   <div class="town-panel" id="pushPanel"></div>
-  <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize</button>
+  <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
   <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
   <div class="town-panel" id="stredPanel"></div>
@@ -1172,7 +1172,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.100';
+const APP_VERSION = '1.101';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1195,6 +1195,19 @@ try{ var _rw=parseInt(localStorage.getItem('florian_rev_warn')); if([30,40,50].i
 const REV_COLOR = {expired:'#d32f2f', soon:'#ef6c00', missing:'#7e57c2', ok:'#2e7d32'};
 const REV_LABEL = {expired:'Po termínu', soon:'Blíží se konec', missing:'Chybí údaj (tlak/revize)', ok:'V pořádku'};
 const REV_ORDER = ['expired','soon','missing','ok'];
+// ČSN rozměr semaforu (hodnoty tlak+průtok) — paralelně k termínovému stavu, přepíná selektor
+const CSN_COLOR = {csnbad:'#d32f2f', csnnone:'#78909c', csnok:'#2e7d32'};
+const CSN_LABEL = {csnbad:'Nevyhovuje ČSN', csnnone:'Neměřeno', csnok:'Vyhovuje ČSN'};
+const CSN_ORDER = ['csnbad','csnnone','csnok']; // nejhorší první (jako REV_ORDER)
+function csnStatus(h){ var t=tlakDynStav(candVal(h,'tlakDyn')), p=prutokStav(candVal(h,'prutok'));
+  if(t==='bad'||p==='bad') return 'csnbad';      // aspoň jedno naměřeno a padá
+  if(t==='ok'&&p==='ok') return 'csnok';          // tlak i průtok naměřeny a projdou
+  return 'csnnone'; }                              // nic / neúplně naměřeno
+var revDim='termin'; // 'termin' (datum) | 'csn' (hodnoty)
+function dimStatus(h){ return revDim==='csn' ? csnStatus(h) : hydStatus(h); }
+function dimColor(){ return revDim==='csn' ? CSN_COLOR : REV_COLOR; }
+function dimOrder(){ return revDim==='csn' ? CSN_ORDER : REV_ORDER; }
+function dimLabel(){ return revDim==='csn' ? CSN_LABEL : REV_LABEL; }
 function revDate(h){
   var raw=(typeof candVal==='function')?candVal(h,'datumRevize'):(h.datumRevize||'');
   const m=(raw||'').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
@@ -1235,7 +1248,7 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" title="Má poznámku">📝</span>':'';
-  if(revMode){ var st=hydStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+REV_COLOR[st]+'">'+uk+pz+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
   return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
 }
@@ -1258,9 +1271,9 @@ const cluster = L.markerClusterGroup({
     const s = n<10?36:(n<50?44:52);
     let bg='';
     if(revMode){
-      let worst='ok';
-      c.getAllChildMarkers().forEach(m=>{ const st=hydStatus(m._h); if(REV_ORDER.indexOf(st)<REV_ORDER.indexOf(worst)) worst=st; });
-      bg=';background:'+REV_COLOR[worst];
+      let ord=dimOrder(); let worst=ord[ord.length-1];
+      c.getAllChildMarkers().forEach(m=>{ const st=dimStatus(m._h); if(ord.indexOf(st)<ord.indexOf(worst)) worst=st; });
+      bg=';background:'+dimColor()[worst];
     }
     // úkol: když má aspoň jeden hydrant ve sloučeném kolečku otevřený úkol, ukaž odznak 🛠️
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
@@ -1299,7 +1312,7 @@ function applyFilter(){
   coverage.clearLayers();
   const pts=[];
   allItems.forEach(it=>{
-    if(matches(it.h) && (!revStatusFilter || hydStatus(it.h)===revStatusFilter)){
+    if(matches(it.h) && (!revStatusFilter || dimStatus(it.h)===revStatusFilter)){
       cluster.addLayer(it.m);
       coverage.addLayer(it.c);
       pts.push([it.h.lat,it.h.lon]);
@@ -1340,15 +1353,16 @@ function renderLegend(){
   const credit='<div class="credit">Aplikace <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka<br>'+
     'verze '+APP_VERSION+' · aktualizace '+APP_UPDATED+'</div>';
   if(revMode){
-    // spočítej stavy jen z aktuálně zobrazených (dle filtru)
-    const cnt={expired:0,soon:0,missing:0,ok:0};
-    allItems.forEach(it=>{ if(matches(it.h)) cnt[hydStatus(it.h)]++; });
-    var legLbl=function(s){ return s==='soon' ? ('Blíží se (do '+REV_WARN_DAYS+' '+plurDen(REV_WARN_DAYS)+')') : REV_LABEL[s]; };
-    var warnSel='<div class="revwarn">⏰ Upozornit <select id="revWarnSel">'+
+    // spočítej stavy jen z aktuálně zobrazených (dle filtru), dle zvoleného rozměru (termín/ČSN)
+    var _ord=dimOrder(), _col=dimColor(), _lbl=dimLabel();
+    var cnt={}; _ord.forEach(function(s){ cnt[s]=0; });
+    allItems.forEach(it=>{ if(matches(it.h)){ var s=dimStatus(it.h); if(cnt[s]!=null) cnt[s]++; } });
+    var legLbl=function(s){ return (revDim==='termin' && s==='soon') ? ('Blíží se (do '+REV_WARN_DAYS+' '+plurDen(REV_WARN_DAYS)+')') : _lbl[s]; };
+    var warnSel = revDim==='termin' ? ('<div class="revwarn">⏰ Upozornit <select id="revWarnSel">'+
       [30,40,50].map(function(d){ return '<option value="'+d+'"'+(d===REV_WARN_DAYS?' selected':'')+'>'+d+'</option>'; }).join('')+
-      '</select> '+plurDen(REV_WARN_DAYS)+' před koncem</div>';
+      '</select> '+plurDen(REV_WARN_DAYS)+' před koncem</div>') : '';
     document.getElementById('legend').innerHTML =
-      REV_ORDER.map(s=>'<button type="button" class="revfilt'+(revStatusFilter===s?' on':'')+'" data-st="'+s+'"><span class="revleg" style="background:'+REV_COLOR[s]+'"></span>'+legLbl(s)+' <span class="revcnt">'+cnt[s]+'</span></button>').join('')+warnSel+credit;
+      _ord.map(s=>'<button type="button" class="revfilt'+(revStatusFilter===s?' on':'')+'" data-st="'+s+'"><span class="revleg" style="background:'+_col[s]+'"></span>'+legLbl(s)+' <span class="revcnt">'+cnt[s]+'</span></button>').join('')+warnSel+credit;
     document.getElementById('legend').querySelectorAll('.revfilt').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var st=b.getAttribute('data-st'); revStatusFilter=(revStatusFilter===st)?null:st; applyFilter(); }; });
     var _ws=document.getElementById('revWarnSel'); if(_ws) _ws.onchange=function(){ REV_WARN_DAYS=parseInt(this.value)||30; try{ localStorage.setItem('florian_rev_warn',String(REV_WARN_DAYS)); }catch(e){} if(window._FL_ADMIN&&window._FDB){ try{ _FDB.ref('florian_config/rev_warn').set(REV_WARN_DAYS); }catch(e){} } if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); renderLegend(); };
   } else {
@@ -1366,12 +1380,12 @@ renderLegend();
 function flRevList(){
   var panel=document.getElementById('revListPanel'); if(!panel) return;
   if(!revMode || !revStatusFilter){ panel.classList.remove('open'); panel.innerHTML=''; return; }
-  var list=allItems.filter(function(it){ return matches(it.h) && hydStatus(it.h)===revStatusFilter; }).map(function(it){ return it.h; });
+  var list=allItems.filter(function(it){ return matches(it.h) && dimStatus(it.h)===revStatusFilter; }).map(function(it){ return it.h; });
   list.sort(function(a,b){ var da=revDaysLeft(a), db=revDaysLeft(b); if(da==null) return 1; if(db==null) return -1; return da-db; });
   var body = list.length ? list.map(function(h){
       return '<div class="tp-item" data-id="'+esc(h.id)+'" style="cursor:pointer"><span><b>'+esc(label(h))+'</b><br><span style="font-size:12px;color:#6b7a8d">📍 '+esc(town(h))+' · '+esc(revDaysText(h))+'</span></span></div>'; }).join('')
     : '<div class="tp-empty" style="display:block">Žádný hydrant v tomto stavu.</div>';
-  panel.innerHTML='<div class="tp-head"><b>'+esc(REV_LABEL[revStatusFilter])+' ('+list.length+')</b><button class="tp-clear" id="revListClr">Zavřít</button></div><div class="tp-list">'+body+'</div>';
+  panel.innerHTML='<div class="tp-head"><b>'+esc(dimLabel()[revStatusFilter])+' ('+list.length+')</b><button class="tp-clear" id="revListClr">Zavřít</button></div><div class="tp-list">'+body+'</div>';
   panel.classList.add('open');
   var _b=document.getElementById('revToggle'); if(_b) panel.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';
   panel.onclick=function(e){ e.stopPropagation(); };
@@ -1398,7 +1412,7 @@ function flHeaderSub(){
   }catch(_){}
 }
 // počet viditelných požárních H (dle filtrů + případného stavu revize)
-function flVisibleFireCount(){ var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||hydStatus(it.h)===revStatusFilter)) n++; }); return n; }
+function flVisibleFireCount(){ var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter)) n++; }); return n; }
 // počet zobrazených „ostatních" (kandidátů) – nezapočítává reklasifikované na požární; respektuje filtr obce/pracoviště
 function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os=(typeof visibleObecSet==='function')?visibleObecSet():null; var n=0; KAND.forEach(function(h){ if(FIRE_IDS.has(h.id)) return; if(os && !os.has(h.obec)) return; n++; }); return n; }
 // horní počítadlo: požární vždy; „ostatní" jen když je vrstva zapnutá
@@ -1661,6 +1675,14 @@ revToggle.onclick = ()=>{
   cluster.refreshClusters();
   renderLegend();
 };
+// selektor rozměru semaforu: Termíny (datum) / ČSN (hodnoty) — jako selektor metrů u Pokrytí
+(function(){ var s=document.getElementById('revDimSel'); if(!s) return;
+  s.addEventListener('click',function(e){ e.stopPropagation(); });      // klik na selektor nesmí přepnout semafor
+  s.addEventListener('mousedown',function(e){ e.stopPropagation(); });
+  s.addEventListener('change',function(e){ e.stopPropagation(); revDim=this.value; revStatusFilter=null;
+    if(revMode){ allItems.forEach(it=> it.m.setIcon(iconForItem(it.h))); cluster.refreshClusters(); applyFilter(); flRevList(); } // applyFilter v revMode překreslí i legendu
+  });
+})();
 
 // ---- moje poloha (GPS) ----
 let watching=false, meMarker=null, meCircle=null, firstFix=true;
