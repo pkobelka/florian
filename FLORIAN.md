@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.91**, cache `florian-v98`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.92**, cache `florian-v99`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.92 (tato session) — Enter u obce · výraznější legenda · Průtok m³/h v kartě
+- **Enter potvrdí obec:** ve vyhledávání filtru obcí (`townSearch`) — když po vyfiltrování
+  zbyde přesně jedna obec, Enter ji zaškrtne, aplikuje filtr a vyčistí hledání (můžeš hledat
+  další). Handler `search.onkeydown` počítá viditelné `.tp-item` **jen v panelu obcí** (`panel.
+  querySelectorAll`), ne globálně.
+- **Legenda nadzemní/podzemní — výraznější rozlišení:** zapnutý stav modře podbarvený
+  (`#dbeafe` + modrý rámeček `#1565c0`, tučné), vypnutý šedý/utlumený (`opacity:.55`,
+  přeškrtnuto, grayscale symbolu). Rozdíl vidět okamžitě.
+- **Karta H — průtok i v m³/h:** dlaždice průtoku ukazuje pod l/s ještě `X m³/h`
+  (převod l/s × 3,6, český formát). Helper `prutokM3h()` + `m3hLine(h)`, CSS `.metric .m3h`
+  (modrý podřádek s tečkovaným oddělovačem). Přidáno do požární i kandidátní karty.
 
 ## Hotovo v1.91 (tato session) — role „Mistr" + editovatelné jméno v týmu
 - **Nová role „Mistr"** v `ROLE_LIST` (mezi „Vedoucí pracoviště" a „Technik"), odznak
