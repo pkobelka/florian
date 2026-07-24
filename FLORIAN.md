@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.111**, cache `florian-v118`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.112**, cache `florian-v119`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.112 (tato session) — tlačítko Pokrytí ukazuje, co je vybráno
+- Tlačítko přejmenováno na **„🎯 Pokrytí a zobrazení"** (sladěno s hlavičkou panelu).
+- `updateCovBtn` nově **rozsvítí aktivní volby**: barevné tečky zapnutých kategorií
+  (🔵 Požární / 🟢 K doměření / 🟣 Ostatní) + poloměr, `➕` když je vrstva Ostatní hydranty.
+  Když je něco zapnuté, tlačítko se zvýrazní (`#covBtn.on` modrý rámeček/text). Volá se
+  i z `buildCovPanel`, takže popisek drží aktuální stav.
 
 ## Hotovo v1.111 (tato session) — „Ostatní H" a „Všechny požární H" do panelu Pokrytí
 - Panel přejmenován na **„🎯 Pokrytí a zobrazení"**; přibyla sekce **Zobrazení**:
