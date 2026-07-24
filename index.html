@@ -1116,6 +1116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 <div class="ctrl">
   <button class="btn-toggle" id="covToggle"><span class="sw"></span> Pokrytí <select id="covRadius" class="cov-r"><option value="100">100</option><option value="150">150</option><option value="200" selected>200</option></select> m</button>
   <button class="btn-toggle" id="domCovToggle"><span class="sw"></span> 🟢 Pokrytí doměřovaných</button>
+  <button class="btn-toggle" id="othersCovToggle"><span class="sw"></span> 🟣 Pokrytí ostatních</button>
   <button class="btn-toggle" id="candToggle">➕ Ostatní hydranty</button>
   <button class="btn-toggle" id="gapToggle">💡 Nepokrytá oblast</button>
   <button class="btn-toggle" id="poznToggle"><span class="sw"></span> 📝 Poznámky</button>
@@ -1188,7 +1189,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.107';
+const APP_VERSION = '1.108';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1278,6 +1279,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 const coverage = L.layerGroup();
 let coverageOn = false;
 let domCovOn = false;
+let othersCovOn = false; // pokrytí „ostatních" (neoznačených) kandidátů – fialové kruhy
 
 const cluster = L.markerClusterGroup({
   maxClusterRadius: 50,
@@ -1656,6 +1658,21 @@ if(domCovToggle){
   domCovToggle.onclick = function(){
     domCovOn = !domCovOn;
     domCovToggle.classList.toggle('on', domCovOn);
+    if(typeof renderMarked==='function') renderMarked();
+    if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
+  };
+}
+// přepínač pokrytí u „ostatních" (neoznačených) kandidátů — fialové kruhy, jen po zúžení na obec/středisko (výkon)
+var othersCovToggle = document.getElementById('othersCovToggle');
+if(othersCovToggle){
+  othersCovToggle.classList.toggle('on', othersCovOn);
+  othersCovToggle.onclick = function(){
+    othersCovOn = !othersCovOn;
+    othersCovToggle.classList.toggle('on', othersCovOn);
+    if(othersCovOn){
+      if(typeof candOn!=='undefined' && !candOn){ alert('Zapni ještě vrstvu „➕ Ostatní hydranty", ať se pokrytí ostatních ukáže.'); }
+      else if(typeof visibleObecSet==='function' && !visibleObecSet()){ alert('„Pokrytí ostatních" se kvůli výkonu ukáže až po zúžení na obec nebo středisko.'); }
+    }
     if(typeof renderMarked==='function') renderMarked();
     if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
   };
@@ -2208,6 +2225,15 @@ function renderCand(){ candCluster.clearLayers(); candCovLayer.clearLayers(); if
     if(FIRE_IDS.has(id)) return; // reklasifikováno na požární → žádný zelený „k doměření" kruh
     if(domereni[id] && domereni[id].povyseno) return;
     if(domCovOn) L.circle([mm.lat,mm.lon],{radius:COVERAGE_RADIUS,color:'#16a34a',weight:2,fillColor:'#16a34a',fillOpacity:.12}).addTo(candCovLayer); });
+  if(othersCovOn && obecSet){ // „Ostatní" pokrytí (fialové) – jen neoznačení kandidáti, jen po zúžení na obec/středisko; limit 800 kruhů
+    var _oc=0;
+    KAND.forEach(function(h){ if(_oc>=800) return;
+      if(FIRE_IDS.has(h.id)) return;
+      if(!obecSet.has(h.obec)) return;
+      if(kandMarked[h.id]) return;
+      if(domereni[h.id] && domereni[h.id].povyseno) return;
+      L.circle([h.lat,h.lon],{radius:COVERAGE_RADIUS,color:'#8e24aa',weight:1,fillColor:'#8e24aa',fillOpacity:.08}).addTo(candCovLayer); _oc++; });
+  }
   if(typeof flRenderCount==='function') flRenderCount(); // osvěž počet „ostatních" nahoře
 }
 function markCand(h){ if(kandMarked[h.id])return;

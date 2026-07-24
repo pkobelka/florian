@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.107**, cache `florian-v114`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.108**, cache `florian-v115`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.108 (tato session) — pokrytí i pro „Ostatní" (neoznačené kandidáty)
+- **Nový přepínač „🟣 Pokrytí ostatních"** (`othersCovToggle`, `othersCovOn`) vedle „Pokrytí"
+  a „Pokrytí doměřovaných". Kreslí **fialové** kruhy (`#8e24aa`) u neoznačených kandidátů —
+  vizuálně odlišené od modrých (požární) a zelených (k doměření).
+- **Výkon:** kreslí se jen po **zúžení na obec/středisko** (`visibleObecSet()`), a max **800**
+  kruhů. Bez filtru / při zapnutí bez vrstvy „Ostatní hydranty" appka jednou napoví.
+- Poloměr sdílí se všemi vrstvami (selektor 100/150/200 m u tlačítka Pokrytí, už z v1.97).
 
 ## Hotovo v1.107 (tato session) — GIS nahrávání do jednoho panelu (Požádat/Stáhnout + historie)
 - **Sjednoceno do jednoho tlačítka „🔼 Nahrání do GISu (N)"** (`gisBtn`) → panel `gisPanel`
