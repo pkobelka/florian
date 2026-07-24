@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.93**, cache `florian-v100`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.94**, cache `florian-v101`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.94 (tato session) — vzdálenost k nejbližšímu H v kartě
+- **Chip „📏 nejbližší H · X m" v hlavičce karty** (vedle ČSN chipu, v požární i kandidátní).
+  Vzdušná vzdálenost k nejbližšímu **požárnímu** hydrantu (přes existující `haversineM`).
+  Nové `nearestFireH(h)` (min přes `HYDRANTY`, vynechá sebe), `fmtDist(m)` (m / „X,X km"),
+  `nearestHChip(h)`. Barva: **≤200 m zeleně** (kruhy pokrytí 200 m se překrývají), jinak jantar.
+  Pozn.: je to vzdušná čára, ne „po silnici" (ČSN doporučuje rozestup ~300 m po komunikaci).
 
 ## Hotovo v1.93 (tato session) — auto-vyhodnocení hydrodynamického tlaku (ČSN ≥0,2 MPa)
 - **Hydrodynamický tlak se vyhodnocuje automaticky dle hodnoty**, ne ručním výběrem.
