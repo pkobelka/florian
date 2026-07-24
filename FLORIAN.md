@@ -6,7 +6,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.112**, cache `florian-v119`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.113**, cache `florian-v120`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.113 (tato session) — řádek shrnutí v liště pod tlačítkem Pokrytí
+- Pod „🎯 Pokrytí a zobrazení" v liště přibyl **řádek `#covSum`** (`updateCovSummary`) s čitelným
+  shrnutím vybraného: „Pokrytí 200 m: 🔵 Požární · 🟣 Ostatní · ➕ Ostatní hydranty".
+  Když nic není vybrané, decentní „Nic vybráno" (třída `.empty`). Aktualizuje se z `updateCovBtn`.
 
 ## Hotovo v1.112 (tato session) — tlačítko Pokrytí ukazuje, co je vybráno
 - Tlačítko přejmenováno na **„🎯 Pokrytí a zobrazení"** (sladěno s hlavičkou panelu).
