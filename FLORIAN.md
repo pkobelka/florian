@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.98**, cache `florian-v105`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.99**, cache `florian-v106`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.99 (tato session) — auto-vyhodnocení průtoku dle ČSN (≥ 4 l/s)
+- **Průtok se vyhodnocuje automaticky dle hodnoty** (jako tlak). Práh `PRUTOK_MIN = 4` l/s
+  (ČSN 73 0873, rodinné domy / objekty do 120 m², v=0,8 m/s). `prutokStav(val)` →
+  `'ok'`/`'bad'`/`''`. (ČSN je tabulka dle kategorie: RD 4 · 120–1000 m² 6 · 1000–2500 m² 9,5 ·
+  >2500 m² 14 l/s při v=0,8; zvolen práh 4.)
+- **Edit formulář:** ruční select „Splňuje průtok dle ČSN" → živý readout `#edCsnPauto`
+  (oninput z `edProtok`), pole zčervená (`.ed-bad`). Při uložení `splnujeProtok` auto.
+- **Karta:** dlaždice průtoku (`prutokTile`) zčervená + „min 4 l/s ✗" při nesplnění; pod
+  hodnotou zůstává m³/h. ČSN chip v `openCard` bere i průtok z hodnoty (`_flowFail`).
 
 ## Hotovo v1.98 (tato session) — Mistr do cílení úkolů · poznámky v tisku · poznámky jen z domereni
 - **Poznámky JEN z `domereni`** (uživatelské): `poznText`/`hasPozn` už neberou zdrojové
