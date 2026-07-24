@@ -811,6 +811,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .btn-toggle.on .sw{background:var(--blue)}
 .btn-toggle.on .sw::after{left:14px}
 .cov-r{font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:2px 4px;background:#f4f7fb;cursor:pointer}
+/* panel Pokrytí (poloměr + kategorie) */
+.cov-rad{font-size:12.5px;font-weight:600;color:var(--ink);padding:2px 4px 8px;display:flex;align-items:center;gap:6px}
+.cov-rchips{display:inline-flex;gap:4px}
+.cov-rchips button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:3px 8px;font-family:inherit;font-size:12px;font-weight:700;color:#37474f;cursor:pointer}
+.cov-rchips button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cov-cats{display:flex;flex-direction:column;gap:2px}
+.cov-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 6px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer}
+.cov-row:hover{background:#f2f6fb}
+.cov-row .sw{width:34px;height:20px;border-radius:999px;background:#cfd4da;position:relative;transition:.15s;flex:0 0 auto}
+.cov-row .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.cov-row.on .sw{background:var(--blue)}
+.cov-row.on .sw::after{left:16px}
+.cov-hint{font-size:11.5px;color:var(--muted);padding:6px 4px 2px;font-weight:600;line-height:1.4}
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
   padding:8px 11px;font-size:12.5px;box-shadow:var(--shadow);line-height:1.7}
@@ -1114,9 +1127,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 
 <button class="ctrl-burger" id="ctrlBurger" aria-label="Nabídka">☰</button>
 <div class="ctrl">
-  <button class="btn-toggle" id="covToggle"><span class="sw"></span> Pokrytí <select id="covRadius" class="cov-r"><option value="100">100</option><option value="150">150</option><option value="200" selected>200</option></select> m</button>
-  <button class="btn-toggle" id="domCovToggle"><span class="sw"></span> 🟢 Pokrytí doměřovaných</button>
-  <button class="btn-toggle" id="othersCovToggle"><span class="sw"></span> 🟣 Pokrytí ostatních</button>
+  <button class="btn-toggle" id="covBtn">🎯 Pokrytí 200 m ▾</button>
+  <div class="town-panel" id="covPanel"></div>
   <button class="btn-toggle" id="candToggle">➕ Ostatní hydranty</button>
   <button class="btn-toggle" id="gapToggle">💡 Nepokrytá oblast</button>
   <button class="btn-toggle" id="poznToggle"><span class="sw"></span> 📝 Poznámky</button>
@@ -1189,7 +1201,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.108';
+const APP_VERSION = '1.109';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1548,6 +1560,7 @@ document.addEventListener('click', ()=>{
   var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open');
   var pp=document.getElementById('pushPanel'); if(pp) pp.classList.remove('open');
   var gp=document.getElementById('gisPanel'); if(gp) gp.classList.remove('open');
+  var cvp=document.getElementById('covPanel'); if(cvp) cvp.classList.remove('open');
 });
 document.getElementById('allBtn').onclick=()=>{
   selectedStrediska=new Set(); selectedOwners=new Set(); selectedTowns=new Set();
@@ -1630,53 +1643,57 @@ if(ctrlBurger){
   map.on('click',function(){ if(window.matchMedia('(max-width:640px)').matches){ ctrlEl.classList.remove('open'); ctrlBurger.classList.remove('on');
     document.getElementById('stredPanel').classList.remove('open'); document.getElementById('ownPanel').classList.remove('open'); document.getElementById('townPanel').classList.remove('open'); var mp=document.getElementById('menuPanel'); if(mp)mp.classList.remove('open'); } });
 }
-const covToggle = document.getElementById('covToggle');
-covToggle.onclick = ()=>{
-  coverageOn = !coverageOn;
-  covToggle.classList.toggle('on', coverageOn);
+// ===== Pokrytí: jedno tlačítko „🎯 Pokrytí" → panel (poloměr + kategorie Požární / K doměření / Ostatní) =====
+function updateCovBtn(){ var b=document.getElementById('covBtn'); if(b) b.textContent='🎯 Pokrytí '+COVERAGE_RADIUS+' m ▾'; }
+function applyCovLayers(){
   if(coverageOn) map.addLayer(coverage); else map.removeLayer(coverage);
   if(typeof renderMarked==='function') renderMarked();
   if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
-};
-// výběr poloměru pokrytí (150/200/250/300 m) — přenastaví hlavní kruhy + překreslí vrstvy
+}
+// výběr poloměru pokrytí (100/150/200 m) — přenastaví hlavní kruhy + překreslí vrstvy
 function setCoverageRadius(r){
   r=parseInt(r,10)||200; COVERAGE_RADIUS=r;
   if(typeof allItems!=='undefined') allItems.forEach(function(it){ if(it.c) it.c.setRadius(r); });
-  if(typeof renderMarked==='function') renderMarked();
-  if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
+  applyCovLayers();
   if(typeof rebuildMarkersBadges==='function') rebuildMarkersBadges(); // nearestHChip/„covered" se přepočítá při otevření karty
+  updateCovBtn(); buildCovPanel();
 }
-(function(){ var s=document.getElementById('covRadius'); if(!s) return;
-  s.addEventListener('click',function(e){ e.stopPropagation(); });      // klik na selektor nesmí přepnout vrstvu
-  s.addEventListener('mousedown',function(e){ e.stopPropagation(); });
-  s.addEventListener('change',function(e){ e.stopPropagation(); setCoverageRadius(this.value); });
+function setCov(cat,val){
+  if(cat==='fire'){ coverageOn=val; }
+  else if(cat==='dom'){ domCovOn=val; }
+  else if(cat==='oth'){ othersCovOn=val; }
+  applyCovLayers(); buildCovPanel();
+}
+function buildCovPanel(){
+  var panel=document.getElementById('covPanel'); if(!panel) return;
+  var radChips=[100,150,200].map(function(r){ return '<button data-r="'+r+'"'+(r===COVERAGE_RADIUS?' class="on"':'')+'>'+r+' m</button>'; }).join('');
+  function row(cat,label,on){ return '<div class="cov-row'+(on?' on':'')+'" data-cat="'+cat+'"><span>'+label+'</span><span class="sw"></span></div>'; }
+  var hint='';
+  if(othersCovOn){
+    if(typeof candOn!=='undefined' && !candOn) hint='Pro „Ostatní" zapni ještě vrstvu ➕ Ostatní hydranty.';
+    else if(typeof visibleObecSet==='function' && !visibleObecSet()) hint='„Ostatní" se kvůli výkonu ukáže až po zúžení na obec/středisko.';
+  }
+  panel.innerHTML=
+    '<div class="tp-head"><b>🎯 Pokrytí (r = '+COVERAGE_RADIUS+' m)</b></div>'+
+    '<div class="cov-rad">Poloměr:<span class="cov-rchips">'+radChips+'</span></div>'+
+    '<div class="cov-cats">'+
+      row('fire','🔵 Požární',coverageOn)+
+      row('dom','🟢 K doměření',domCovOn)+
+      row('oth','🟣 Ostatní',othersCovOn)+
+    '</div>'+
+    (hint?'<div class="cov-hint">'+hint+'</div>':'');
+  panel.onclick=function(e){ e.stopPropagation(); };
+  Array.prototype.forEach.call(panel.querySelectorAll('.cov-rchips button'),function(b){ b.onclick=function(){ setCoverageRadius(this.getAttribute('data-r')); }; });
+  Array.prototype.forEach.call(panel.querySelectorAll('.cov-row'),function(rw){ rw.onclick=function(){ setCov(this.getAttribute('data-cat'), !this.classList.contains('on')); }; });
+}
+(function(){ var b=document.getElementById('covBtn'); if(!b) return;
+  b.onclick=function(e){ e.stopPropagation();
+    ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+    buildCovPanel();
+    var cp=document.getElementById('covPanel'); cp.classList.toggle('open'); if(cp.classList.contains('open')){ cp.style.top=(b.offsetTop+b.offsetHeight+6)+'px'; }
+  };
+  updateCovBtn();
 })();
-// přepínač pokrytí (200 m kružnice) u hydrantů k doměření
-var domCovToggle = document.getElementById('domCovToggle');
-if(domCovToggle){
-  domCovToggle.classList.toggle('on', domCovOn);
-  domCovToggle.onclick = function(){
-    domCovOn = !domCovOn;
-    domCovToggle.classList.toggle('on', domCovOn);
-    if(typeof renderMarked==='function') renderMarked();
-    if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
-  };
-}
-// přepínač pokrytí u „ostatních" (neoznačených) kandidátů — fialové kruhy, jen po zúžení na obec/středisko (výkon)
-var othersCovToggle = document.getElementById('othersCovToggle');
-if(othersCovToggle){
-  othersCovToggle.classList.toggle('on', othersCovOn);
-  othersCovToggle.onclick = function(){
-    othersCovOn = !othersCovOn;
-    othersCovToggle.classList.toggle('on', othersCovOn);
-    if(othersCovOn){
-      if(typeof candOn!=='undefined' && !candOn){ alert('Zapni ještě vrstvu „➕ Ostatní hydranty", ať se pokrytí ostatních ukáže.'); }
-      else if(typeof visibleObecSet==='function' && !visibleObecSet()){ alert('„Pokrytí ostatních" se kvůli výkonu ukáže až po zúžení na obec nebo středisko.'); }
-    }
-    if(typeof renderMarked==='function') renderMarked();
-    if(typeof candOn!=='undefined' && candOn && typeof renderCand==='function') renderCand();
-  };
-}
 // ---- Poznámky: odznak 📝 vždy, hover tooltip vždy; přepínač = trvalé štítky na mapě ----
 var poznOn = false;
 function applyPoznTooltips(){

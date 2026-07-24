@@ -6,7 +6,16 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.108**, cache `florian-v115`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.109**, cache `florian-v116`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.109 (tato session) — pokrytí sjednoceno do jednoho panelu
+- **Tři tlačítka pokrytí** (Pokrytí+selektor, Pokrytí doměřovaných, Pokrytí ostatních)
+  sloučena do **jednoho „🎯 Pokrytí ▾"** (`covBtn` → panel `covPanel`, `buildCovPanel`).
+  Lišta/hamburger se tím zkrátí (3 tlačítka → 1).
+- Panel: **poloměr** (chipy 100/150/200 m, přes `setCoverageRadius`) + tři kategorie
+  s přepínačem a barvou: 🔵 Požární, 🟢 K doměření, 🟣 Ostatní. Popisek tlačítka drží
+  aktuální poloměr. Hinty u „Ostatní" (zapni vrstvu / zúži na obec) jsou v panelu.
+- Logika kreslení kruhů beze změny (jen přesunuté ovládání); `setCov()` + `applyCovLayers()`.
 
 ## Hotovo v1.108 (tato session) — pokrytí i pro „Ostatní" (neoznačené kandidáty)
 - **Nový přepínač „🟣 Pokrytí ostatních"** (`othersCovToggle`, `othersCovOn`) vedle „Pokrytí"
