@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.103**, cache `florian-v110`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.104**, cache `florian-v111`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.104 (tato session) — historie žádostí o nahrání do GISu + další dvojice
+- **Historie žádostí/nahrání do GISu** (`#gisReqHist`, viditelná všem — ať se neprosí 2×).
+  „Poprosit" zapíše do `florian_gis_requests` (`{type:'req',by,pid,n,ts}`), export zapíše
+  `{type:'done',by,ts}`. Listener `limitToLast(30)` → `flRenderGisReq` (poslední nahoře jako
+  hlavička „🕘 …", rozklik ukáže 10 posledních). `fmtDateTime`. **Vyžaduje DB pravidlo
+  `florian_gis_requests` (auth!=null)** — přidáno v `mojebudky/database.rules.json` (auto-deploy).
+  Komu žádost chodí: role **GIS + Admin** (`flGisTargets`) — admin/Petr ji tedy dostává.
+- **Dvojice K doměření + Úkoly** vedle sebe; „K doměření" tlačítko přejmenováno na **„Změřit"**
+  (kratší). (Panel/feature interně dál „k doměření".)
 
 ## Hotovo v1.103 (tato session) — kratší hamburger · landscape · poprosit i pro vedení · oprava nejbližší H
 - **Kratší hamburger:** dvojice tlačítek vedle sebe přes `.ctrl-row` (flex) — **Svazek+Obce**
