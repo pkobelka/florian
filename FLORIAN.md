@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.105**, cache `florian-v112`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.107**, cache `florian-v114`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.107 (tato session) — GIS nahrávání do jednoho panelu (Požádat/Stáhnout + historie)
+- **Sjednoceno do jednoho tlačítka „🔼 Nahrání do GISu (N)"** (`gisBtn`) → panel `gisPanel`
+  (`buildGisPanel`). Zrušena samostatná tlačítka Export + Poprosit + řádek historie.
+- Panel: stav „Ke stažení: N změn od posledního nahrání", **akce dle role** — GIS/Admin
+  „📤 Stáhnout změny (CSV)", ostatní „🔼 Požádat o nahrání" (přejmenováno z „Poprosit").
+  Pod tím **historie žádostí a nahrání** (`_gisReqList` z `florian_gis_requests`, 🔼 žádost /
+  ✅ nahráno + čas). `flApplyRoleUI` už jen aktualizuje počet + přestaví panel. `gisBtn` vidí všichni.
+
+## Hotovo v1.106 (tato session) — Tisk mapy skrytý na mobilu/landscape
+- `#printMapBtn{display:none}` v `@media (max-width:640px),(max-height:480px)` — tisk mapy je
+  desktopová věc; na telefonu i landscape se skryje, na tabletu/desktopu zůstává.
 
 ## Hotovo v1.105 (tato session) — pole „Osazen na potrubí DN" v kartě
 - **Nový údaj `dnPotrubi`** (DN potrubí, na kterém je hydrant osazen — jiné než DN hydrantu).
