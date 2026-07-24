@@ -6,7 +6,16 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.110**, cache `florian-v117`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.111**, cache `florian-v118`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.111 (tato session) — „Ostatní H" a „Všechny požární H" do panelu Pokrytí
+- Panel přejmenován na **„🎯 Pokrytí a zobrazení"**; přibyla sekce **Zobrazení**:
+  - **➕ Ostatní hydranty** (přepínač, zrcadlí `candOn`) — ovládá skrytý `candToggle`.
+  - **🎯 Všechny požární H** (akce) — spouští skrytý `allBtn` (reset filtrů).
+- Tlačítka `candToggle` a `allBtn` **skryta z lišty** (`display:none`, zůstávají v DOM →
+  vazba `gapToggle→candToggle` funguje). Lišta kratší o 2 tlačítka.
+- **Zapnutí „🟣 Ostatní" pokrytí rovnou zapne vrstvu** Ostatní hydranty (`setCov` → `candToggle.click()`),
+  ať se fialové kruhy hned ukážou.
 
 ## Hotovo v1.110 (tato session) — oprava: tlačítko polohy překrývalo panel
 - `.locate` mělo `z-index:900` stejně jako `.ctrl`, a bylo v DOM později → kreslilo se
