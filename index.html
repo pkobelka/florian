@@ -773,6 +773,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .statusbar .onl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .statusbar .onl-n{background:rgba(255,255,255,.16);border-radius:6px;padding:1px 7px;color:#fff}
 .statusbar .onl-non{opacity:.6}
+.statusbar .onl{cursor:pointer}
+.statusbar .onl b{color:#fff;font-weight:800}
+.statusbar .onl-caret{font-size:9px;opacity:.75;transition:transform .15s}
+.statusbar .onl.expanded .onl-caret{transform:rotate(180deg)}
+.statusbar .onl-names{display:none;gap:6px;flex-wrap:wrap}
+.statusbar .onl.expanded .onl-names{display:inline-flex}
 .topbar .t{font-weight:800;font-size:17px;line-height:1.1}
 .topbar .s{font-size:11.5px;opacity:.9}
 .topbar .count{margin-left:auto;font-size:12px;background:rgba(255,255,255,.18);
@@ -866,6 +872,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .ld-badge.r-pr{background:#e8f5e9;color:#2e7d32}.ld-badge.r-vs{background:#fff3e0;color:#e65100}
 .ld-badge.r-vp{background:#e0f2f1;color:#00695c}.ld-badge.r-tech{background:#eceff1;color:#455a64}
 .ld-badge.r-mistr{background:#fce4ec;color:#ad1457}
+.ld-badge.r-gis{background:#e0f7fa;color:#00838f}
 .ld-name-in{flex:1;min-width:0;font-weight:700;font-size:13.5px;font-family:inherit;color:var(--ink);border:1px solid transparent;border-radius:7px;padding:3px 6px;background:transparent}
 .ld-name-in:hover{background:#f2f6fb}
 .ld-name-in:focus{outline:none;background:#fff;border-color:var(--blue)}
@@ -1093,7 +1100,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
     <div class="s">Požární hydranty · VHOS (všechny skupiny)</div>
   </div>
   <div class="count" id="count">–</div>
-  <div class="statusbar" id="flStatus"><span class="clk" id="flClock"></span><span class="onl">🟢 Online: <span id="flOnline"><span class="onl-non">…</span></span></span></div>
+  <div class="statusbar" id="flStatus"><span class="clk" id="flClock"></span><span class="onl" id="flOnlWrap" title="Klikni pro zobrazení jmen">🟢 Online: <b id="flOnlCount">…</b> <span class="onl-caret" id="flOnlCaret">▾</span><span class="onl-names" id="flOnlineNames"></span></span></div>
 </div>
 
 <button class="ctrl-burger" id="ctrlBurger" aria-label="Nabídka">☰</button>
@@ -1165,7 +1172,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.99';
+const APP_VERSION = '1.100';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -2511,8 +2518,8 @@ function openUkolTarget(hid){
 
 /* ===== Tým / lidé (základ pro role a cílení push) ===== */
 var lide={}; // {pid:{jmeno,role,pracoviste,ts}}
-const ROLE_LIST=['Admin','TŘ','PŘ','Vedoucí střediska','Vedoucí pracoviště','Mistr','Technik'];
-function roleCls(r){ return ({'Admin':'r-adm','TŘ':'r-tr','PŘ':'r-pr','Vedoucí střediska':'r-vs','Vedoucí pracoviště':'r-vp','Mistr':'r-mistr','Technik':'r-tech'})[r]||'r-tech'; }
+const ROLE_LIST=['Admin','TŘ','PŘ','GIS','Vedoucí střediska','Vedoucí pracoviště','Mistr','Technik'];
+function roleCls(r){ return ({'Admin':'r-adm','TŘ':'r-tr','PŘ':'r-pr','GIS':'r-gis','Vedoucí střediska':'r-vs','Vedoucí pracoviště':'r-vp','Mistr':'r-mistr','Technik':'r-tech'})[r]||'r-tech'; }
 function lideArr(){ return Object.keys(lide||{}).map(function(pid){ var p=Object.assign({},lide[pid]); p._id=pid; return p; }).sort(function(a,b){ return (a.jmeno||'').localeCompare(b.jmeno||'','cs'); }); }
 function _roleOpts(sel){ return ROLE_LIST.map(function(r){ return '<option'+(r===sel?' selected':'')+'>'+esc(r)+'</option>'; }).join(''); }
 function _pracOpts(sel){ return '<option value="">— všechna pracoviště —</option>'+PRAC_ORDER.map(function(st){ return '<option value="'+esc(st)+'"'+(st===sel?' selected':'')+'>'+esc(PRAC_NAME[st]||st)+'</option>'; }).join(''); }
@@ -2618,7 +2625,7 @@ function flSetMe(pid){ if(pid) localStorage.setItem('florian_me',pid); else loca
 function flMeName(){ var p=lide[flMe()]; return (p&&p.jmeno)||''; }
 function flMyRole(){ var p=lide[flMe()]; return (p&&p.role)||''; }
 function flMyPrac(){ var p=lide[flMe()]; return (p&&p.pracoviste)||''; }
-function flIsVedeni(){ if(window._FL_ADMIN) return true; var r=flMyRole(); return r==='Admin'||r==='TŘ'||r==='PŘ'; }
+function flIsVedeni(){ if(window._FL_ADMIN) return true; var r=flMyRole(); return r==='Admin'||r==='TŘ'||r==='PŘ'||r==='GIS'; } // GIS vidí všechna pracoviště (jen náhled, ne admin práva)
 /* pracoviště, která má přihlášený vidět jako „svoje" (prázdné = vše):
    vedení (Admin/TŘ/PŘ) = vše; vedoucí střediska = celé středisko vč. pracovišť pod ním
    (Vykydal MT → MT+Svitavy, Rada Polička → Polička+Litomyšl); ostatní = jen své pracoviště. */
@@ -2760,7 +2767,13 @@ function flPlaceZoom(){ try{
 try{ requestAnimationFrame(flPlaceZoom); [200,600,1400].forEach(function(t){ setTimeout(flPlaceZoom,t); }); window.addEventListener('resize',flPlaceZoom); window.addEventListener('orientationchange',function(){ setTimeout(flPlaceZoom,250); }); }catch(_){}
 // ---- kdo je online (uzel florian_presence) ----
 function flPresencePush(){ if(!window._FDB) return; var r=_FDB.ref('florian_presence/'+flDevId()); var me=flMe(); if(me){ try{ r.onDisconnect().remove(); }catch(_){} r.set({pid:me,jmeno:flMeName()||'',ts:Date.now()}).catch(function(){}); } else { r.remove().catch(function(){}); } }
-function flRenderOnline(out){ var el=document.getElementById('flOnline'); if(!el) return; el.innerHTML=out.length ? out.map(function(v){ var nm=v.jmeno||((lide[v.pid]||{}).jmeno)||'?'; return '<span class="onl-n" title="'+esc(nm)+'">'+esc(nm)+'</span>'; }).join('') : '<span class="onl-non">nikdo</span>'; if(typeof flPlaceZoom==='function') requestAnimationFrame(flPlaceZoom); }
+var _flOnlineList=[];
+function flRenderOnline(out){ _flOnlineList=out||[];
+  var cEl=document.getElementById('flOnlCount'); if(cEl) cEl.textContent=_flOnlineList.length;
+  var nEl=document.getElementById('flOnlineNames'); if(nEl){ nEl.innerHTML=_flOnlineList.length ? _flOnlineList.map(function(v){ var nm=v.jmeno||((lide[v.pid]||{}).jmeno)||'?'; return '<span class="onl-n" title="'+esc(nm)+'">'+esc(nm)+'</span>'; }).join('') : '<span class="onl-non">zatím nikdo přihlášený</span>'; }
+  if(typeof flPlaceZoom==='function') requestAnimationFrame(flPlaceZoom);
+}
+(function(){ var w=document.getElementById('flOnlWrap'); if(w) w.onclick=function(){ w.classList.toggle('expanded'); if(typeof flPlaceZoom==='function') requestAnimationFrame(flPlaceZoom); }; })();
 var _flPresenceStarted=false;
 function flPresenceStart(){ if(_flPresenceStarted||!window._FDB) return; _flPresenceStarted=true;
   _FDB.ref('.info/connected').on('value',function(s){ if(s.val()===true) flPresencePush(); });

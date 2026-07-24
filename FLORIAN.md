@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.99**, cache `florian-v106`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.100**, cache `florian-v107`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.100 (tato session) — role „GIS" + online jako počet s rozklikem
+- **Nová role „GIS"** (`ROLE_LIST`, odznak `.r-gis` tyrkys). GIS **vidí všechna pracoviště**
+  (přidán do `flIsVedeni` — jen náhled, ne admin práva). Určeno pro správce GIS, který bude
+  nahrávat změny do GISu (Daniel Polák; přidán do `florian_lide` + `florian_login_email`
+  přes seed workflow v `mojebudky`).
+- **Online presence = počet + jména na rozklik:** horní lišta ukazuje „🟢 Online: N ▾",
+  klik na `#flOnlWrap` rozbalí jména (`.onl-names`, třída `.expanded`). `flRenderOnline`
+  plní počet `#flOnlCount` + jména; drží `_flOnlineList`. (Presence píše jen self-identifikované
+  uživatele — kdo si nevybral „kdo jsem", se nepočítá.)
+- Pozn.: rozpracováno dál (zaparkováno) — GIS „část A" (poprosit o nahrání + počítadlo +
+  export), a přepínač Revize Termíny/ČSN do jednoho tlačítka (bez nafouknutí hamburgeru).
 
 ## Hotovo v1.99 (tato session) — auto-vyhodnocení průtoku dle ČSN (≥ 4 l/s)
 - **Průtok se vyhodnocuje automaticky dle hodnoty** (jako tlak). Práh `PRUTOK_MIN = 4` l/s
