@@ -1129,7 +1129,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <button class="btn-toggle btn-all" id="allBtn">Všechny požární H</button>
   <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
   <button class="btn-toggle btn-share" id="shareBtn" style="display:none">📤 Sdílet appku</button>
-  <button class="btn-toggle btn-share" id="exportBtn" style="display:none">📤 Export změn (CSV pro GIS)</button>
+  <button class="btn-toggle btn-share" id="exportBtn" style="display:none">📤 Export změn (CSV pro GIS) <span id="exportCount"></span></button>
+  <button class="btn-toggle" id="poprosBtn" style="display:none">🔼 Poprosit o nahrání do GISu <span id="poprosCount"></span></button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
 </div>
 
@@ -1172,7 +1173,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.101';
+const APP_VERSION = '1.102';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -2643,7 +2644,7 @@ function lideDel(pid){ if(lide[pid]) delete lide[pid]; if(window._FDB){ _FDB.ref
 var FL_VAPID='BCn3YD9DqB2ejEGoqAxpnUpKuo6oG3TPBrGhjgXtLuQl4kbEee_hghSKE6nJ8ttffH-RIMjtyPNY-PPflKiCSho';
 function flDevId(){ var k='florian_dev_id'; var v=localStorage.getItem(k); if(!v){ v='fl-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem(k,v); } return v; }
 function flMe(){ return localStorage.getItem('florian_me')||''; }
-function flSetMe(pid){ if(pid) localStorage.setItem('florian_me',pid); else localStorage.removeItem('florian_me'); try{ flPresencePush(); }catch(_){} try{ flApplyMyPracDefault(); }catch(_){} }
+function flSetMe(pid){ if(pid) localStorage.setItem('florian_me',pid); else localStorage.removeItem('florian_me'); try{ flPresencePush(); }catch(_){} try{ flApplyMyPracDefault(); }catch(_){} try{ flApplyRoleUI(); }catch(_){} }
 function flMeName(){ var p=lide[flMe()]; return (p&&p.jmeno)||''; }
 function flMyRole(){ var p=lide[flMe()]; return (p&&p.role)||''; }
 function flMyPrac(){ var p=lide[flMe()]; return (p&&p.pracoviste)||''; }
@@ -2674,7 +2675,7 @@ function flApplyMyPracDefault(){
   applyFilter();
 }
 // ---- Tým + Sdílet appku: jen pro admina ----
-function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','exportBtn','revUploadBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } }
+function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','revUploadBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
 // ---- Export úprav požárních hydrantů do CSV (pro zpětný import do GISu) ----
 // Sloupce s novými hodnotami odpovídají editovaným polím; k párování v GISu jsou
 // v souboru VŠECHNY identifikátory (IČME, interní ID, kód obce/katastru, adresa, GPS).
@@ -2743,10 +2744,43 @@ function flExportZmenyCSV(){
   var a=document.createElement('a'); a.href=url; a.download='florian_zmeny_'+stamp+'.csv';
   document.body.appendChild(a); a.click();
   setTimeout(function(){ try{ document.body.removeChild(a); }catch(_){ } URL.revokeObjectURL(url); },600);
+  try{ localStorage.setItem('florian_last_export', String(Date.now())); }catch(_){}  // od teď se počítají jen novější změny
+  if(typeof flUpdChangeCount==='function') flUpdChangeCount();
   var mp=document.getElementById('menuPanel'); if(mp) mp.classList.remove('open');
   try{ var cp=document.querySelector('.ctrl'); if(cp) cp.classList.remove('open'); }catch(_){ }
 }
 (function(){ var b=document.getElementById('exportBtn'); if(b) b.onclick=function(e){ e.stopPropagation(); flExportZmenyCSV(); }; })();
+// ===== GIS: koordinace nahrávání změn do GISu (poprosit + počítadlo + export) =====
+function flLastExport(){ return parseInt(localStorage.getItem('florian_last_export')||'0',10)||0; }
+// počet změn požárních hydrantů od posledního exportu (bez závislosti na KAND – povýšení počítá dle příznaku)
+function flPendingCount(){ if(typeof domereni==='undefined'||!domereni) return 0; var last=flLastExport();
+  var byId={}; HYDRANTY.forEach(function(h){ byId[h.id]=h; }); var n=0;
+  Object.keys(domereni).forEach(function(id){ var d=domereni[id]||{}; if((d.ts||0)<=last) return;
+    var h=byId[id], changed=false;
+    if(h){ FL_EXPORT_FIELDS.forEach(function(f){ var k=f[0]; var neu=(d[k]!=null&&String(d[k]).trim()!=='')?String(d[k]).trim():''; var orig=(h[k]!=null)?String(h[k]).trim():''; if(neu!==''&&neu!==orig) changed=true; }); }
+    else if(d.povyseno){ changed=true; } // povýšený kandidát
+    if(changed) n++;
+  });
+  return n; }
+function flUpdChangeCount(){ var n=flPendingCount(); var s=n?('('+n+')'):'';
+  var pc=document.getElementById('poprosCount'); if(pc) pc.textContent=s;
+  var ec=document.getElementById('exportCount'); if(ec) ec.textContent=s; }
+// komu jde žádost o nahrání = lidé s rolí GIS (+ Admin pro jistotu)
+function flGisTargets(){ return Object.keys(lide||{}).filter(function(pid){ var r=(lide[pid]||{}).role; return r==='GIS'||r==='Admin'; }); }
+function flPoprositNahrani(){ try{
+  if(!flMe()){ alert('Nejdřív nahoře vyber „Kdo jsi na tomto zařízení?" (panel 🔔 Oznámení nebo 👥 Tým).'); return; }
+  if(!window._FDB){ alert('Offline – žádost nelze odeslat.'); return; }
+  var targets=flGisTargets(); if(!targets.length){ alert('V týmu zatím není nikdo s rolí GIS. Přidej správce GIS v panelu 👥 Tým.'); return; }
+  var n=flPendingCount(); var kdo=flMeName()||'Někdo';
+  _FDB.ref('florian_outbox').push({ title:'🔼 Žádost o nahrání do GISu', body:kdo+' prosí o nahrání změn do GISu'+(n?(' · čeká '+n+' změn'):''), targets:targets, ts:Date.now() });
+  alert('✅ Odesláno správci GIS.'+(n?(' Čeká '+n+' změn.'):''));
+}catch(e){ alert('Chyba: '+(e&&e.message||e)); } }
+(function(){ var b=document.getElementById('poprosBtn'); if(b) b.onclick=function(e){ e.stopPropagation(); flPoprositNahrani(); }; })();
+// zobrazení tlačítek dle role: GIS/Admin → Export; ostatní → Poprosit o nahrání
+function flApplyRoleUI(){ var gis = !!window._FL_ADMIN || flMyRole()==='GIS';
+  var eb=document.getElementById('exportBtn'); if(eb) eb.style.display=gis?'':'none';
+  var pb=document.getElementById('poprosBtn'); if(pb) pb.style.display=gis?'none':'';
+  flUpdChangeCount(); }
 // ---- Nahrání revizí do Firebase (uzel florian_revize) pro denní notifikace ----
 // Základní (raw) datum revize + středisko + obec/adresa. Server merguje živé editace
 // z florian_domereni (efektivní datum = domereni[id].datumRevize || revize[id].d).
@@ -2899,7 +2933,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
     if(_dataStarted) return; _dataStarted=true;
     try{ flPresenceStart(); }catch(_){}
     _FDB.ref('florian_seq').on('value',function(sn){ var v=parseInt(sn.val())||0; if(v>flSeq){ flSeq=v; try{localStorage.setItem('florian_seq',String(flSeq));}catch(e){} } }, function(){});
-    _FDB.ref('florian_domereni').on('value',function(sn){ var v=sn.val()||{}; Object.keys(v).forEach(function(id){ domereni[id]=v[id]; }); saveDomereni(); if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(typeof candOn!=='undefined'&&candOn)renderCand(); }, function(){});
+    _FDB.ref('florian_domereni').on('value',function(sn){ var v=sn.val()||{}; Object.keys(v).forEach(function(id){ domereni[id]=v[id]; }); saveDomereni(); if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(typeof candOn!=='undefined'&&candOn)renderCand(); if(typeof flUpdChangeCount==='function')flUpdChangeCount(); }, function(){});
     var _kandFirst=true;
     _FDB.ref('florian_kandidati').on('value',function(sn){ var v=sn.val()||{};
       // jednorázově (po prvním úspěšném čtení = přihlášen): nahraj lokální body, které v cloudu chybí
@@ -2908,7 +2942,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
     _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; }); }, function(){});
     _FDB.ref('florian_ukoly').on('value',function(sn){ ukoly=sn.val()||{}; if(typeof refreshUkolBadge==='function')refreshUkolBadge(); }, function(){});
     var _lideFirst=true;
-    _FDB.ref('florian_lide').on('value',function(sn){ lide=sn.val()||{}; var lp=document.getElementById('lidePanel'); if(lp&&lp.classList.contains('open')&&typeof buildLidePanel==='function') buildLidePanel(); try{ flApplyMyPracDefault(); }catch(_){} if(_lideFirst){ _lideFirst=false; if(typeof flPushAutoRenew==='function') setTimeout(flPushAutoRenew,800); try{ flPresencePush(); }catch(_){} } }, function(){});
+    _FDB.ref('florian_lide').on('value',function(sn){ lide=sn.val()||{}; var lp=document.getElementById('lidePanel'); if(lp&&lp.classList.contains('open')&&typeof buildLidePanel==='function') buildLidePanel(); try{ flApplyMyPracDefault(); }catch(_){} try{ flApplyRoleUI(); }catch(_){} if(_lideFirst){ _lideFirst=false; if(typeof flPushAutoRenew==='function') setTimeout(flPushAutoRenew,800); try{ flPresencePush(); }catch(_){} } }, function(){});
     // jednorázový seed týmu (jen když je uzel úplně prázdný)
     _FDB.ref('florian_lide').get().then(function(sn){ if(!sn.exists()){ [['Aleš Bubák','Mistr'],['Halva','Mistr']].forEach(function(pair){ var r=_FDB.ref('florian_lide').push(); r.set({jmeno:pair[0],role:pair[1],pracoviste:'',ts:Date.now()}); }); } }).catch(function(){});
   }
