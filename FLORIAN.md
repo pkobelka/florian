@@ -6,7 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.104**, cache `florian-v111`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.105**, cache `florian-v112`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.105 (tato session) — pole „Osazen na potrubí DN" v kartě
+- **Nový údaj `dnPotrubi`** (DN potrubí, na kterém je hydrant osazen — jiné než DN hydrantu).
+  V edit formuláři `#edDnPot` = select (— / 80 / 100 / 150). Ukládá se do `domereni.dnPotrubi`.
+  Zobrazeno v detailech karty („Osazen na potrubí DN", za „DN hydrantu"). Přidáno do
+  `FL_EXPORT_FIELDS` → jde i do CSV pro GIS.
 
 ## Hotovo v1.104 (tato session) — historie žádostí o nahrání do GISu + další dvojice
 - **Historie žádostí/nahrání do GISu** (`#gisReqHist`, viditelná všem — ať se neprosí 2×).
