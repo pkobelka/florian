@@ -1189,7 +1189,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.104';
+const APP_VERSION = '1.105';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1830,6 +1830,7 @@ function openCard(h){
     ['Obec / město', town(h)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
+    ['Osazen na potrubí DN', txt(candVal(h,'dnPotrubi'))],
     ['Provozovatel', provoz(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['Vlastník', txt(h.vlastnik)],
@@ -1980,6 +1981,7 @@ function doPrint(h){
     ['Stav', txt(h.etapa)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
+    ['Osazen na potrubí DN', txt(candVal(h,'dnPotrubi'))],
     ['Průtok [l/s]', meas(candVal(h,'prutok'))],
     ['Hydrostatický tlak [MPa]', meas(candVal(h,'tlakStat'))],
     ['Hydrodynamický tlak [MPa]', meas(candVal(h,'tlakDyn'))],
@@ -2082,6 +2084,7 @@ function openEditForm(h){
       inp('edTlakS','Hydrostatický tlak [MPa]',candVal(h,'tlakStat'))+
       inp('edTlakD','Hydrodynamický tlak [MPa]',candVal(h,'tlakDyn'))+
       inp('edDN','DN hydrantu [mm]',candVal(h,'dn'))+
+      '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150'].map(function(v){ return '<option'+(candVal(h,'dnPotrubi')===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
       '<label class="ed-row"><span>Datum revize</span><input id="edRev" type="date" value="'+revIso+'"></label>'+
       '<div class="ed-row"><span>Splňuje tlak dle ČSN</span><div id="edCsnTauto" class="ed-auto">—</div></div>'+
       '<div class="ed-row"><span>Splňuje průtok dle ČSN</span><div id="edCsnPauto" class="ed-auto">—</div></div>'+
@@ -2112,6 +2115,7 @@ function openEditForm(h){
     d2.tlakStat=document.getElementById('edTlakS').value.trim();
     d2.tlakDyn=document.getElementById('edTlakD').value.trim();
     d2.dn=document.getElementById('edDN').value.trim();
+    d2.dnPotrubi=document.getElementById('edDnPot').value;
     d2.datumRevize=_iso2cz(document.getElementById('edRev').value);
     var _st=tlakDynStav(d2.tlakDyn); d2.splnujeTlak = _st==='ok'?'Ano':(_st==='bad'?'Ne':''); // auto dle hodnoty
     var _sp=prutokStav(d2.prutok); d2.splnujeProtok = _sp==='ok'?'Ano':(_sp==='bad'?'Ne':''); // auto dle hodnoty
@@ -2702,6 +2706,7 @@ var FL_EXPORT_FIELDS=[
   ['tlakStat','Hydrostatický tlak [MPa]'],
   ['tlakDyn','Hydrodynamický tlak [MPa]'],
   ['dn','DN [mm]'],
+  ['dnPotrubi','Osazen na potrubí DN [mm]'],
   ['datumRevize','Datum revize'],
   ['splnujeTlak','Splňuje tlak ČSN'],
   ['splnujeProtok','Splňuje průtok ČSN'],
