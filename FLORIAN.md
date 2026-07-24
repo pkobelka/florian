@@ -6,9 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.96**, cache `florian-v103`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.97**, cache `florian-v104`. (Nasazuje se přes merge dev větve do `main`.)
 
-## Hotovo v1.96 (tato session) — volitelný poloměr pokrytí 150/200/250/300 m
+## Hotovo v1.97 (tato session) — selektor poloměru zúžen na ČSN hodnoty 100/150/200 m
+- Nabídka `#covRadius` změněna z 150/200/250/300 na **100/150/200** (default 200) — jen
+  hodnoty odpovídající ČSN „vzdálenost od objektu". (Mezi hydranty = 2×: 200/300/400 m.)
+
+## Hotovo v1.96 (tato session) — volitelný poloměr pokrytí (nyní 100/150/200 m)
 - **`COVERAGE_RADIUS` je nově `let`** (dřív const) + inline `<select id="covRadius">`
   (150/200/250/300) v tlačítku „Pokrytí … m". `setCoverageRadius(r)`: `it.c.setRadius(r)` na
   hlavní kruhy + `renderMarked`/`renderCand`/`rebuildMarkersBadges` (ostatní kruhy se
