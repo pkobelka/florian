@@ -828,8 +828,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .cov-act{padding:8px 6px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--blue);cursor:pointer}
 .cov-act:hover{background:#f2f6fb}
 #covBtn.on{border-color:var(--blue);color:var(--blue);font-weight:800}
-.cov-sum{font-size:11px;font-weight:700;color:var(--ink);background:#eef4fb;border:1px solid var(--line);border-radius:8px;padding:4px 9px;margin-top:-2px;max-width:100%;line-height:1.35;overflow-wrap:anywhere}
-.cov-sum.empty{color:var(--muted);background:transparent;border-color:transparent;font-weight:600}
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
   padding:8px 11px;font-size:12.5px;box-shadow:var(--shadow);line-height:1.7}
@@ -1135,7 +1133,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 <div class="ctrl">
   <button class="btn-toggle" id="covBtn">🎯 Pokrytí 200 m ▾</button>
   <div class="town-panel" id="covPanel"></div>
-  <div class="cov-sum empty" id="covSum"></div>
   <button class="btn-toggle" id="candToggle" style="display:none">➕ Ostatní hydranty</button>
   <button class="btn-toggle" id="gapToggle">💡 Nepokrytá oblast</button>
   <button class="btn-toggle" id="poznToggle"><span class="sw"></span> 📝 Poznámky</button>
@@ -1208,7 +1205,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.113';
+const APP_VERSION = '1.114';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1444,6 +1441,9 @@ function flHeaderSub(){
     if(selectedOwners&&selectedOwners.size){
       parts.push(selectedOwners.size===1?[...selectedOwners][0]:('Svazky ('+selectedOwners.size+')'));
     }
+    var covDots=''; if(coverageOn) covDots+='🔵'; if(domCovOn) covDots+='🟢'; if(othersCovOn) covDots+='🟣';
+    if(covDots) parts.push('🎯 '+covDots+' '+COVERAGE_RADIUS+' m'); // vybrané pokrytí
+    if(typeof candOn!=='undefined' && candOn) parts.push('➕ Ostatní H'); // zapnutá vrstva
     var sub=parts.length?parts.join(' · '):'VHOS (všechny skupiny)';
     var el=document.querySelector('.topbar .s'); if(el) el.textContent='Požární hydranty · '+sub;
   }catch(_){}
@@ -1659,22 +1659,7 @@ function updateCovBtn(){ var b=document.getElementById('covBtn'); if(!b) return;
   if(layerOn) t+=' ➕';
   b.textContent=t+' ▾';
   b.classList.toggle('on', !!(coverageOn||domCovOn||othersCovOn||layerOn)); // rozsvítí se, když je něco vybrané
-  updateCovSummary();
-}
-// řádek pod tlačítkem: čitelné shrnutí, co je vybrané (Pokrytí + Zobrazení)
-function updateCovSummary(){
-  var el=document.getElementById('covSum'); if(!el) return;
-  var parts=[];
-  if(coverageOn) parts.push('🔵 Požární');
-  if(domCovOn) parts.push('🟢 K doměření');
-  if(othersCovOn) parts.push('🟣 Ostatní');
-  var layerOn=(typeof candOn!=='undefined' && candOn);
-  var txt='';
-  if(parts.length) txt='Pokrytí '+COVERAGE_RADIUS+' m: '+parts.join(' · ');
-  if(layerOn) txt+=(txt?'  ·  ':'')+'➕ Ostatní hydranty';
-  var empty=!txt;
-  el.textContent=empty?'Nic vybráno':txt;
-  el.classList.toggle('empty', empty);
+  if(typeof flHeaderSub==='function') flHeaderSub(); // shrnutí výběru ukaž v horním řádku (vedle pracoviště/obce)
 }
 function applyCovLayers(){
   if(coverageOn) map.addLayer(coverage); else map.removeLayer(coverage);
