@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.114**, cache `florian-v121`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.115**, cache `florian-v122`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.115 (tato session) — tlačítko „Vše" u Pracoviště + roletky se zavírají po výběru
+- **Nové tlačítko „Vše"** ve dvojici s „Pracoviště" (`.ctrl-row`) — zruší filtry a ukáže všechny
+  požární H (přesunut sem `allBtn`, zviditelněn, přejmenován). Odebráno z panelu Pokrytí
+  („🎯 Všechny požární H" v sekci Zobrazení) i skryté tlačítko z lišty. `#stredLbl` dostal ellipsis.
+- **Roletky filtrů se po výběru zavřou:** výběr pracoviště / svazku / obce (`onchange`
+  checkboxu) nově zavře příslušný panel (`panel.classList.remove('open')`). Multi-výběr jde
+  dál přes znovuotevření.
 
 ## Hotovo v1.114 (tato session) — shrnutí pokrytí přesunuto do horního řádku
 - Shrnutí vybraného pokrytí je nově **v podtitulku modré hlavičky** (`flHeaderSub`), vedle
