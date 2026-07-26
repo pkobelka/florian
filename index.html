@@ -825,8 +825,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .cov-row.on .sw::after{left:16px}
 .cov-hint{font-size:11.5px;color:var(--muted);padding:6px 4px 2px;font-weight:600;line-height:1.4}
 .cov-sec{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:8px 6px 2px;border-top:1px solid var(--line);margin-top:6px}
-.cov-act{padding:8px 6px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--blue);cursor:pointer}
-.cov-act:hover{background:#f2f6fb}
 #covBtn.on{border-color:var(--blue);color:var(--blue);font-weight:800}
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
@@ -881,7 +879,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .tp-search{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:14px;font-family:inherit;background:#f7f9fb}
 .tp-search:focus{outline:2px solid var(--blue);border-color:var(--blue);background:#fff}
 .tp-empty{color:var(--muted);font-size:13px;padding:10px 6px;text-align:center}
-#ownLbl,#townLbl{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+#ownLbl,#townLbl,#stredLbl{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 /* tým / lidé */
 .ld-item{border:1px solid var(--line);border-radius:9px;padding:7px 8px;margin-bottom:6px;background:#fff}
 .ld-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -1150,7 +1148,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="pushPanel"></div>
   <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
-  <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
+  <div class="ctrl-row">
+    <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
+    <button class="btn-toggle btn-all" id="allBtn" title="Zrušit filtry – všechny požární H">Vše</button>
+  </div>
   <div class="town-panel" id="stredPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="ownBtn">🏢 <span id="ownLbl">Svazek</span> ▾</button>
@@ -1158,7 +1159,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   </div>
   <div class="town-panel" id="ownPanel"></div>
   <div class="town-panel" id="townPanel"></div>
-  <button class="btn-toggle btn-all" id="allBtn" style="display:none">Všechny požární H</button>
   <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
   <button class="btn-toggle" id="gisBtn">🔼 Nahrání do GISu <span id="gisCount"></span></button>
   <div class="town-panel" id="gisPanel"></div>
@@ -1205,7 +1205,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.114';
+const APP_VERSION = '1.115';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 7. 2026';
 
@@ -1481,7 +1481,7 @@ function buildStrediskoFilter(){
   panel.onclick=e=>e.stopPropagation();
   document.getElementById('stredBtn').onclick=(e)=>{ e.stopPropagation(); document.getElementById('ownPanel').classList.remove('open'); document.getElementById('townPanel').classList.remove('open'); var mp=document.getElementById('menuPanel'); if(mp)mp.classList.remove('open'); panel.classList.toggle('open'); if(panel.classList.contains('open')){var _b=document.getElementById('stredBtn'); panel.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';} };
   document.getElementById('stredClr').onclick=()=>{ selectedStrediska=new Set(); panel.querySelectorAll('input').forEach(c=>c.checked=false); pracLbl(); buildOwnerFilter(); buildTownFilter(); applyFilter(); };
-  panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.onchange=()=>{ if(cb.checked) selectedStrediska.add(cb.value); else selectedStrediska.delete(cb.value); pracLbl(); buildOwnerFilter(); buildTownFilter(); applyFilter(); }; });
+  panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.onchange=()=>{ if(cb.checked) selectedStrediska.add(cb.value); else selectedStrediska.delete(cb.value); pracLbl(); buildOwnerFilter(); buildTownFilter(); applyFilter(); panel.classList.remove('open'); }; });
 }
 function buildOwnerFilter(){
   const counts={}, obce={};
@@ -1501,7 +1501,7 @@ function buildOwnerFilter(){
   panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.onchange=()=>{
       if(cb.checked) selectedOwners.add(cb.value); else selectedOwners.delete(cb.value);
-      ownerLbl(); buildTownFilter(); applyFilter();
+      ownerLbl(); buildTownFilter(); applyFilter(); panel.classList.remove('open');
     };
   });
 }
@@ -1551,7 +1551,7 @@ function buildTownFilter(){
   panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.onchange=()=>{
       if(cb.checked) selectedTowns.add(cb.value); else selectedTowns.delete(cb.value);
-      townLblUpd(); applyFilter();
+      townLblUpd(); applyFilter(); panel.classList.remove('open');
     };
   });
 }
@@ -1704,8 +1704,7 @@ function buildCovPanel(){
     '<div class="cov-sec">Zobrazení</div>'+
     '<div class="cov-cats">'+
       '<div class="cov-row'+(candShown?' on':'')+'" data-act="cand"><span>➕ Ostatní hydranty</span><span class="sw"></span></div>'+
-    '</div>'+
-    '<div class="cov-act" data-act="all">🎯 Všechny požární H</div>';
+    '</div>';
   panel.onclick=function(e){ e.stopPropagation(); };
   Array.prototype.forEach.call(panel.querySelectorAll('.cov-rchips button'),function(b){ b.onclick=function(){ setCoverageRadius(this.getAttribute('data-r')); }; });
   Array.prototype.forEach.call(panel.querySelectorAll('.cov-row'),function(rw){ rw.onclick=function(){
@@ -1713,7 +1712,6 @@ function buildCovPanel(){
     if(cat){ setCov(cat, !this.classList.contains('on')); return; }
     if(this.getAttribute('data-act')==='cand'){ var b=document.getElementById('candToggle'); if(b) b.click(); setTimeout(buildCovPanel,60); }
   }; });
-  var av=panel.querySelector('.cov-act'); if(av) av.onclick=function(){ var b=document.getElementById('allBtn'); if(b) b.click(); };
   updateCovBtn();
 }
 (function(){ var b=document.getElementById('covBtn'); if(!b) return;
