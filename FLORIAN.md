@@ -6,7 +6,16 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.134**, cache `florian-v141`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.135**, cache `florian-v142`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.135 (tato session) — Fotogalerie omezená na vyfiltrovanou oblast
+- **Oprava „nefunguje":** galerie dřív renderovala fotky celého datasetu naráz → na telefonu
+  se zaseklo/prázdno. Teď se řídí aktuálním filtrem (`matches(h)` + `selectedStrediska/Owners/Towns`).
+- `fotoFilterActive()` = zaškrtnuté aspoň jedno pracoviště/svazek/obec. Bez výběru panel ukáže
+  výzvu „Nejdřív si vyber pracoviště/obec/svazek". S výběrem = jen fotky té oblasti.
+- `fotoItems()` má try/catch (bezpečné i při volání z `applyFilter()` při startu, kdy photoData
+  ještě není inicializováno). `fotoRefresh()` volané z `applyFilter()` → počet i otevřený panel
+  sledují filtr. Badge počtu = počet fotek v aktuální oblasti.
 
 ## Hotovo v1.134 (tato session) — Navigační „follow" režim polohy
 - Tlačítko 📍 Moje poloha má teď **3 stavy** (jako Mapy Google), řídí `follow` + `setLocState()`:

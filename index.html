@@ -1181,13 +1181,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   </div>
   <div class="town-panel" id="menuPanel"></div>
   <div class="town-panel" id="ukolPanel"></div>
+  <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
   <div class="ctrl-row">
-    <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
     <button class="btn-toggle" id="pushBtn">🔔 Oznámení</button>
+    <button class="btn-toggle" id="fotoBtn">📷 Fotogalerie <span id="fotoCount"></span></button>
   </div>
   <div class="town-panel" id="lidePanel"></div>
   <div class="town-panel" id="pushPanel"></div>
-  <button class="btn-toggle" id="fotoBtn">📷 Fotogalerie <span id="fotoCount"></span></button>
   <div class="town-panel" id="fotoPanel"></div>
   <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.134';
+const APP_VERSION = '1.135';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1407,6 +1407,7 @@ function applyFilter(){
   if(candReady) renderCand();
   if(typeof markedLayer!=='undefined' && typeof renderMarked==='function') renderMarked(); // překreslí „k doměření" (schová při filtru stavu revize)
   if(revMode){ if(typeof renderLegend==='function') renderLegend(); if(typeof flRevList==='function') flRevList(); } // v semaforu osvěž počty i seznam H
+  if(typeof fotoRefresh==='function') fotoRefresh(); // fotogalerie sleduje aktuální filtr
 }
 applyFilter();
 
@@ -2586,22 +2587,37 @@ document.getElementById('pushBtn').onclick=function(e){ e.stopPropagation();
   var pp=document.getElementById('pushPanel'); pp.classList.toggle('open'); if(pp.classList.contains('open')){var _b=document.getElementById('pushBtn'); pp.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';}
 };
 
-// ---- Fotogalerie (přehled všech fotek z karet hydrantů) ----
+// ---- Fotogalerie (fotky z karet hydrantů – jen pro aktuálně vyfiltrovanou oblast) ----
+// aktivní je, když je zaškrtnuté aspoň jedno pracoviště / svazek / obec
+function fotoFilterActive(){
+  return (typeof selectedStrediska!=='undefined'&&selectedStrediska.size)
+       ||(typeof selectedOwners!=='undefined'&&selectedOwners.size)
+       ||(typeof selectedTowns!=='undefined'&&selectedTowns.size);
+}
 function fotoItems(){
-  var out=[];
-  HYDRANTY.forEach(function(h){ if(cloudPhotos[h.id]||photoData[h.id]) out.push(h); });
-  out.sort(function(a,b){
-    var ta=town(a)||'', tb=town(b)||''; if(ta!==tb) return ta<tb?-1:1;
-    return String(label(a)||'').localeCompare(String(label(b)||''),'cs',{numeric:true});
-  });
-  return out;
+  try{
+    if(!fotoFilterActive()) return [];        // bez výběru nic (viz výzva v panelu)
+    var out=[];
+    HYDRANTY.forEach(function(h){ if((cloudPhotos[h.id]||photoData[h.id]) && matches(h)) out.push(h); });
+    out.sort(function(a,b){
+      var ta=town(a)||'', tb=town(b)||''; if(ta!==tb) return ta<tb?-1:1;
+      return String(label(a)||'').localeCompare(String(label(b)||''),'cs',{numeric:true});
+    });
+    return out;
+  }catch(e){ return []; }
 }
 function updFotoCount(){ var el=document.getElementById('fotoCount'); if(el){ var n=fotoItems().length; el.textContent=n?('('+n+')'):''; } }
 function closeFotoPanel(){ var fp=document.getElementById('fotoPanel'); if(fp) fp.classList.remove('open'); }
+// osvěžení počtu i otevřeného panelu při změně filtru
+function fotoRefresh(){ if(typeof updFotoCount==='function')updFotoCount(); var fp=document.getElementById('fotoPanel'); if(fp&&fp.classList.contains('open')&&typeof buildFotoPanel==='function')buildFotoPanel(); }
 function buildFotoPanel(){
   var wrap=document.getElementById('fotoPanel'); if(!wrap) return;
+  if(!fotoFilterActive()){
+    wrap.innerHTML='<div class="fp-h">📷 Fotogalerie</div><div class="fp-empty">Nejdřív si vyber <b>pracoviště</b>, <b>obec</b> nebo <b>svazek</b> – pak se tu zobrazí jejich fotky.</div>';
+    return;
+  }
   var items=fotoItems();
-  if(!items.length){ wrap.innerHTML='<div class="fp-h">📷 Fotogalerie</div><div class="fp-empty">Zatím žádné fotky.<br>Fotku přidáš v kartě hydrantu tlačítkem 📷 Vyfotit / 🖼️ Galerie.</div>'; return; }
+  if(!items.length){ wrap.innerHTML='<div class="fp-h">📷 Fotogalerie</div><div class="fp-empty">Ve vybrané oblasti zatím nejsou žádné fotky.<br>Fotku přidáš v kartě hydrantu (📷 Vyfotit / 🖼️ Galerie).</div>'; return; }
   var html='<div class="fp-h">📷 Fotogalerie · '+items.length+'</div><div class="foto-grid">';
   items.forEach(function(h){
     var src=cloudPhotos[h.id]||photoData[h.id];
