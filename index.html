@@ -825,7 +825,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .cov-row.on .sw::after{left:16px}
 .cov-hint{font-size:11.5px;color:var(--muted);padding:6px 4px 2px;font-weight:600;line-height:1.4}
 .cov-sec{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:8px 6px 2px;border-top:1px solid var(--line);margin-top:6px}
-#covBtn.on{border-color:var(--blue);color:var(--blue);font-weight:800}
+/* mřížka Zobrazení a pokrytí (3 druhy H × vidět/pokrytí) */
+.cov-matrix{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.cov-matrix .cm-title{font-weight:800;font-size:13px;margin-bottom:7px;color:var(--ink)}
+.cm-grid{display:grid;grid-template-columns:1fr auto auto;gap:5px 7px;align-items:center}
+.cm-h{font-size:11px;color:var(--muted);text-align:center;font-weight:700;white-space:nowrap}
+.cm-lbl{font-size:13.5px;font-weight:700;white-space:nowrap}
+.cm-c{min-width:54px;height:30px;border:1px solid var(--line);border-radius:8px;background:#f4f5f7;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:#c2c7cd;font-family:inherit}
+.cm-c.on.r-fire{background:#e8f0fe;border-color:#1565c0;color:#1565c0}
+.cm-c.on.r-marked{background:#e7f6ec;border-color:#16a34a;color:#16a34a}
+.cm-c.on.r-oth{background:#f3e8fa;border-color:#8e24aa;color:#8e24aa}
+.cm-hint{font-size:11.5px;color:var(--muted);padding-top:6px;font-weight:600;line-height:1.4}
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 #allBtn{flex:0 0 auto;padding-left:13px;padding-right:13px}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
@@ -1142,8 +1152,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 
 <button class="ctrl-burger" id="ctrlBurger" aria-label="Nabídka">☰</button>
 <div class="ctrl">
-  <button class="btn-toggle" id="covBtn">🎯 Pokrytí 200 m ▾</button>
-  <div class="town-panel" id="covPanel"></div>
+  <div class="cov-matrix" id="covMatrix"></div>
   <button class="btn-toggle" id="candToggle" style="display:none">➕ Ostatní hydranty</button>
   <button class="btn-toggle" id="gapToggle">💡 Nepokrytá oblast</button>
   <button class="btn-toggle" id="poznToggle"><span class="sw"></span> 📝 Poznámky</button>
@@ -1218,7 +1227,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.116';
+const APP_VERSION = '1.117';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1309,6 +1318,8 @@ const coverage = L.layerGroup();
 let coverageOn = false;
 let domCovOn = false;
 let othersCovOn = false; // pokrytí „ostatních" (neoznačených) kandidátů – fialové kruhy
+let fireLayerOn = true;   // vidět vrstvu požárních H (mřížka „vidět" u 🔵 Pož.)
+let markedShownOn = true; // vidět vrstvu vybraných „k doměření" (mřížka „vidět" u 🟢 Vybr.)
 
 const cluster = L.markerClusterGroup({
   maxClusterRadius: 50,
@@ -1585,7 +1596,10 @@ document.addEventListener('click', ()=>{
 document.getElementById('allBtn').onclick=()=>{
   selectedStrediska=new Set(); selectedOwners=new Set(); selectedTowns=new Set();
   typeOff={nad:false, pod:false}; // vrať i typové filtry z legendy
+  if(!fireLayerOn) setFireLayer(true); // „Vše" = ukaž i schované požární
+  if(!markedShownOn) setMarkedShown(true); // i schované vybrané
   pracLbl(); ownerLbl(); buildStrediskoFilter(); buildOwnerFilter(); buildTownFilter(); if(typeof renderLegend==='function') renderLegend(); applyFilter();
+  if(typeof buildCovPanel==='function') buildCovPanel();
 };
 
 // ---- tisk mapy: aktuální výřez, jednotlivé body (bez shluků) ----
@@ -1597,7 +1611,7 @@ function restoreFromPrint(){
   const el=document.getElementById('map'); el.style.width=''; el.style.height='';
   const ps=document.getElementById('printPageStyle'); if(ps) ps.textContent='';
   if(printGroup){ map.removeLayer(printGroup); printGroup=null; }
-  if(!map.hasLayer(cluster)) map.addLayer(cluster);
+  if(fireLayerOn && !map.hasLayer(cluster)) map.addLayer(cluster);
   applyFilter();
   setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 60);
 }
@@ -1664,15 +1678,8 @@ if(ctrlBurger){
     document.getElementById('stredPanel').classList.remove('open'); document.getElementById('ownPanel').classList.remove('open'); document.getElementById('townPanel').classList.remove('open'); var mp=document.getElementById('menuPanel'); if(mp)mp.classList.remove('open'); } });
 }
 // ===== Pokrytí: jedno tlačítko „🎯 Pokrytí" → panel (poloměr + kategorie Požární / K doměření / Ostatní) =====
-function updateCovBtn(){ var b=document.getElementById('covBtn'); if(!b) return;
-  var dots=''; if(coverageOn) dots+='🔵'; if(domCovOn) dots+='🟢'; if(othersCovOn) dots+='🟣';
-  var layerOn=(typeof candOn!=='undefined' && candOn);
-  var t='🎯 Pokrytí a zobrazení';
-  if(dots) t+=' '+dots+' '+COVERAGE_RADIUS+' m';
-  if(layerOn) t+=' ➕';
-  b.textContent=t+' ▾';
-  b.classList.toggle('on', !!(coverageOn||domCovOn||othersCovOn||layerOn)); // rozsvítí se, když je něco vybrané
-  if(typeof flHeaderSub==='function') flHeaderSub(); // shrnutí výběru ukaž v horním řádku (vedle pracoviště/obce)
+function updateCovBtn(){ // mřížka nahradila tlačítko; jen osvěž shrnutí v horní hlavičce
+  if(typeof flHeaderSub==='function') flHeaderSub();
 }
 function applyCovLayers(){
   if(coverageOn) map.addLayer(coverage); else map.removeLayer(coverage);
@@ -1695,46 +1702,46 @@ function setCov(cat,val){
   }
   applyCovLayers(); buildCovPanel();
 }
+// „vidět" vrstvy: požární (cluster) a vybrané „k doměření" (markedLayer)
+function setFireLayer(val){ fireLayerOn=val;
+  if(typeof cluster!=='undefined'){ if(val){ if(!map.hasLayer(cluster)) map.addLayer(cluster); } else if(map.hasLayer(cluster)) map.removeLayer(cluster); }
+  buildCovPanel();
+}
+function setMarkedShown(val){ markedShownOn=val; if(typeof renderMarked==='function') renderMarked(); buildCovPanel(); }
+// Mřížka „Zobrazení a pokrytí": 3 druhy H (Pož./Vybr./Ost.) × 2 sloupce (vidět / pokrytí).
+// Ovládá: fireLayerOn/coverageOn (🔵), markedShownOn/domCovOn (🟢), candOn/othersCovOn (🟣).
 function buildCovPanel(){
-  var panel=document.getElementById('covPanel'); if(!panel) return;
-  var radChips=[100,150,200].map(function(r){ return '<button data-r="'+r+'"'+(r===COVERAGE_RADIUS?' class="on"':'')+'>'+r+' m</button>'; }).join('');
-  function row(cat,label,on){ return '<div class="cov-row'+(on?' on':'')+'" data-cat="'+cat+'"><span>'+label+'</span><span class="sw"></span></div>'; }
-  var hint='';
-  if(othersCovOn){
-    if(typeof candOn!=='undefined' && !candOn) hint='Pro „Ostatní" zapni ještě vrstvu ➕ Ostatní hydranty.';
-    else if(typeof visibleObecSet==='function' && !visibleObecSet()) hint='„Ostatní" se kvůli výkonu ukáže až po zúžení na obec/středisko.';
-  }
+  var m=document.getElementById('covMatrix'); if(!m) return;
   var candShown=(typeof candOn!=='undefined' && candOn);
-  panel.innerHTML=
-    '<div class="tp-head"><b>🎯 Pokrytí a zobrazení</b></div>'+
-    '<div class="cov-rad">Poloměr:<span class="cov-rchips">'+radChips+'</span></div>'+
-    '<div class="cov-cats">'+
-      row('fire','🔵 Požární',coverageOn)+
-      row('dom','🟢 K doměření',domCovOn)+
-      row('oth','🟣 Ostatní',othersCovOn)+
+  function cell(rowKey,act,on){ return '<button class="cm-c r-'+rowKey+(on?' on':'')+'" data-row="'+rowKey+'" data-act="'+act+'">'+(on?'✓':'·')+'</button>'; }
+  var radChips=[100,150,200].map(function(r){ return '<button data-r="'+r+'"'+(r===COVERAGE_RADIUS?' class="on"':'')+'>'+r+' m</button>'; }).join('');
+  var hint='';
+  if(othersCovOn || candShown){
+    if(typeof visibleObecSet==='function' && !visibleObecSet()) hint='„Ostatní" se kvůli výkonu ukáže až po zúžení na obec/středisko.';
+  }
+  m.innerHTML=
+    '<div class="cm-title">🎯 Zobrazení a pokrytí</div>'+
+    '<div class="cm-grid">'+
+      '<div></div><div class="cm-h">👁 vidět</div><div class="cm-h">🎯 pokrytí</div>'+
+      '<div class="cm-lbl">🔵 Pož.</div>'+cell('fire','show-fire',fireLayerOn)+cell('fire','cov-fire',coverageOn)+
+      '<div class="cm-lbl">🟢 Vybr.</div>'+cell('marked','show-marked',markedShownOn)+cell('marked','cov-dom',domCovOn)+
+      '<div class="cm-lbl">🟣 Ost.</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)+
     '</div>'+
-    (hint?'<div class="cov-hint">'+hint+'</div>':'')+
-    '<div class="cov-sec">Zobrazení</div>'+
-    '<div class="cov-cats">'+
-      '<div class="cov-row'+(candShown?' on':'')+'" data-act="cand"><span>➕ Ostatní hydranty</span><span class="sw"></span></div>'+
-    '</div>';
-  panel.onclick=function(e){ e.stopPropagation(); };
-  Array.prototype.forEach.call(panel.querySelectorAll('.cov-rchips button'),function(b){ b.onclick=function(){ setCoverageRadius(this.getAttribute('data-r')); }; });
-  Array.prototype.forEach.call(panel.querySelectorAll('.cov-row'),function(rw){ rw.onclick=function(){
-    var cat=this.getAttribute('data-cat');
-    if(cat){ setCov(cat, !this.classList.contains('on')); return; }
-    if(this.getAttribute('data-act')==='cand'){ var b=document.getElementById('candToggle'); if(b) b.click(); setTimeout(buildCovPanel,60); }
+    '<div class="cov-rad" style="border-top:1px solid var(--line);margin-top:7px;padding-top:8px">Poloměr:<span class="cov-rchips">'+radChips+'</span></div>'+
+    (hint?'<div class="cm-hint">'+hint+'</div>':'');
+  Array.prototype.forEach.call(m.querySelectorAll('.cov-rchips button'),function(b){ b.onclick=function(){ setCoverageRadius(this.getAttribute('data-r')); }; });
+  Array.prototype.forEach.call(m.querySelectorAll('.cm-c'),function(c){ c.onclick=function(){
+    var act=this.getAttribute('data-act'); var on=this.classList.contains('on');
+    if(act==='show-fire') setFireLayer(!on);
+    else if(act==='cov-fire') setCov('fire',!on);
+    else if(act==='show-marked') setMarkedShown(!on);
+    else if(act==='cov-dom') setCov('dom',!on);
+    else if(act==='show-oth'){ var b=document.getElementById('candToggle'); if(b) b.click(); setTimeout(buildCovPanel,60); }
+    else if(act==='cov-oth') setCov('oth',!on);
   }; });
   updateCovBtn();
 }
-(function(){ var b=document.getElementById('covBtn'); if(!b) return;
-  b.onclick=function(e){ e.stopPropagation();
-    ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
-    buildCovPanel();
-    var cp=document.getElementById('covPanel'); cp.classList.toggle('open'); if(cp.classList.contains('open')){ cp.style.top=(b.offsetTop+b.offsetHeight+6)+'px'; }
-  };
-  updateCovBtn();
-})();
+buildCovPanel();
 // ---- Poznámky: odznak 📝 vždy, hover tooltip vždy; přepínač = trvalé štítky na mapě ----
 var poznOn = false;
 function applyPoznTooltips(){
@@ -2257,6 +2264,7 @@ var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, showCoverageOnHover:
 });
 function renderMarked(){
   markedLayer.clearLayers(); markedCovLayer.clearLayers();
+  if(!markedShownOn) return; // vrstva Vybraných schovaná (mřížka „vidět" u 🟢 Vybr.)
   if(revStatusFilter) return; // filtr stavu revize = jen požární daného stavu, „k doměření" pryč
   if(candOn) return; // v režimu kandidátů je vykresluje renderCand()
   var obecSet=visibleObecSet();

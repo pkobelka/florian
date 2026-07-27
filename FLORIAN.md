@@ -6,7 +6,23 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.116**, cache `florian-v123`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.117**, cache `florian-v124`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.117 (tato session) — mřížka „Zobrazení a pokrytí" (3 druhy H × vidět/pokrytí)
+- **Sloučené tlačítko „🎯 Pokrytí a zobrazení" (rozbalovací panel) nahrazeno kompaktní
+  mřížkou přímo v hamburgeru** (`#covMatrix`, inline v `.ctrl`, žádné rozklikávání).
+  Tři řádky = tři druhy H (**🔵 Pož. / 🟢 Vybr. / 🟣 Ost.**), dva sloupce = **👁 vidět**
+  (vrstva na mapě) a **🎯 pokrytí** (kruhy v barvě druhu). Pod tím výběr poloměru.
+- **Třetí kategorie přejmenována na „Vybrané"** (dřív „K doměření" v tomto ovládání;
+  v mřížce zkratka „Vybr."). Feature/panel „Změřit" zůstává.
+- **Nové přepínače viditelnosti vrstev:** `fireLayerOn` (🔵 vidět → add/removeLayer
+  `cluster`) a `markedShownOn` (🟢 vidět → guard v `renderMarked`). Oba default `true`.
+  🟣 vidět reuse existující `candToggle` (vrstva Ostatní hydranty). Pokrytí beze změny:
+  `coverageOn`/`domCovOn`/`othersCovOn`. „Vše" (`allBtn`) resetuje i viditelnost na true.
+- `buildCovPanel()` teď kreslí mřížku do `#covMatrix` a napojuje `.cm-c` buňky na
+  `setFireLayer`/`setCov('fire')`/`setMarkedShown`/`setCov('dom')`/candToggle/`setCov('oth')`.
+  `updateCovBtn` zredukováno na `flHeaderSub` (tlačítko `covBtn` + panel `covPanel` zrušeny,
+  stejně tak IIFE handler; init render přes `buildCovPanel()`). Tisk-restore respektuje `fireLayerOn`.
 
 ## Hotovo v1.116 (tato session) — delší tlačítko Pracoviště + otočení fotky
 - **Tlačítko „Pracoviště" delší, „Vše" zúžené.** `#allBtn` dostal `flex:0 0 auto`
