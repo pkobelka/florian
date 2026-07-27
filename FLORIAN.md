@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.128**, cache `florian-v135`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.129**, cache `florian-v136`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.129 (tato session) — VRÁCENO: naměřený tlak je HYDROSTATICKÝ (revert v1.128)
+- **Vrácena změna z v1.128.** Uživatel upřesnil: naměřený tlak ze seznamů je měřen
+  **při zavřeném H → hydrostatický** (ne hydrodynamický). Takže hodnota patří do `tlakStat`
+  (jak byla původně ve v1.124/1.125). Přesunuto zpět: `tlakStat` = naměřeno
+  (0,58/0,42/0,38 · 0,4/0,5/0,36/0,52), `tlakDyn` = „0" (neměřeno; `hasVal('0')`=false → bez
+  „nevyhovuje"). **Hydrodynamický se teprve doměří** (za průtoku).
+- **Správná konvence do budoucna:** tlak ze „Seznam PH" (H-stat, zavřený H) → `tlakStat`
+  (hydrostatický). Hydrodynamický ČSN se doplní z pozdějšího měření za průtoku.
+- Pozn.: uživatel upozornil, že „v tabulce (Excelu) je to uvedeno špatně" — hlídat při
+  dalších obcích (labely sloupců / jednotky; už dřív nalezen unit-bug l/s vs m³/h u Bílé Studně).
 
 ## Hotovo v1.128 (tato session) — oprava: naměřený tlak je HYDRODYNAMICKÝ, ne statický
 - **Oprava zařazení tlaku (Radišov + Bílá Studně, 7 bodů).** Hodnota tlaku z „Seznam PH"
