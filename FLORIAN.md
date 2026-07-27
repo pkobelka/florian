@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.133**, cache `florian-v140`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.134**, cache `florian-v141`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.134 (tato session) — Navigační „follow" režim polohy
+- Tlačítko 📍 Moje poloha má teď **3 stavy** (jako Mapy Google), řídí `follow` + `setLocState()`:
+  - vypnuto → klepnutí = GPS zap + sledování (`follow=true`, plné modré tlačítko `.on`)
+  - sleduji → na každý fix `map.panTo(e.latlng)` = mapa jede s tebou; klepnutí = vypnout
+  - pozastaveno → když uživatel šoupne mapou (`dragstart`), `follow=false`, tlačítko pulzuje
+    (`.paused`); klepnutí = vycentruje na polohu a zase sleduje
+- **Wake Lock** (`acquireWake`/`releaseWake`) drží displej rozsvícený během sledování, re-akvizice
+  na `visibilitychange` — funguje jako navigace za jízdy.
+- `panTo` nespouští `dragstart`, takže auto-posun follow nekoliduje s detekcí ručního posunu.
 
 ## Hotovo v1.133 (tato session) — Fotogalerie v menu
 - Nové tlačítko **📷 Fotogalerie** v hamburger menu (`fotoBtn` + panel `fotoPanel`, za 🔔 Oznámení),

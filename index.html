@@ -851,6 +851,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .locate svg{fill:var(--blue)}
 .locate.on{background:var(--blue)}
 .locate.on svg{fill:#fff}
+/* sledování pozastaveno (uživatel posunul mapu) – pulzuje „klepni pro vycentrování" */
+.locate.paused{background:#fff;animation:locpulse 1.4s ease-in-out infinite}
+.locate.paused svg{fill:var(--blue)}
+@keyframes locpulse{0%,100%{box-shadow:0 0 0 2px var(--blue),var(--shadow)}50%{box-shadow:0 0 0 6px rgba(21,101,192,.22),var(--shadow)}}
 .me-dot{width:18px;height:18px;border-radius:50%;background:#111;border:3px solid #fff;
   box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 7px rgba(0,0,0,.4)}
 .legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
@@ -1246,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.133';
+const APP_VERSION = '1.134';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1810,13 +1814,30 @@ revToggle.onclick = ()=>{
 let watching=false, meMarker=null, meCircle=null, firstFix=true;
 const locBtn=document.getElementById('locBtn');
 const meIcon=L.divIcon({className:'',html:'<div class="me-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+// follow = navigační režim: mapa se posouvá s polohou. Když uživatel šoupne mapou,
+// follow se pozastaví (tlačítko pulzuje), dalším klepnutím se vycentruje a zase sleduje.
+let follow=false;
+function setLocState(){
+  locBtn.classList.toggle('on', watching && follow);
+  locBtn.classList.toggle('paused', watching && !follow);
+  locBtn.title = !watching ? 'Moje poloha'
+    : (follow ? 'Sleduji polohu při jízdě – klepni pro vypnutí' : 'Klepni pro vycentrování na moji polohu');
+}
 locBtn.onclick=()=>{
-  if(watching){ stopLocate(); return; }
-  watching=true; firstFix=true; locBtn.classList.add('on');
-  map.locate({watch:true, enableHighAccuracy:true, maximumAge:5000, timeout:20000});
+  if(!watching){                    // zapnout: GPS + sledování
+    watching=true; follow=true; firstFix=true; setLocState(); acquireWake();
+    map.locate({watch:true, enableHighAccuracy:true, maximumAge:5000, timeout:20000});
+    return;
+  }
+  if(!follow){                      // pozastaveno → vycentrovat a zase sledovat
+    follow=true; setLocState();
+    if(meMarker) map.setView(meMarker.getLatLng(), Math.max(map.getZoom(),16));
+    return;
+  }
+  stopLocate();                     // sleduji → vypnout
 };
 function stopLocate(){
-  watching=false; locBtn.classList.remove('on');
+  watching=false; follow=false; setLocState(); releaseWake();
   map.stopLocate();
   if(meMarker){ map.removeLayer(meMarker); meMarker=null; }
   if(meCircle){ map.removeLayer(meCircle); meCircle=null; }
@@ -1828,7 +1849,15 @@ map.on('locationfound', e=>{
   if(meCircle){ meCircle.setLatLng(e.latlng); meCircle.setRadius(e.accuracy); }
   else meCircle=L.circle(e.latlng,{radius:e.accuracy,color:'#222',weight:1,opacity:.55,fillColor:'#222',fillOpacity:.10}).addTo(map);
   if(firstFix){ map.setView(e.latlng, Math.max(map.getZoom(),16)); firstFix=false; }
+  else if(follow){ map.panTo(e.latlng, {animate:true, duration:.6}); }  // navigační posun s polohou
 });
+// když uživatel sám posune mapu, sledování pozastav (panTo výše dragstart nespouští)
+map.on('dragstart', function(){ if(watching && follow){ follow=false; setLocState(); } });
+// Wake Lock – displej nezhasne během sledování (jako navigace); po skrytí se znovu vyžádá
+let _wakeLock=null;
+function acquireWake(){ try{ if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(function(w){ _wakeLock=w; }).catch(function(){}); } }catch(e){} }
+function releaseWake(){ try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){} }
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible' && watching) acquireWake(); });
 map.on('locationerror', ()=>{
   if(!watching) return;
   stopLocate();
