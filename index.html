@@ -1139,7 +1139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .foto-badge img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .foto-badge::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
   border:4px solid transparent;border-top-color:#fff}  /* špička bubliny dolů k markeru */
-.fotos-on .foto-badge{display:block}  /* miniatury jen když je zapnuté „📷 Foto" a vybraná oblast */
+.fotos-on .foto-badge{display:block}  /* miniatury jen když je zapnuté „📷 Foto" a mapa přiblížená */
 .pozn-tip{font-size:12.5px;font-weight:600;color:#3a2c00;background:#fff8e1;border:1px solid #f0d78a;border-radius:8px;padding:5px 8px;box-shadow:0 2px 8px rgba(0,0,0,.18);width:max-content;max-width:230px;white-space:normal;text-align:left}
 .pozn-tip::before{border-top-color:#f0d78a !important}
 .leaflet-tooltip.pozn-tip{opacity:1}
@@ -1176,7 +1176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
     <button class="btn-toggle" id="gapToggle">💡 Nepokryto</button>
     <button class="btn-toggle" id="poznToggle">📝 Poznámky</button>
   </div>
-  <button class="btn-toggle" id="fotoToggle" title="Zobrazit miniatury fotek u hydrantů ve vybrané obci – hned je vidět, kde foto je a kde chybí">📷 Foto</button>
+  <button class="btn-toggle" id="fotoToggle" title="Zapni a přibliž mapu na obec – u hydrantů se ukážou miniatury fotek (hned je vidět, kde foto je a kde chybí)">📷 Foto</button>
   <div class="ctrl-row">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.138';
+const APP_VERSION = '1.139';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1415,7 +1415,7 @@ applyFilter();
 
 // Čísla H na značkách ukázat až při bližším přiblížení (jinak by se pletla na přehledu).
 var NUM_ZOOM = 16;
-function flNumZoom(){ try{ var el=map.getContainer(); el.classList.toggle('nums-on', map.getZoom()>=NUM_ZOOM); }catch(e){} }
+function flNumZoom(){ try{ var el=map.getContainer(); el.classList.toggle('nums-on', map.getZoom()>=NUM_ZOOM); if(typeof updFotoBadges==='function') updFotoBadges(); }catch(e){} }
 map.on('zoomend', flNumZoom); flNumZoom();
 // klik na miniaturu fotky u markeru = velké foto (a NE otevření karty) – capture, ať předběhne klik markeru
 map.getContainer().addEventListener('click', function(e){
@@ -1819,19 +1819,18 @@ if(poznToggle){
 }
 
 // přepínač miniatur fotek u markerů (default vyplý). Bubliny se ukážou jen když je
-// zapnutý A je vybraná obec / pracoviště / svazek – ať se nemáznou přes celou mapu.
+// zapnutý A je mapa přiblížená (stačí najet na obec a přiblížit) – ať se nemáznou přes
+// celou mapu. Řídí třídu .fotos-on; přepíná se i při zoomu (viz flNumZoom).
 var fotoBadgeOn = false;
-function anyAreaSelected(){ return (typeof selectedStrediska!=='undefined'&&selectedStrediska.size)
-  ||(typeof selectedOwners!=='undefined'&&selectedOwners.size)
-  ||(typeof selectedTowns!=='undefined'&&selectedTowns.size); }
-function updFotoBadges(){ try{ map.getContainer().classList.toggle('fotos-on', fotoBadgeOn && anyAreaSelected()); }catch(e){} }
+var FOTO_ZOOM = 15;
+function updFotoBadges(){ try{ map.getContainer().classList.toggle('fotos-on', fotoBadgeOn && map.getZoom()>=FOTO_ZOOM); }catch(e){} }
 var fotoToggle = document.getElementById('fotoToggle');
 if(fotoToggle){
   fotoToggle.onclick = function(){
     fotoBadgeOn = !fotoBadgeOn;
     fotoToggle.classList.toggle('on', fotoBadgeOn);
     updFotoBadges();
-    if(fotoBadgeOn && !anyAreaSelected()) alert('Vyber si obec (nebo pracoviště/svazek) a fotky se ukážou u hydrantů v mapě.');
+    if(fotoBadgeOn && map.getZoom()<FOTO_ZOOM) alert('Přibliž mapu na obec a fotky se u hydrantů ukážou.');
   };
 }
 

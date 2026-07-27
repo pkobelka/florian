@@ -6,7 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.138**, cache `florian-v145`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.139**, cache `florian-v146`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.139 (tato session) — Foto bubliny: gate na přiblížení (ne výběr obce)
+- Podmínka „vybraná obec" zrušena (uživatel radši jen přijede/přiblíží mapou). Bubliny se ukážou
+  když: **toggle „📷 Foto" ON a zoom ≥ FOTO_ZOOM (15)**. `updFotoBadges()` volané z toggle handleru,
+  z `flNumZoom` (zoomend) i z `applyFilter`. Zapnutí při oddáleném → hláška ať přiblíží.
+- Odstraněno `anyAreaSelected`. Zbytek bublin (`.foto-badge`, klik=velké foto) beze změny.
 
 ## Hotovo v1.138 (tato session) — Foto: přepínač bublin, gate na vybranou oblast, galerie zrušena
 - **Fotogalerie v menu ZRUŠENA** (tlačítko, panel, buildFotoPanel/fotoItems/updFotoCount/… + CSS
