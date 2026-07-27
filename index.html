@@ -872,6 +872,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .town-panel{display:none;position:absolute;right:0;top:98px;width:236px;max-height:56vh;overflow:auto;
   background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;z-index:901}
 .town-panel.open{display:block}
+.fp-h{font-weight:700;font-size:13px;padding:2px 2px 6px;position:sticky;top:-8px;background:#fff;z-index:1}
+.fp-empty{font-size:12px;color:#666;padding:6px 4px;line-height:1.45}
+.foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.foto-cell{cursor:zoom-in;overflow:hidden}
+.foto-cell img{width:100%;height:70px;object-fit:cover;border-radius:6px;display:block;background:#eee;border:1px solid var(--line)}
+.foto-cell .cap{font-size:10px;line-height:1.2;margin-top:2px;color:#222;cursor:pointer;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.foto-cell .cap .o{color:#777}
+.foto-cell .cap:hover{text-decoration:underline}
 #ownPanel{top:100px}
 #townPanel{top:152px}
 .tp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -1175,6 +1183,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   </div>
   <div class="town-panel" id="lidePanel"></div>
   <div class="town-panel" id="pushPanel"></div>
+  <button class="btn-toggle" id="fotoBtn">📷 Fotogalerie <span id="fotoCount"></span></button>
+  <div class="town-panel" id="fotoPanel"></div>
   <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
   <div class="ctrl-row">
@@ -1236,7 +1246,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.132';
+const APP_VERSION = '1.133';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2191,7 +2201,7 @@ function isDomereno(h){ var d=domereni[h.id]; return !!(d&&(hasVal(d.prutok)||ha
 function isPovyseno(h){ var d=domereni[h.id]; return !!(d&&d.povyseno); }
 function promoteCand(h){ if(!domereni[h.id])domereni[h.id]={}; domereni[h.id].povyseno=true; domereni[h.id].cislo=(kandMarked[h.id]&&kandMarked[h.id].idx)||domereni[h.id].cislo||''; domereni[h.id].povTs=Date.now(); domereni[h.id].povBy=(typeof flMeName==='function'&&flMeName())||flMe()||''; domereni[h.id].funkcePuvodni=domereni[h.id].funkcePuvodni||(h.funkce||'kandidát'); domereni[h.id].funkce='požární hydrant'; domereni[h.id].by=domereni[h.id].povBy; domereni[h.id].ts=domereni[h.id].povTs; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); openCandCard(h); }
 function unpromoteCand(h){ if(domereni[h.id])domereni[h.id].povyseno=false; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); openCandCard(h); }
-function reopenCard(h){ if(h.funkce==='požární hydrant') openCard(h); else openCandCard(h); }
+function reopenCard(h){ if(typeof updFotoCount==='function')updFotoCount(); if(h.funkce==='požární hydrant') openCard(h); else openCandCard(h); }
 function openEditForm(h){
   if(miniMap){ miniMap.remove(); miniMap=null; }
   var d=domereni[h.id]||{};
@@ -2546,6 +2556,51 @@ document.getElementById('pushBtn').onclick=function(e){ e.stopPropagation();
   buildPushPanel();
   var pp=document.getElementById('pushPanel'); pp.classList.toggle('open'); if(pp.classList.contains('open')){var _b=document.getElementById('pushBtn'); pp.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';}
 };
+
+// ---- Fotogalerie (přehled všech fotek z karet hydrantů) ----
+function fotoItems(){
+  var out=[];
+  HYDRANTY.forEach(function(h){ if(cloudPhotos[h.id]||photoData[h.id]) out.push(h); });
+  out.sort(function(a,b){
+    var ta=town(a)||'', tb=town(b)||''; if(ta!==tb) return ta<tb?-1:1;
+    return String(label(a)||'').localeCompare(String(label(b)||''),'cs',{numeric:true});
+  });
+  return out;
+}
+function updFotoCount(){ var el=document.getElementById('fotoCount'); if(el){ var n=fotoItems().length; el.textContent=n?('('+n+')'):''; } }
+function closeFotoPanel(){ var fp=document.getElementById('fotoPanel'); if(fp) fp.classList.remove('open'); }
+function buildFotoPanel(){
+  var wrap=document.getElementById('fotoPanel'); if(!wrap) return;
+  var items=fotoItems();
+  if(!items.length){ wrap.innerHTML='<div class="fp-h">📷 Fotogalerie</div><div class="fp-empty">Zatím žádné fotky.<br>Fotku přidáš v kartě hydrantu tlačítkem 📷 Vyfotit / 🖼️ Galerie.</div>'; return; }
+  var html='<div class="fp-h">📷 Fotogalerie · '+items.length+'</div><div class="foto-grid">';
+  items.forEach(function(h){
+    var src=cloudPhotos[h.id]||photoData[h.id];
+    var t=town(h)||'', lb=String(label(h)||'');
+    var sub=(t && lb.indexOf(t)<0)?t:''; if(h.cislo) sub=(sub?sub+' · ':'')+'č. H '+h.cislo;
+    html+='<div class="foto-cell" data-id="'+esc(String(h.id))+'">'+
+            '<img loading="lazy" src="'+src+'" alt="foto '+esc(lb)+'">'+
+            '<div class="cap">'+esc(lb)+(sub?'<br><span class="o">'+esc(sub)+'</span>':'')+'</div>'+
+          '</div>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('.foto-cell').forEach(function(cell){
+    var id=cell.getAttribute('data-id');
+    var h=null; for(var i=0;i<HYDRANTY.length;i++){ if(String(HYDRANTY[i].id)===id){ h=HYDRANTY[i]; break; } }
+    if(!h) return;
+    var img=cell.querySelector('img');
+    if(img) img.onclick=function(e){ e.stopPropagation(); flZoomPhoto(cloudPhotos[h.id]||photoData[h.id], rotOf(h.id)); };
+    var cp=cell.querySelector('.cap');
+    if(cp) cp.onclick=function(e){ e.stopPropagation(); closeFotoPanel(); try{ map.setView([h.lat,h.lon], Math.max(map.getZoom(),16)); }catch(_){} openCard(h); };
+  });
+}
+document.getElementById('fotoBtn').onclick=function(e){ e.stopPropagation();
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  buildFotoPanel();
+  var fp=document.getElementById('fotoPanel'); fp.classList.toggle('open'); if(fp.classList.contains('open')){var _b=document.getElementById('fotoBtn'); fp.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';}
+};
+updFotoCount();
 refreshUkolBadge();
 renderMarked();
 candReady=true;
@@ -3129,7 +3184,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       // jednorázově (po prvním úspěšném čtení = přihlášen): nahraj lokální body, které v cloudu chybí
       if(_kandFirst){ _kandFirst=false; try{ Object.keys(kandMarked).forEach(function(id){ if(kandMarked[id] && !v[id]){ _FDB.ref('florian_kandidati/'+id).set(kandMarked[id]); } }); }catch(e){} }
       Object.keys(v).forEach(function(id){ kandMarked[id]=v[id]; }); try{localStorage.setItem('florian_kandidati',JSON.stringify(kandMarked));}catch(e){} if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof candOn!=='undefined'&&candOn)renderCand(); }, function(){});
-    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; cloudRot={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; if(v[id]&&v[id].rot!=null)cloudRot[id]=v[id].rot; }); }, function(){});
+    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; cloudRot={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; if(v[id]&&v[id].rot!=null)cloudRot[id]=v[id].rot; }); if(typeof updFotoCount==='function')updFotoCount(); var _fp=document.getElementById('fotoPanel'); if(_fp&&_fp.classList.contains('open')&&typeof buildFotoPanel==='function')buildFotoPanel(); }, function(){});
     _FDB.ref('florian_ukoly').on('value',function(sn){ ukoly=sn.val()||{}; if(typeof refreshUkolBadge==='function')refreshUkolBadge(); }, function(){});
     _FDB.ref('florian_gis_requests').limitToLast(30).on('value',function(sn){ var out=[]; sn.forEach(function(c){ var v=c.val()||{}; if(v.ts) out.push(v); }); out.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); if(typeof flRenderGisReq==='function') flRenderGisReq(out); }, function(){});
     var _lideFirst=true;

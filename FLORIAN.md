@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.132**, cache `florian-v139`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.133**, cache `florian-v140`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.133 (tato session) — Fotogalerie v menu
+- Nové tlačítko **📷 Fotogalerie** v hamburger menu (`fotoBtn` + panel `fotoPanel`, za 🔔 Oznámení),
+  s počtem fotek v závorce (`updFotoCount`).
+- Panel = mřížka náhledů (3 sloupce) všech fotek z karet hydrantů (zdroj `cloudPhotos`||`photoData`,
+  klíč = `h.id`), řazeno podle obce + popisku. Pod náhledem popisek (label + obec + č. H).
+- **Klik na fotku** → zvětšení přes celou obrazovku (využívá existující `flZoomPhoto` vč. rotace).
+  **Klik na popisek** → zavře galerii, přiblíží mapu na hydrant a otevře jeho kartu.
+- Počet/galerie se aktualizuje při Firebase `florian_foto` on('value') i po lokální změně (`reopenCard`).
+- Klíč fce: `buildFotoPanel()`, `fotoItems()`, `updFotoCount()`, `closeFotoPanel()` (~ř. 2550).
 
 ## Hotovo v1.132 (tato session) — oficiální data Staré Město (18 z 23 hydrantů)
 - **Staré Město ze „Seznam PH" doplněno pro 18 hydrantů** (17 spárováno podle č.p., H8 podle
