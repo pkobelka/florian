@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.136**, cache `florian-v143`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.137**, cache `florian-v144`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.137 (tato session) — Miniatura fotky přímo u markeru na mapě
+- To bylo hlavní přání: u každého H s fotkou se při přiblížení (zoom ≥ FOTO_ZOOM=16) objeví
+  **bublinka s miniaturou** nad markerem (`.foto-badge` v `iconForItem`, gate `.fotos-on`
+  z `flNumZoom`). Hned je vidět, který H má/nemá foto → kde fotka chybí.
+- **Klik na miniaturu → velké foto** přes `flZoomPhoto`. Řešeno delegovaným listenerem na
+  map containeru v **capture fázi** + `stopPropagation`, aby se místo karty otevřel zoom.
+- `iconForItem` má foto-badge v try/catch (markery se staví na ř.1369 před foto-daty = TDZ).
+  Překreslení přes `rebuildMarkersBadges()`: po načtení lokálních fotek, při Firebase `florian_foto`
+  sync, a v `reopenCard` (přidání/smazání/otočení).
+- Fotogalerie v menu (v1.133/1.135) zůstává jako doplněk pro procházení vyfiltrované oblasti.
 
 ## Hotovo v1.136 (tato session) — Horní počítadlo rozděleno na 3 kategorie
 - Počítadlo v topbaru (`#count`, `flRenderCount`) teď ukazuje **zvlášť 🔵 Požární · 🟢 Vybrané · 🟣 Ostatní**

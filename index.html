@@ -1139,6 +1139,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .pozn-badge{position:absolute;top:-9px;right:-10px;background:#f59e0b;border-radius:50%;font-size:10px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .num-badge{display:none;position:absolute;bottom:-9px;right:-11px;min-width:20px;height:20px;padding:0 4px;box-sizing:border-box;background:#0d47a1;color:#fff;border-radius:10px;font-size:12.5px;line-height:17px;font-weight:800;text-align:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
+/* miniatura fotky u markeru – ať je hned vidět, který H má foto (a kde chybí) */
+.foto-badge{display:none;position:absolute;left:50%;bottom:100%;transform:translate(-50%,-3px);
+  width:30px;height:30px;border-radius:8px;overflow:hidden;border:2px solid #fff;background:#e9edf1;
+  box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:zoom-in;z-index:600}
+.foto-badge img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.foto-badge::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+  border:4px solid transparent;border-top-color:#fff}  /* špička bubliny dolů k markeru */
+.fotos-on .foto-badge{display:block}  /* miniatury až po přiblížení (flNumZoom → fotos-on) */
 .pozn-tip{font-size:12.5px;font-weight:600;color:#3a2c00;background:#fff8e1;border:1px solid #f0d78a;border-radius:8px;padding:5px 8px;box-shadow:0 2px 8px rgba(0,0,0,.18);width:max-content;max-width:230px;white-space:normal;text-align:left}
 .pozn-tip::before{border-top-color:#f0d78a !important}
 .leaflet-tooltip.pozn-tip{opacity:1}
@@ -1250,7 +1258,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.136';
+const APP_VERSION = '1.137';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1328,9 +1336,11 @@ function iconForItem(h){
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" title="Má poznámku">📝</span>':'';
   var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
   var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
-  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+  // miniatura fotky (bublinka nad markerem) – jen když H fotku má; klik na ni = velké foto
+  var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
+  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
-  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
+  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
 }
 function rebuildMarkersBadges(){ try{ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
 
@@ -1412,9 +1422,19 @@ function applyFilter(){
 applyFilter();
 
 // Čísla H na značkách ukázat až při bližším přiblížení (jinak by se pletla na přehledu).
-var NUM_ZOOM = 16;
-function flNumZoom(){ try{ var el=map.getContainer(); if(map.getZoom()>=NUM_ZOOM) el.classList.add('nums-on'); else el.classList.remove('nums-on'); }catch(e){} }
+var NUM_ZOOM = 16, FOTO_ZOOM = 16;
+function flNumZoom(){ try{ var el=map.getContainer(), z=map.getZoom();
+  el.classList.toggle('nums-on', z>=NUM_ZOOM);
+  el.classList.toggle('fotos-on', z>=FOTO_ZOOM);
+}catch(e){} }
 map.on('zoomend', flNumZoom); flNumZoom();
+// klik na miniaturu fotky u markeru = velké foto (a NE otevření karty) – capture, ať předběhne klik markeru
+map.getContainer().addEventListener('click', function(e){
+  var b=(e.target&&e.target.closest)?e.target.closest('.foto-badge'):null; if(!b) return;
+  e.stopPropagation();
+  var id=b.getAttribute('data-id'); var src=(typeof cloudPhotos!=='undefined'&&cloudPhotos[id])||(typeof photoData!=='undefined'&&photoData[id]);
+  if(src && typeof flZoomPhoto==='function') flZoomPhoto(src, (typeof rotOf==='function'?rotOf(id):0));
+}, true);
 
 /* Omez mapu na oblast hydrantů (+ kousek okolo), ať se nedá oddálit/odjet na celou Evropu.
    maxBounds = bounding box všech požárních hydrantů rozšířený o 20 %; minZoom = zoom, při
@@ -1980,6 +2000,8 @@ try{ photoData = JSON.parse(localStorage.getItem('florian_photos')||'{}') || {};
 // otočení fotky (0/90/180/270°) – jen příznak, pixely se nemění (funguje i pro cloud fotky)
 let photoRot = {};
 try{ photoRot = JSON.parse(localStorage.getItem('florian_photo_rot')||'{}') || {}; }catch(e){ photoRot = {}; }
+// lokální fotky jsou teď načtené → překresli markery, ať se objeví miniatury u H s fotkou
+try{ if(typeof rebuildMarkersBadges==='function') rebuildMarkersBadges(); }catch(e){}
 var cloudRot = {};
 function rotOf(id){ var r = (cloudRot[id]!=null?cloudRot[id]:photoRot[id]); r=parseInt(r,10)||0; return ((r%360)+360)%360; }
 function rotCls(id){ var d=rotOf(id); return d?(' r'+d):''; }
@@ -2248,7 +2270,7 @@ function isDomereno(h){ var d=domereni[h.id]; return !!(d&&(hasVal(d.prutok)||ha
 function isPovyseno(h){ var d=domereni[h.id]; return !!(d&&d.povyseno); }
 function promoteCand(h){ if(!domereni[h.id])domereni[h.id]={}; domereni[h.id].povyseno=true; domereni[h.id].cislo=(kandMarked[h.id]&&kandMarked[h.id].idx)||domereni[h.id].cislo||''; domereni[h.id].povTs=Date.now(); domereni[h.id].povBy=(typeof flMeName==='function'&&flMeName())||flMe()||''; domereni[h.id].funkcePuvodni=domereni[h.id].funkcePuvodni||(h.funkce||'kandidát'); domereni[h.id].funkce='požární hydrant'; domereni[h.id].by=domereni[h.id].povBy; domereni[h.id].ts=domereni[h.id].povTs; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); openCandCard(h); }
 function unpromoteCand(h){ if(domereni[h.id])domereni[h.id].povyseno=false; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); openCandCard(h); }
-function reopenCard(h){ if(typeof updFotoCount==='function')updFotoCount(); if(h.funkce==='požární hydrant') openCard(h); else openCandCard(h); }
+function reopenCard(h){ if(typeof updFotoCount==='function')updFotoCount(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(h.funkce==='požární hydrant') openCard(h); else openCandCard(h); }
 function openEditForm(h){
   if(miniMap){ miniMap.remove(); miniMap=null; }
   var d=domereni[h.id]||{};
@@ -3247,7 +3269,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       // jednorázově (po prvním úspěšném čtení = přihlášen): nahraj lokální body, které v cloudu chybí
       if(_kandFirst){ _kandFirst=false; try{ Object.keys(kandMarked).forEach(function(id){ if(kandMarked[id] && !v[id]){ _FDB.ref('florian_kandidati/'+id).set(kandMarked[id]); } }); }catch(e){} }
       Object.keys(v).forEach(function(id){ kandMarked[id]=v[id]; }); try{localStorage.setItem('florian_kandidati',JSON.stringify(kandMarked));}catch(e){} if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof candOn!=='undefined'&&candOn)renderCand(); }, function(){});
-    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; cloudRot={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; if(v[id]&&v[id].rot!=null)cloudRot[id]=v[id].rot; }); if(typeof updFotoCount==='function')updFotoCount(); var _fp=document.getElementById('fotoPanel'); if(_fp&&_fp.classList.contains('open')&&typeof buildFotoPanel==='function')buildFotoPanel(); }, function(){});
+    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; cloudRot={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; if(v[id]&&v[id].rot!=null)cloudRot[id]=v[id].rot; }); if(typeof updFotoCount==='function')updFotoCount(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); var _fp=document.getElementById('fotoPanel'); if(_fp&&_fp.classList.contains('open')&&typeof buildFotoPanel==='function')buildFotoPanel(); }, function(){});
     _FDB.ref('florian_ukoly').on('value',function(sn){ ukoly=sn.val()||{}; if(typeof refreshUkolBadge==='function')refreshUkolBadge(); }, function(){});
     _FDB.ref('florian_gis_requests').limitToLast(30).on('value',function(sn){ var out=[]; sn.forEach(function(c){ var v=c.val()||{}; if(v.ts) out.push(v); }); out.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); if(typeof flRenderGisReq==='function') flRenderGisReq(out); }, function(){});
     var _lideFirst=true;
