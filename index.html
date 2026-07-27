@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.135';
+const APP_VERSION = '1.136';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1507,11 +1507,28 @@ function flHeaderSub(){
 function flVisibleFireCount(){ var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter)) n++; }); return n; }
 // počet zobrazených „ostatních" (kandidátů) – nezapočítává reklasifikované na požární; respektuje filtr obce/pracoviště
 function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os=(typeof visibleObecSet==='function')?visibleObecSet():null; var n=0; KAND.forEach(function(h){ if(FIRE_IDS.has(h.id)) return; if(os && !os.has(h.obec)) return; n++; }); return n; }
-// horní počítadlo: požární vždy; „ostatní" jen když je vrstva zapnutá
-function flRenderCount(){ var cel=document.getElementById('count'); if(!cel) return; var f=flVisibleFireCount();
-  if(typeof candOn!=='undefined' && candOn && typeof KAND!=='undefined' && KAND){
-    cel.innerHTML=f+' hydrantů<span style="opacity:.82;font-weight:400"> · +'+candShownCount()+' ostatních</span>';
-  } else { cel.textContent=f+' hydrantů'; } }
+// počet vybraných „k doměření" (🟢) v aktuálním výběru – bez povýšených a reklasifikovaných
+function flMarkedCount(){ try{
+  if(typeof kandMarked==='undefined'||!kandMarked) return 0;
+  var obecSet=(typeof visibleObecSet==='function')?visibleObecSet():null, n=0;
+  Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m||m.lat==null) return;
+    if(typeof FIRE_IDS!=='undefined'&&FIRE_IDS&&FIRE_IDS.has(id)) return;
+    if(typeof domereni!=='undefined'&&domereni[id]&&domereni[id].povyseno) return;
+    if(typeof markInSel==='function'&&!markInSel(id,obecSet)) return;
+    n++; });
+  return n;
+}catch(e){ return 0; } }
+// horní počítadlo: zvlášť 🔵 Požární, 🟢 Vybrané a 🟣 Ostatní (barvy = legenda appky)
+function flRenderCount(){ var cel=document.getElementById('count'); if(!cel) return;
+  var f=flVisibleFireCount();
+  var vyb=flMarkedCount();
+  var showOst=(typeof candOn!=='undefined' && candOn && typeof KAND!=='undefined' && KAND);
+  var html='<span class="cnt-f" title="Požární hydranty">🔵 '+f+'</span>';
+  if(vyb>0) html+='<span class="cnt-v" title="Vybrané k doměření"> · 🟢 '+vyb+'</span>';
+  if(showOst) html+='<span class="cnt-o" title="Ostatní hydranty"> · 🟣 '+candShownCount()+'</span>';
+  cel.innerHTML=html;
+  cel.title='🔵 Požární · 🟢 Vybrané (k doměření) · 🟣 Ostatní';
+}
 // ---- filtry: Skupina (majitel) + Obce (provázané) ----
 function ownerLbl(){
   const s=selectedOwners.size;
@@ -2325,6 +2342,7 @@ var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, showCoverageOnHover:
     return L.divIcon({html:'<div class="cluster markcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }
 });
 function renderMarked(){
+  if(typeof flRenderCount==='function') flRenderCount(); // osvěž horní počty (🟢 Vybrané)
   markedLayer.clearLayers(); markedCovLayer.clearLayers();
   if(!markedShownOn) return; // vrstva Vybraných schovaná (mřížka „vidět" u 🟢 Vybr.)
   if(revStatusFilter) return; // filtr stavu revize = jen požární daného stavu, „k doměření" pryč

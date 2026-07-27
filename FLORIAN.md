@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.135**, cache `florian-v142`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.136**, cache `florian-v143`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.136 (tato session) — Horní počítadlo rozděleno na 3 kategorie
+- Počítadlo v topbaru (`#count`, `flRenderCount`) teď ukazuje **zvlášť 🔵 Požární · 🟢 Vybrané · 🟣 Ostatní**
+  (dřív jen jedno číslo + „ostatní"). Barvy = legenda appky (coverage matrix).
+- Nová `flMarkedCount()` = počet 🟢 vybraných „k doměření" (`kandMarked`) v aktuálním výběru,
+  bez povýšených/reklasifikovaných, respektuje filtr (`markInSel`). Try/catch kvůli volání při startu.
+- 🔵 vždy; 🟢 jen když >0; 🟣 jen když je zapnutá vrstva Ostatní (`candOn`). Tooltip vysvětluje.
+- `flRenderCount()` volán navíc z `renderMarked()` → počty se osvěží při značení/odznačení vybraných.
 
 ## Hotovo v1.135 (tato session) — Fotogalerie omezená na vyfiltrovanou oblast
 - **Oprava „nefunguje":** galerie dřív renderovala fotky celého datasetu naráz → na telefonu
