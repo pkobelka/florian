@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.137**, cache `florian-v144`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.138**, cache `florian-v145`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.138 (tato session) — Foto: přepínač bublin, gate na vybranou oblast, galerie zrušena
+- **Fotogalerie v menu ZRUŠENA** (tlačítko, panel, buildFotoPanel/fotoItems/updFotoCount/… + CSS
+  mřížky). Zůstává jen bublinový systém u markerů.
+- **Nový toggle „📷 Foto"** (`fotoToggle`, `fotoBadgeOn`, v řadě pod 💡/📝) – default vyplý,
+  po zapnutí zmodrá (`#fotoToggle.on`). Řeší dřívější „svítí pořád".
+- **Bubliny se ukážou jen když: toggle ON a je vybraná obec/pracoviště/svazek** (`anyAreaSelected`).
+  `updFotoBadges()` přepíná třídu `.fotos-on`; voláno z toggle handleru i z `applyFilter()`
+  (změna filtru → bubliny naskočí/zmizí). Zapnutí bez výběru → hláška ať vybere obec.
+- Zoom-gate pro fotky odstraněn (řídí to toggle+oblast); `flNumZoom` zpět jen pro čísla H.
+- Bublina (`.foto-badge` v `iconForItem`), klik = velké foto (capture listener) – beze změny.
 
 ## Hotovo v1.137 (tato session) — Miniatura fotky přímo u markeru na mapě
 - To bylo hlavní přání: u každého H s fotkou se při přiblížení (zoom ≥ FOTO_ZOOM=16) objeví
