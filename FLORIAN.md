@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.122**, cache `florian-v129`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.123**, cache `florian-v130`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.123 (tato session) — zrušeno pracovní číslo H u bodů k doměření
+- **Globální pořadové číslo „H1, H2…" u vybraných bodů zrušeno** (bylo arbitrární, plete se
+  s oficiálním číslem hydrantu). Vybraný bod = zelený puntík s **✓** (`candIcon` badge),
+  karta „✓ Vybráno k doměření", tlačítko „✓ Vybráno — zrušit".
+- **Seznam „Změřit" se řadí podle obce** (`_domTown`, `localeCompare cs`), ne podle pořadí
+  kliku; položky vedou obcí místo čísla (todo i historie).
+- **Nová čísla se nepřidělují** (odebrán back-fill IIFE + `idx` z `markCand`). `flSeq/flNextNum/
+  cislujDomereni` ponechány (nevolají se), stará uložená čísla se nemažou, jen nezobrazují → vratné.
+- Pozn.: oficiální per-obec číslování H (ze seznamu starostů v Excelu) je samostatná věc —
+  plánuje se doplnit do karty z nahraných tabulek (viz níže „Rozdělané").
 
 ## Hotovo v1.122 (tato session) — tip „foťte na šířku" u fotky
 - **Decentní nápověda u tlačítek fotky** v obou kartách (`.ptip` pod `.pbtns`):

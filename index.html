@@ -1234,7 +1234,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.122';
+const APP_VERSION = '1.123';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2240,8 +2240,8 @@ function _idxNum(idx){ return parseInt(String(idx||'').replace(/^\D+/,''))||0; }
 function flSeqRecalc(){ var mx=0; Object.keys(kandMarked).forEach(function(id){ mx=Math.max(mx,_idxNum(kandMarked[id].idx)); }); Object.keys(domereni||{}).forEach(function(id){ mx=Math.max(mx,_idxNum(domereni[id]&&domereni[id].cislo)); }); var ls=parseInt(localStorage.getItem('florian_seq'))||0; flSeq=Math.max(flSeq,mx,ls); return flSeq; }
 function flPersistSeq(){ try{ localStorage.setItem('florian_seq',String(flSeq)); }catch(e){} if(window._FDB){ try{ _FDB.ref('florian_seq').set(flSeq).catch(function(){}); }catch(e){} } }
 function flNextNum(){ flSeqRecalc(); flSeq++; flPersistSeq(); return flSeq; }
-// dorovnej čítač a doplň čísla starším bodům bez čísla (existující čísla NIKDY nepřečíslovávej)
-(function(){ flSeqRecalc(); var changed=false; Object.keys(kandMarked).forEach(function(id){ if(!kandMarked[id].idx){ kandMarked[id].idx='H'+(++flSeq); changed=true; } }); if(changed){ flPersistSeq(); saveMarked(); } })();
+// číslování bodů k doměření zrušeno (v1.123) – nová čísla se nepřidělují, stará se nezobrazují
+// (flSeq/flNextNum ponechány pro kompatibilitu, nevolají se)
 function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   var dla=(c-a)*r,dlo=(d-b)*r,la1=a*r,la2=c*r;
   var x=Math.sin(dla/2)*Math.sin(dla/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)*Math.sin(dlo/2);
@@ -2254,7 +2254,7 @@ const candCluster=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:
     return L.divIcon({html:'<div class="cluster candcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }});
 function candIcon(h,state){ var col=state==='marked'?'#16a34a':(state==='gap'?'#f59e0b':'#8e24aa');
   var nad=h.typ==='nadzemní'; var inner=nad?'<div class="ci-nad"></div>':'<div class="ci-pod"></div>';
-  var mk=kandMarked[h.id]?'<span class="ci-badge">'+(kandMarked[h.id].idx?esc(kandMarked[h.id].idx):'✓')+'</span>':'';
+  var mk=kandMarked[h.id]?'<span class="ci-badge">✓</span>':'';
   var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)){ var t=filterTown(it.h); if(t)s.add(t); } }); return s; }
 /* vrstva označených bodů (k doměření) – viditelná VŽDY, i když je vrstva „Ostatní hydranty" vypnutá,
@@ -2327,7 +2327,7 @@ function renderCand(){ candCluster.clearLayers(); candCovLayer.clearLayers(); if
   if(typeof flRenderCount==='function') flRenderCount(); // osvěž počet „ostatních" nahoře
 }
 function markCand(h){ if(kandMarked[h.id])return;
-  kandMarked[h.id]={idx:'H'+flNextNum(),lat:h.lat,lon:h.lon,typ:h.typ,obec:h.obec,town:candTown(h),stredisko:h.provozniStredisko||''}; saveMarked(); fbSaveKand(h.id); renderCand(); renderMarked(); updDomCount(); buildDomereniList(); openCandCard(h); }
+  kandMarked[h.id]={lat:h.lat,lon:h.lon,typ:h.typ,obec:h.obec,town:candTown(h),stredisko:h.provozniStredisko||''}; saveMarked(); fbSaveKand(h.id); renderCand(); renderMarked(); updDomCount(); buildDomereniList(); openCandCard(h); }
 function cislujDomereni(){
   Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m.idx){ m.idx='H'+flNextNum(); } });
   saveMarked(); Object.keys(kandMarked).forEach(function(id){ fbSaveKand(id); }); if(candOn)renderCand(); renderMarked(); updDomCount(); buildDomereniList(); }
@@ -2363,7 +2363,7 @@ function openCandCard(h){
       '<span class="chip '+(nad?'type-nad':'type-pod')+'">'+(nad?'Nadzemní':'Podzemní')+'</span>'+
       '<span class="chip" style="background:'+(covered?'#eef1f4':'#fff3e0')+';color:'+(covered?'#37474f':'#b45309')+'">'+(covered?'V dosahu pokrytí':'Mimo pokrytí (díra)')+'</span>'+
       nearestHChip(h)+
-      (mk?'<span class="chip ok">'+(mk.idx?('K doměření · '+esc(mk.idx)):'Vybráno k doměření')+'</span>':'')+
+      (mk?'<span class="chip ok">✓ Vybráno k doměření</span>':'')+
       (isPovyseno(h)?'<span class="chip" style="background:#fdecec;color:#c62828;font-weight:800">🚒 Povýšeno na požární</span>':'')+
     '</div>'+
     (hasRev?'<div class="revbig rev-'+revSt+'"><span class="rl">🚦 Datum revize</span><span class="rv">'+esc(candVal(h,'datumRevize')||'—')+'</span><span class="rs">'+esc(revDaysText(h))+'</span></div>':'')+
@@ -2396,7 +2396,7 @@ function openCandCard(h){
       '</div>'+
     '</div>'+
     '<div class="cand-actions">'+
-      (mk?'<button class="cand-unmark" id="cUnmark">✓ Vybráno'+(mk.idx?(' '+esc(mk.idx)):'')+' — zrušit</button>'
+      (mk?'<button class="cand-unmark" id="cUnmark">✓ Vybráno — zrušit</button>'
         :'<button class="cand-mark" id="cMark">➕ Vybrat k doměření</button>')+
       '<button class="cand-edit" id="cEdit">✏️ Doměřit / upravit</button>'+
       (isPovyseno(h)?'<button class="cand-unpov" id="cUnpov">↩︎ Vrátit z požárních</button>':(isDomereno(h)?'<button class="cand-pov" id="cPov">🚒 Povýšit na požární</button>':''))+
@@ -2476,19 +2476,19 @@ function buildDomereniList(){
   // K doměření = označené, ještě NEzměřené; Historie = změřené / povýšené
   var _os=visibleObecSet();
   var todo=Object.keys(kandMarked).filter(function(id){ return markInSel(id,_os); }).filter(function(id){ return !_domMeasured(id); });
-  todo.sort(function(a,b){ return _idxNum(kandMarked[a].idx)-_idxNum(kandMarked[b].idx); });
+  todo.sort(function(a,b){ return String(_domTown(a)||'').localeCompare(String(_domTown(b)||''),'cs'); }); // řazení podle obce
   var hist=Object.keys(domereni).filter(_domMeasured);
   hist.sort(function(a,b){ return (domereni[b].ts||domereni[b].povTs||0)-(domereni[a].ts||domereni[a].povTs||0); });
   var body;
   if(domTab==='hist'){
-    body = hist.length ? hist.map(function(id){ var d=domereni[id]||{}; var cis=d.cislo||((kandMarked[id]||{}).idx)||'•';
+    body = hist.length ? hist.map(function(id){ var d=domereni[id]||{};
         var stav=d.povyseno?'🚒 povýšeno':'✓ doměřeno'; var kdy=d.datumRevize||''; var kdo=d.povBy||d.by||'';
-        return '<div class="tp-item" style="cursor:default"><span><b>'+esc(cis)+'</b> · '+esc(_domTown(id))+' · '+esc(stav)+(kdy?(' · '+esc(kdy)):'')+(kdo?(' · '+esc(kdo)):'')+'</span>'+
+        return '<div class="tp-item" style="cursor:default"><span><b>'+esc(_domTown(id))+'</b> · '+esc(stav)+(kdy?(' · '+esc(kdy)):'')+(kdo?(' · '+esc(kdo)):'')+'</span>'+
           '<span style="display:flex;gap:6px"><button class="dom-go" data-id="'+esc(id)+'" title="Na mapě">📍</button></span></div>'; }).join('')
       : '<div class="tp-empty" style="display:block">Zatím nic doměřeného.</div>';
   } else {
     body = todo.length ? todo.map(function(id){ var m=kandMarked[id];
-        return '<div class="tp-item" style="cursor:default"><span><b>'+(m.idx?esc(m.idx):'•')+'</b> · '+esc(m.town||'—')+' · '+(m.typ==='nadzemní'?'nadz.':'podz.')+'</span>'+
+        return '<div class="tp-item" style="cursor:default"><span><b>'+esc(m.town||'—')+'</b> · '+(m.typ==='nadzemní'?'nadz.':'podz.')+'</span>'+
           '<span style="display:flex;gap:6px"><button class="dom-go" data-id="'+esc(id)+'" title="Na mapě">📍</button><button class="dom-del" data-id="'+esc(id)+'" title="Zrušit">✕</button></span></div>'; }).join('')
       : '<div class="tp-empty" style="display:block">Zatím žádný hydrant k doměření. Klikni na kandidáta na mapě → „Vybrat k doměření".</div>';
   }
