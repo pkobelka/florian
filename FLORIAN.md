@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.131**, cache `florian-v138`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.132**, cache `florian-v139`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.132 (tato session) — oficiální data Staré Město (18 z 23 hydrantů)
+- **Staré Město ze „Seznam PH" doplněno pro 18 hydrantů** (17 spárováno podle č.p., H8 podle
+  „u KD" → id 2173). Doplněno `cislo` (1–23), `dnPotrubi` (150/110/90), `umisteniText`
+  (umístění + poznámka, **osobní jména majitelů vypuštěna** kvůli soukromí; závorky pryč,
+  prefix „Staré Město" pryč). `tlakStat`+`prutok` nastaveny na hodnoty ze seznamu (shodovaly
+  se s tím, co app měla → potvrzuje převod).
+- **Jednotka tlaku „Atm" → MPa ÷10** — POTVRZENO: atm÷10 sedí PŘESNĚ na existující app tlakStat
+  (3,9 atm → 0,39 MPa = app). Takže Staré Město = hydrostatický v MPa, jako Bílá Studně.
+  (Přehled jednotek: Radišov „Mpa"=bar ÷10 · Bílá Studně „MPa" přímo · Staré Město „Atm" ÷10.)
+- **NESPÁROVÁNO (k ručnímu dořešení, 5):** H1 (č.p.36 – v app chybí), H9 (č.p.269 – app má 270),
+  H10 (JIH, točna – bez č.p.), H18 (areál letiště – bez č.p.), H23 (č.p.317 – app má 321).
+  Doplnit ručně v appce nebo přes GPS, až se potvrdí, který app bod to je.
 
 ## Hotovo v1.131 (tato session) — větší čísla + jen při přiblížení + oprava filtru obcí
 - **Oprava filtru: hydranty bez adresy padaly pod špatné město.** `OBEC_NAME` se plnil PRVNÍM
