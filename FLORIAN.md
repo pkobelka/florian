@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.120**, cache `florian-v127`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.121**, cache `florian-v128`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.121 (tato session) — plné názvy v mřížce + sjednocená mezera
+- **Zkratky v mřížce nahrazeny plnými názvy:** 🔵 Požární / 🟢 Vybrané / 🟣 Ostatní
+  (dřív Pož./Vybr./Ost.) — místa je dost (mřížka je široká jako panel).
+- **Sjednocená mezera pod mřížkou:** `.cov-matrix` mělo `margin-bottom:8px`, který se
+  sčítal s `gap:8px` ve `.ctrl` (flex column) → dole dvojnásobná mezera. Margin odebrán,
+  teď mezera stejná jako mezi ostatními tlačítky hamburgeru.
 
 ## Hotovo v1.120 (tato session) — oprava „Nepokryto" nezhasínalo + mezera v „Do GISu"
 - **Oprava: „Nepokryto" (`gapToggle`) po vypnutí nezhasínalo body.** Zapnutí „Nepokryto"

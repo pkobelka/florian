@@ -826,7 +826,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .cov-hint{font-size:11.5px;color:var(--muted);padding:6px 4px 2px;font-weight:600;line-height:1.4}
 .cov-sec{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:8px 6px 2px;border-top:1px solid var(--line);margin-top:6px}
 /* mřížka Zobrazení a pokrytí (3 druhy H × vidět/pokrytí) */
-.cov-matrix{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.cov-matrix{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .cov-matrix .cm-title{font-weight:800;font-size:13px;margin-bottom:7px;color:var(--ink)}
 .cov-matrix .cm-title .cm-r{font-weight:600;font-size:11.5px;color:var(--muted)}
 .cm-grid{display:grid;grid-template-columns:1fr auto auto;gap:5px 7px;align-items:center}
@@ -1233,7 +1233,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.120';
+const APP_VERSION = '1.121';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1728,9 +1728,9 @@ function buildCovPanel(){
     '<div class="cm-title">🎯 Zobrazení a pokrytí <span class="cm-r">· poloměr '+COVERAGE_RADIUS+' m</span></div>'+
     '<div class="cm-grid">'+
       '<div></div><div class="cm-h">👁 vidět</div><div class="cm-h">🎯 pokrytí</div>'+
-      '<div class="cm-lbl">🔵 Pož.</div>'+cell('fire','show-fire',fireLayerOn)+cell('fire','cov-fire',coverageOn)+
-      '<div class="cm-lbl">🟢 Vybr.</div>'+cell('marked','show-marked',markedShownOn)+cell('marked','cov-dom',domCovOn)+
-      '<div class="cm-lbl">🟣 Ost.</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)+
+      '<div class="cm-lbl">🔵 Požární</div>'+cell('fire','show-fire',fireLayerOn)+cell('fire','cov-fire',coverageOn)+
+      '<div class="cm-lbl">🟢 Vybrané</div>'+cell('marked','show-marked',markedShownOn)+cell('marked','cov-dom',domCovOn)+
+      '<div class="cm-lbl">🟣 Ostatní</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)+
     '</div>'+
     (hint?'<div class="cm-hint">'+hint+'</div>':'');
   Array.prototype.forEach.call(m.querySelectorAll('.cm-c'),function(c){ c.onclick=function(){
