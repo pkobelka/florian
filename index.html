@@ -1176,7 +1176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
     <button class="btn-toggle" id="gapToggle">💡 Nepokryto</button>
     <button class="btn-toggle" id="poznToggle">📝 Poznámky</button>
   </div>
-  <button class="btn-toggle" id="fotoToggle" title="Zapni a přibliž mapu na obec – u hydrantů se ukážou miniatury fotek (hned je vidět, kde foto je a kde chybí)">📷 Foto</button>
+  <button class="btn-toggle" id="fotoToggle" title="Zapni a přibliž mapu na obec – u hydrantů se ukážou miniatury fotek (hned je vidět, kde foto je a kde chybí). Číslo = počet fotek ve výřezu mapy.">📷 Foto<span id="fotoCnt"></span></button>
   <div class="ctrl-row">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.139';
+const APP_VERSION = '1.140';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1823,7 +1823,15 @@ if(poznToggle){
 // celou mapu. Řídí třídu .fotos-on; přepíná se i při zoomu (viz flNumZoom).
 var fotoBadgeOn = false;
 var FOTO_ZOOM = 15;
-function updFotoBadges(){ try{ map.getContainer().classList.toggle('fotos-on', fotoBadgeOn && map.getZoom()>=FOTO_ZOOM); }catch(e){} }
+// počet hydrantů s fotkou v aktuálním výřezu mapy (jen když je přepínač zapnutý)
+function fotoOnMapCount(){ try{ if(!fotoBadgeOn) return 0; var b=map.getBounds(), n=0;
+  for(var i=0;i<HYDRANTY.length;i++){ var h=HYDRANTY[i];
+    if(((cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id])) && b.contains([h.lat,h.lon])) n++; }
+  return n; }catch(e){ return 0; } }
+function updFotoBadges(){ try{
+  map.getContainer().classList.toggle('fotos-on', fotoBadgeOn && map.getZoom()>=FOTO_ZOOM);
+  var el=document.getElementById('fotoCnt'); if(el) el.textContent = fotoBadgeOn ? (' ('+fotoOnMapCount()+')') : '';
+}catch(e){} }
 var fotoToggle = document.getElementById('fotoToggle');
 if(fotoToggle){
   fotoToggle.onclick = function(){
@@ -1833,6 +1841,7 @@ if(fotoToggle){
     if(fotoBadgeOn && map.getZoom()<FOTO_ZOOM) alert('Přibliž mapu na obec a fotky se u hydrantů ukážou.');
   };
 }
+map.on('moveend', function(){ if(fotoBadgeOn) updFotoBadges(); }); // při posunu mapy přepočítej počet
 
 // revize (semafor) toggle – přebarví hydranty podle stavu (viditelné pro všechny)
 const revToggle = document.getElementById('revToggle');

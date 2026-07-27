@@ -6,7 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.139**, cache `florian-v146`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.140**, cache `florian-v147`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.140 (tato session) — Počet fotek na tlačítku „📷 Foto"
+- Po zapnutí přepínače se na tlačítku ukáže číslo `(N)` = počet hydrantů s fotkou v aktuálním
+  výřezu mapy (`fotoOnMapCount()` přes `map.getBounds().contains`). Aktualizace při zapnutí,
+  zoomu (`flNumZoom`) i posunu mapy (`map.on('moveend')`). Vyplý přepínač → číslo zmizí.
+- POZN.: „📷 Foto" je full-width, vedle je místo na budoucí druhé tlačítko (nápad: filtr „bez fotky").
 
 ## Hotovo v1.139 (tato session) — Foto bubliny: gate na přiblížení (ne výběr obce)
 - Podmínka „vybraná obec" zrušena (uživatel radši jen přijede/přiblíží mapou). Bubliny se ukážou
