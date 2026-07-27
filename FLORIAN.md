@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.140**, cache `florian-v147`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.141**, cache `florian-v148`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.141 (tato session) — Oprava: 🟢 Vybrané v počítadle sedí s viditelností
+- Bug (od v1.136): počítadlo ukazovalo 🟢 6 i když se žádné zelené nekreslily (schovaná vrstva
+  🟢 Vybrané / aktivní semafor). `flMarkedCount()` nezohledňoval podmínky viditelnosti.
+- Fix: přidány stejné gaty jako v renderMarked/renderCand — `revStatusFilter` → 0;
+  `!candOn && !markedShownOn` → 0. Teď počet 🟢 vždy odpovídá tomu, co je na mapě vidět.
+- POZN. k počítadlu: 🔵🟢🟣 jsou podle FILTRU (pracoviště/obec/svazek), NE podle výřezu mapy –
+  rolování/zoom je nemění. Jen počet u „📷 Foto" je podle výřezu (getBounds).
 
 ## Hotovo v1.140 (tato session) — Počet fotek na tlačítku „📷 Foto"
 - Po zapnutí přepínače se na tlačítku ukáže číslo `(N)` = počet hydrantů s fotkou v aktuálním

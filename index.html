@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.140';
+const APP_VERSION = '1.141';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1519,6 +1519,9 @@ function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os
 // počet vybraných „k doměření" (🟢) v aktuálním výběru – bez povýšených a reklasifikovaných
 function flMarkedCount(){ try{
   if(typeof kandMarked==='undefined'||!kandMarked) return 0;
+  // počítej jen když se zelené vážně kreslí (stejné podmínky jako renderMarked/renderCand)
+  if(typeof revStatusFilter!=='undefined' && revStatusFilter) return 0;                 // semafor = zelené pryč
+  if(!(typeof candOn!=='undefined'&&candOn) && typeof markedShownOn!=='undefined' && !markedShownOn) return 0; // vrstva 🟢 schovaná
   var obecSet=(typeof visibleObecSet==='function')?visibleObecSet():null, n=0;
   Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m||m.lat==null) return;
     if(typeof FIRE_IDS!=='undefined'&&FIRE_IDS&&FIRE_IDS.has(id)) return;
