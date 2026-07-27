@@ -1009,6 +1009,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .media2 .m-map{height:86px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#dfe6ea}
 .pbtns{display:flex;gap:6px;padding:5px 16px 2px}
 .pbtns .btn{flex:1;padding:7px 6px;font-size:12px}
+.ptip{font-size:10.5px;color:var(--muted);text-align:center;padding:3px 16px 0;font-weight:600}
 /* úkoly kompaktně */
 .card .uk-item{padding:7px 10px;margin:5px 0}
 .card .uk-txt{font-size:13px}
@@ -1233,7 +1234,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.121';
+const APP_VERSION = '1.122';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1971,6 +1972,7 @@ function openCard(h){
           (ph?'<button class="btn ghost" id="fRot" title="Otočit fotku o 90°">🔄</button>':'')+
           (ph?'<button class="btn danger" id="fDel">🗑️</button>':'')+
         '</div>'+
+        '<div class="ptip">💡 Nejlépe foťte na šířku (naležato)</div>'+
         ukolySekce(h)+
       '</div>'+
     '</div>'+
@@ -2389,6 +2391,7 @@ function openCandCard(h){
           (ph?'<button class="btn ghost" id="fRot" title="Otočit fotku o 90°">🔄</button>':'')+
           (ph?'<button class="btn danger" id="fDel">🗑️</button>':'')+
         '</div>'+
+        '<div class="ptip">💡 Nejlépe foťte na šířku (naležato)</div>'+
         ukolySekce(h)+
       '</div>'+
     '</div>'+

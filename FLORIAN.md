@@ -6,7 +6,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.121**, cache `florian-v128`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.122**, cache `florian-v129`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.122 (tato session) — tip „foťte na šířku" u fotky
+- **Decentní nápověda u tlačítek fotky** v obou kartách (`.ptip` pod `.pbtns`):
+  „💡 Nejlépe foťte na šířku (naležato)". Orientaci systémového foťáku z webu vynutit
+  nejde (`<input capture>`), tak aspoň doporučí — fotky se v kartě i clusteru zobrazují
+  na ležato, takže landscape sedí líp (a míň se pak musí otáčet přes 🔄).
 
 ## Hotovo v1.121 (tato session) — plné názvy v mřížce + sjednocená mezera
 - **Zkratky v mřížce nahrazeny plnými názvy:** 🔵 Požární / 🟢 Vybrané / 🟣 Ostatní
