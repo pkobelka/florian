@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.126**, cache `florian-v133`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.127**, cache `florian-v134`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.127 (tato session) — poznámka „jen číslo / H4" se nepovažuje za poznámku
+- **Oprava: u Radišova svítily na mapě štítky „H4/H5" (i duplicitně).** Byly to poznámky,
+  které si uživatel dřív ručně dopsal (číslo za „H" do pole poznámka, ve Firebase `domereni`).
+  Teď jsou redundantní (oficiální číslo je v chipu 🏷️). `poznText` nově vrací '' pro poznámku,
+  která je **jen číslo nebo „H<číslo>"** (regex `^H?\s*\d{1,3}$`) → nebere se jako poznámka
+  (žádný odznak 📝 ani štítek na mapě). Skutečné poznámky („v komunikaci", „H4, u školy")
+  zůstávají. (Navazuje na filtr balastu z v1.98.)
 
 ## Hotovo v1.126 (tato session) — umístění/poznámka do podtitulku karty (na klik)
 - **Číslo H „na klik" (v kartě)** — chip 🏷️ H<č> už je v hlavičce od v1.124; stálý odznak
