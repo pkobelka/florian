@@ -6,7 +6,20 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.124**, cache `florian-v131`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.125**, cache `florian-v132`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.125 (tato session) — oficiální data Bílá Studně + oprava průtoku (m³/h→l/s)
+- **Bílá Studně (3 body) doplněna ze seznamu** (párování dle č.p. + typu): id 3785=H1
+  (Bílá Studně 2, nadz), 2228=H2 (6, podz), 2229=H3 (12, podz). Doplněno `cislo` (1–3),
+  `dnPotrubi` (80), `tlakStat` beze změny (0,58/0,42/0,38 — Excel už v MPa).
+- **DŮLEŽITÉ — oprava průtoku:** app měla u těchto 3 uložené **m³/h omylem jako l/s**
+  (39,1 / 15,6 / 16,6). Opraveno na správné l/s (**10,9 / 4,3 / 4,6**). Ovlivňuje i
+  auto-vyhodnocení ČSN (≥4 l/s). Pozor: tenhle unit-bug může být i u dalších obcí —
+  ověřovat proti seznamům (l/s vs m³/h = ×3,6).
+- Rozdíl mezi seznamy: **Radišov měl tlak v barech** (÷10), **Bílá Studně už v MPa**.
+  Umístění „měkčí" (mezi čp 6 a 8), ale číslo popisné + typ na spárování stačí.
+- Rozpracováno (viz níže): číselný odznak H na mapě (návrh hotov, čeká na schválení),
+  editovatelné pole „Číslo H", umístění text (počká na správce GIS).
 
 ## Hotovo v1.124 (tato session) — oficiální čísla H + DN potrubí z Excelu (Radišov)
 - **Doplněna oficiální data z „Seznam PH" (Excel starostů/VHOS) pro Radišov** přímo do
