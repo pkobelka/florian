@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.118**, cache `florian-v125`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.119**, cache `florian-v126`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.119 (tato session) — dvojice tlačítek + Poznámky bez přepínače
+- **Nepokryto + Poznámky do jedné dvojice** (`.ctrl-row`): „💡 Nepokrytá oblast" zkráceno
+  na **„💡 Nepokryto"**, vedle „📝 Poznámky".
+- **Tisk mapy + Do GISu do dvojice** (`.ctrl-row`): „🔼 Nahrání do GISu" zkráceno na
+  **„🔼 Do GISu"**. Na mobilu je `#printMapBtn` skrytý → „Do GISu" se roztáhne na celou
+  šířku (flex, jako u ostatních dvojic).
+- **Poznámky: zrušen posuvník `.sw`**, místo něj se tlačítko **zabarví, když je zapnuté**
+  (`#poznToggle.on` = modré, jako ostatní přepínače). Sjednodušší a konzistentní.
+- Ušetřeny 2 řádky v hamburgeru.
 
 ## Hotovo v1.118 (tato session) — poloměr 200 m napevno, poznámka v titulku mřížky
 - **Selektor poloměru (100/150/200 m) v mřížce zrušen** — poloměr je napevno `COVERAGE_RADIUS`
