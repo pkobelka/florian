@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.119**, cache `florian-v126`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.120**, cache `florian-v127`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.120 (tato session) — oprava „Nepokryto" nezhasínalo + mezera v „Do GISu"
+- **Oprava: „Nepokryto" (`gapToggle`) po vypnutí nezhasínalo body.** Zapnutí „Nepokryto"
+  si samo zapne vrstvu Ostatní (aby bylo co zvýraznit), ale vypnutí dřív jen zrušilo
+  oranžové zvýraznění a vrstvu nechalo zapnutou → body zůstaly na mapě. Nově příznak
+  `gapTurnedCand`: když vrstvu zapnulo „Nepokryto", při vypnutí ji zase zhasne
+  (`candToggle.click()`); když si ji zapnul uživatel sám, nechá ji a zruší jen zvýraznění.
+  Po přepnutí volá `buildCovPanel()` (sync mřížky – Ostatní „vidět").
+- **Oprava mezery v „🔼 Do GISu".** Prázdný `<span id="gisCount">` byl samostatná flex
+  položka tlačítka (`.btn-toggle{gap:7px}`) → zbytečná mezera + text utíkal od středu.
+  Text i počet nově v jednom obalovém `<span>` (žádná flex mezera uvnitř), počet dostává
+  vlastní mezeru jen když je (`' ('+n+')'`). Tlačítko je čistě vycentrované.
 
 ## Hotovo v1.119 (tato session) — dvojice tlačítek + Poznámky bez přepínače
 - **Nepokryto + Poznámky do jedné dvojice** (`.ctrl-row`): „💡 Nepokrytá oblast" zkráceno

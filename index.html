@@ -1187,7 +1187,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="townPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
-    <button class="btn-toggle" id="gisBtn">🔼 Do GISu <span id="gisCount"></span></button>
+    <button class="btn-toggle" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
   </div>
   <div class="town-panel" id="gisPanel"></div>
   <button class="btn-toggle btn-share" id="shareBtn" style="display:none">📤 Sdílet appku</button>
@@ -1233,7 +1233,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.119';
+const APP_VERSION = '1.120';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2445,7 +2445,18 @@ candToggle.onclick=function(){
     showCandLayers();
   } else { hideCandLayers(); }
 };
-gapToggle.onclick=function(){ gapOn=!gapOn; gapToggle.classList.toggle('on',gapOn); if(gapOn && !candOn){ candToggle.click(); } else if(candOn){ renderCand(); } };
+var gapTurnedCand=false; // „Nepokryto" si samo zaplo vrstvu Ostatní → při vypnutí ji zase zhasne
+gapToggle.onclick=function(){
+  gapOn=!gapOn; gapToggle.classList.toggle('on',gapOn);
+  if(gapOn){
+    if(!candOn){ gapTurnedCand=true; candToggle.click(); } // zapni vrstvu Ostatní (klik ji i vykreslí; gapOn už true → zvýraznění)
+    else renderCand();                                     // vrstvu měl uživatel → jen přidej zvýraznění
+  } else {
+    if(gapTurnedCand && candOn){ gapTurnedCand=false; candToggle.click(); } // zhasni vrstvu, kterou zapnulo „Nepokryto"
+    else { gapTurnedCand=false; if(candOn) renderCand(); }                  // uživatelovu vrstvu nech, jen zruš zvýraznění
+  }
+  if(typeof buildCovPanel==='function') buildCovPanel(); // sync mřížky (Ostatní „vidět")
+};
 
 function ensureKand(cb){ if(kandLoaded){ cb(); return; }
   fetch('kandidati.json').then(function(r){return r.json();}).then(function(d){ KAND=d; kandLoaded=true; cb(); })
@@ -2902,7 +2913,7 @@ function flPendingCount(){ if(typeof domereni==='undefined'||!domereni) return 0
   });
   return n; }
 var _gisReqList=[];
-function flUpdChangeCount(){ var n=flPendingCount(); var gc=document.getElementById('gisCount'); if(gc) gc.textContent=n?('('+n+')'):'';
+function flUpdChangeCount(){ var n=flPendingCount(); var gc=document.getElementById('gisCount'); if(gc) gc.textContent=n?(' ('+n+')'):'';
   var gp=document.getElementById('gisPanel'); if(gp&&gp.classList.contains('open')) buildGisPanel(); }
 // komu jde žádost o nahrání = lidé s rolí GIS (+ Admin pro jistotu)
 function flGisTargets(){ return Object.keys(lide||{}).filter(function(pid){ var r=(lide[pid]||{}).role; return r==='GIS'||r==='Admin'; }); }
