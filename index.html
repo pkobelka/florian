@@ -1130,7 +1130,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .uk-empty{font-size:13px;color:#8a97a6;padding:4px 2px}
 .uk-badge{position:absolute;top:-9px;left:-10px;background:#d32f2f;border-radius:50%;font-size:11px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .pozn-badge{position:absolute;top:-9px;right:-10px;background:#f59e0b;border-radius:50%;font-size:10px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-.num-badge{display:none;position:absolute;bottom:-9px;right:-11px;min-width:20px;height:20px;padding:0 4px;box-sizing:border-box;background:#0d47a1;color:#fff;border-radius:10px;font-size:12.5px;line-height:17px;font-weight:800;text-align:center;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.num-badge{display:none;position:absolute;left:100%;top:50%;transform:translate(3px,-50%);white-space:nowrap;background:#fff;color:#0d47a1;border:1.5px solid #1565c0;border-radius:3px;padding:1px 5px;font-size:14px;line-height:16px;font-weight:600;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.45);z-index:550}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
 /* miniatura fotky u markeru – ať je hned vidět, který H má foto (a kde chybí) */
 .foto-badge{display:none;position:absolute;left:50%;bottom:100%;transform:translate(-50%,-3px);
@@ -1250,7 +1250,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.141';
+const APP_VERSION = '1.142';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1513,20 +1513,23 @@ function flHeaderSub(){
   }catch(_){}
 }
 // počet viditelných požárních H (dle filtrů + případného stavu revize)
-function flVisibleFireCount(){ var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter)) n++; }); return n; }
+// pomůcka: je bod v aktuálním výřezu mapy? (počty nahoře se počítají podle plochy na obrazovce)
+function _inView(lat,lon){ try{ return map.getBounds().contains([lat,lon]); }catch(e){ return true; } }
+function flVisibleFireCount(){ var b=null; try{ b=map.getBounds(); }catch(e){} var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter) && (!b||b.contains([it.h.lat,it.h.lon]))) n++; }); return n; }
 // počet zobrazených „ostatních" (kandidátů) – nezapočítává reklasifikované na požární; respektuje filtr obce/pracoviště
-function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os=(typeof visibleObecSet==='function')?visibleObecSet():null; var n=0; KAND.forEach(function(h){ if(FIRE_IDS.has(h.id)) return; if(os && !os.has(h.obec)) return; n++; }); return n; }
+function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os=(typeof visibleObecSet==='function')?visibleObecSet():null; var b=null; try{ b=map.getBounds(); }catch(e){} var n=0; KAND.forEach(function(h){ if(FIRE_IDS.has(h.id)) return; if(os && !os.has(h.obec)) return; if(b && !b.contains([h.lat,h.lon])) return; n++; }); return n; }
 // počet vybraných „k doměření" (🟢) v aktuálním výběru – bez povýšených a reklasifikovaných
 function flMarkedCount(){ try{
   if(typeof kandMarked==='undefined'||!kandMarked) return 0;
   // počítej jen když se zelené vážně kreslí (stejné podmínky jako renderMarked/renderCand)
   if(typeof revStatusFilter!=='undefined' && revStatusFilter) return 0;                 // semafor = zelené pryč
   if(!(typeof candOn!=='undefined'&&candOn) && typeof markedShownOn!=='undefined' && !markedShownOn) return 0; // vrstva 🟢 schovaná
-  var obecSet=(typeof visibleObecSet==='function')?visibleObecSet():null, n=0;
+  var obecSet=(typeof visibleObecSet==='function')?visibleObecSet():null, n=0, b=null; try{ b=map.getBounds(); }catch(e){}
   Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m||m.lat==null) return;
     if(typeof FIRE_IDS!=='undefined'&&FIRE_IDS&&FIRE_IDS.has(id)) return;
     if(typeof domereni!=='undefined'&&domereni[id]&&domereni[id].povyseno) return;
     if(typeof markInSel==='function'&&!markInSel(id,obecSet)) return;
+    if(b && !b.contains([m.lat,m.lon])) return;
     n++; });
   return n;
 }catch(e){ return 0; } }
@@ -1539,7 +1542,7 @@ function flRenderCount(){ var cel=document.getElementById('count'); if(!cel) ret
   if(vyb>0) html+='<span class="cnt-v" title="Vybrané k doměření"> · 🟢 '+vyb+'</span>';
   if(showOst) html+='<span class="cnt-o" title="Ostatní hydranty"> · 🟣 '+candShownCount()+'</span>';
   cel.innerHTML=html;
-  cel.title='🔵 Požární · 🟢 Vybrané (k doměření) · 🟣 Ostatní';
+  cel.title='Počty v zobrazené ploše mapy · 🔵 Požární · 🟢 Vybrané (k doměření) · 🟣 Ostatní';
 }
 // ---- filtry: Skupina (majitel) + Obce (provázané) ----
 function ownerLbl(){
@@ -1844,7 +1847,7 @@ if(fotoToggle){
     if(fotoBadgeOn && map.getZoom()<FOTO_ZOOM) alert('Přibliž mapu na obec a fotky se u hydrantů ukážou.');
   };
 }
-map.on('moveend', function(){ if(fotoBadgeOn) updFotoBadges(); }); // při posunu mapy přepočítej počet
+map.on('moveend', function(){ if(fotoBadgeOn) updFotoBadges(); if(typeof flRenderCount==='function') flRenderCount(); }); // posun/zoom → přepočítej počty (foto i 🔵🟢🟣 podle výřezu)
 
 // revize (semafor) toggle – přebarví hydranty podle stavu (viditelné pro všechny)
 const revToggle = document.getElementById('revToggle');

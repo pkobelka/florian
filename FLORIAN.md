@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.141**, cache `florian-v148`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.142**, cache `florian-v149`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.142 (tato session) — Počty podle výřezu + čitelnější čísla H
+- **Počty 🔵🟢🟣 nahoře jsou teď podle VÝŘEZU mapy** (volba B): `flVisibleFireCount`,
+  `candShownCount`, `flMarkedCount` filtrují navíc přes `map.getBounds().contains`. Přepočet
+  navázán na `map.on('moveend')` → rolování/zoom čísla mění. (Pořád i podle filtru pracoviště/obec.)
+- **Čísla H (`.num-badge`) čitelnější:** větší (14px), hranatý rámeček (border-radius 3px, bílé
+  pozadí, modrý okraj+text), nezvýrazněně (font-weight 600), a hlavně **vedle symbolu**
+  (`left:100%`, ne přes něj) – dřív se schovávalo za symbol H.
 
 ## Hotovo v1.141 (tato session) — Oprava: 🟢 Vybrané v počítadle sedí s viditelností
 - Bug (od v1.136): počítadlo ukazovalo 🟢 6 i když se žádné zelené nekreslily (schovaná vrstva
