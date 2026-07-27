@@ -1125,6 +1125,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .uk-empty{font-size:13px;color:#8a97a6;padding:4px 2px}
 .uk-badge{position:absolute;top:-9px;left:-10px;background:#d32f2f;border-radius:50%;font-size:11px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .pozn-badge{position:absolute;top:-9px;right:-10px;background:#f59e0b;border-radius:50%;font-size:10px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.num-badge{position:absolute;bottom:-8px;right:-9px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;background:#0d47a1;color:#fff;border-radius:8px;font-size:10px;line-height:14px;font-weight:800;text-align:center;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.5)}
 .pozn-tip{font-size:12.5px;font-weight:600;color:#3a2c00;background:#fff8e1;border:1px solid #f0d78a;border-radius:8px;padding:5px 8px;box-shadow:0 2px 8px rgba(0,0,0,.18);width:max-content;max-width:230px;white-space:normal;text-align:left}
 .pozn-tip::before{border-top-color:#f0d78a !important}
 .leaflet-tooltip.pozn-tip{opacity:1}
@@ -1234,7 +1235,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.129';
+const APP_VERSION = '1.130';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1310,9 +1311,11 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" title="Má poznámku">📝</span>':'';
-  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+  var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
+  var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
+  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
-  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
+  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
 }
 function rebuildMarkersBadges(){ try{ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
 

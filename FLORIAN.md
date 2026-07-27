@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.129**, cache `florian-v136`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.130**, cache `florian-v137`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.130 (tato session) — číslo hydrantu jako odznak na mapě
+- **Oficiální číslo H v obci se ukazuje jako malý odznak na značce na mapě** (`.num-badge`,
+  tmavě modrý kroužek vpravo dole, **jen číslo** — 1/2/3…, bez „H"). V `iconForItem` (obě
+  varianty vč. revMode) přes `candVal(h,'cislo')`. Svítí jen u hydrantů, co číslo mají
+  (Radišov 1–4, Bílá Studně 1–3); při oddálení schová cluster. Poznámka/umístění zůstává
+  v kartě (na klik, podtitulek). V kartě je pořád i chip 🏷️ H<č>.
+- Pozn.: „špatné očíslování" u Radišova (H4/H5) byly staré ručně psané poznámky — mizí
+  filtrem z v1.127; pokud uživatel viděl stále, byla to **neobnovená stránka / cache**
+  (sw je network-first → stačí reload; „Do GISu" mezera byla taky jen stará cache).
 
 ## Hotovo v1.129 (tato session) — VRÁCENO: naměřený tlak je HYDROSTATICKÝ (revert v1.128)
 - **Vrácena změna z v1.128.** Uživatel upřesnil: naměřený tlak ze seznamů je měřen
