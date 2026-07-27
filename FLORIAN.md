@@ -6,7 +6,22 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.123**, cache `florian-v130`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.124**, cache `florian-v131`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.124 (tato session) — oficiální čísla H + DN potrubí z Excelu (Radišov)
+- **Doplněna oficiální data z „Seznam PH" (Excel starostů/VHOS) pro Radišov** přímo do
+  zdrojových dat `HYDRANTY` (4 body). Párování **podle čísla popisného**: app `upresneni`
+  „Radišov 45" ↔ Excel „umístění" „u č.p. 45". Mapa: id 2148=H1(45), 2147=H2(5), 840=H3(42),
+  837=H4(32). Doplněno/aktualizováno: `cislo` (1–4), `dnPotrubi` (80/80/100/80), `prutok`
+  (zaokr. na 1 desetinu: 9,9/13,8/9,5/11,7), `tlakStat` (Excel „Mpa" byly bary → ÷10:
+  0,4/0,5/0,36/0,52). Měření z 15.7.2025.
+- **Nový chip v kartě „🏷️ H<č>"** (`cisloHChip`, čte `candVal(h,'cislo')`) v hlavičce vedle
+  „📏 nejbližší H". DN potrubí se ukazuje přes existující řádek (v1.105), `dnPotrubi` je i v
+  `FL_EXPORT_FIELDS`.
+- **Postup pro další obce (až přijdou seznamy):** stejný styl — najít hydrant podle textu
+  umístění (č.p.) ↔ `upresneni`, zapsat do zdrojových `HYDRANTY`: `cislo`, `dnPotrubi`,
+  `prutok` (1 des.), `tlakStat` (bar→MPa). Skript na patch objektů viz commit v1.124.
+  Pozor: tlak v Excelu bývá v barech i když hlavička říká „Mpa" (÷10).
 
 ## Hotovo v1.123 (tato session) — zrušeno pracovní číslo H u bodů k doměření
 - **Globální pořadové číslo „H1, H2…" u vybraných bodů zrušeno** (bylo arbitrární, plete se
