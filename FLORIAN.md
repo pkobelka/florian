@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.127**, cache `florian-v134`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.128**, cache `florian-v135`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.128 (tato session) — oprava: naměřený tlak je HYDRODYNAMICKÝ, ne statický
+- **Oprava zařazení tlaku (Radišov + Bílá Studně, 7 bodů).** Hodnota tlaku z „Seznam PH"
+  (měřeno za průtoku Hydranttestem) je **hydrodynamický** tlak, ne hydrostatický — i když
+  Excel měl v hlavičce „H-stat". Dle uživatele (odborník): naměřeno = hydrodynamický,
+  hydrostatický se teprve doměří. Přesunuto: `tlakDyn` = naměřená hodnota
+  (0,58/0,42/0,38 · 0,4/0,5/0,36/0,52), `tlakStat` **vyprázdněno** (nezměřeno).
+- Důsledek: **ČSN 73 0873 se teď vyhodnotí správně** (hlídá hydrodynamický ≥ 0,2 MPa) —
+  všechny tyto body vyhovují. Dřív byl dynamický 0 → nevyhodnocovalo se.
+- **Pozor do budoucna:** u dalších obcí zapisovat naměřený tlak ze seznamů do
+  **hydrodynamického** (`tlakDyn`), ne do `tlakStat`. (Oprava k v1.124/1.125.)
 
 ## Hotovo v1.127 (tato session) — poznámka „jen číslo / H4" se nepovažuje za poznámku
 - **Oprava: u Radišova svítily na mapě štítky „H4/H5" (i duplicitně).** Byly to poznámky,
