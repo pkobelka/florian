@@ -6,7 +6,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.125**, cache `florian-v132`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.126**, cache `florian-v133`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.126 (tato session) — umístění/poznámka do podtitulku karty (na klik)
+- **Číslo H „na klik" (v kartě)** — chip 🏷️ H<č> už je v hlavičce od v1.124; stálý odznak
+  na mapě zatím NEděláme (uživatel preferuje jen v kartě). Návrh odznaku hotov (scratchpad),
+  parkuje.
+- **Umístění/poznámka z Excelu v podtitulku karty — bez řádku navíc.** Nové zdrojové pole
+  `umisteniText`; podtitulek karty (`.sub`) ukazuje `candVal(h,'umisteniText')||txt(h.umisteni)`
+  → místo „na řadu" ukáže třeba „u č.p. 45" (Radišov) nebo „mezi čp 6 a 8 · v komunikaci"
+  (Bílá Studně). Doplněno 7 bodům (Radišov 4 + Bílá Studně 3). Řeší obavu „řádek navíc".
+- GIS: číslo/poznámka nemají v GIS exportu vlastní sloupec (viz CSV schéma) → do GISu půjde
+  vše do `Poznámka` (jediné volné pole), formát doladit se správcem GIS. Export CSV lze
+  srovnat na přesné hlavičky GIS (`Hydrant_vod_info.csv`).
 
 ## Hotovo v1.125 (tato session) — oficiální data Bílá Studně + oprava průtoku (m³/h→l/s)
 - **Bílá Studně (3 body) doplněna ze seznamu** (párování dle č.p. + typu): id 3785=H1
