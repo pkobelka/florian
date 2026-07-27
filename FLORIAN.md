@@ -14,13 +14,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   „Pracoviště" (flex:1) zabere zbytek řádku. Jmenovka `#stredLbl` má vlastní
   `max-width:240px` (dřív sdílených 150px) → vejde se celý název pracoviště.
 - **Otočení fotky v kartě.** Nové tlačítko **🔄** v `.pbtns` (u Vyfotit/Galerie/🗑️,
-  jen když fotka je) v obou kartách (požární i kandidát). `rotatePhoto(h)` načte
-  fotku (přednostně lokální `photoData`, jinak `cloudPhotos` s `crossOrigin`),
-  otočí ji o **90° po směru hodin** přes canvas (prohodí rozměry), uloží do
-  `photoData` + localStorage a přes `fbUploadFoto` nahraje do cloudu (přepíše
-  `florian/foto/<id>.jpg`, nový download token → bez cache). Opakovaným klikem
-  doladíš orientaci. Fotka jen z cloudu z jiného zařízení bez CORS → hláška
-  (otoč na zařízení, kde jsi fotil, nebo přefoť). Řeší „Rozstání 91: foto naležato".
+  jen když fotka je) v obou kartách (požární i kandidát). `rotatePhoto(h)` **nemění
+  pixely** — jen uloží **příznak úhlu** 0/90/180/270° (klik = +90° po směru hodin):
+  do `photoRot` + localStorage `florian_photo_rot` a do Firebase
+  `florian_foto/<id>.rot` (`.update`, `cloudRot` z listeneru, cloud vyhrává jako
+  u url). Zobrazení otočí přes **CSS `transform:rotate`** — miniatura `.pimg`
+  (u r90/r270 přepnuto na `object-fit:contain`), zoom `#photoZoom img`
+  (r90/r270 mají `max-width:94vh/max-height:94vw`, ať se vejdou) i tisk `.pphoto`.
+  Třída se sází přes `rotCls(id)` v markupu, `flZoomPhoto(src,deg)`. **Funguje i pro
+  fotku od kolegy jen v cloudu** (nečte se obraz → žádný CORS problém) a otočení
+  se **propíše všem** (uloženo u fotky). `deletePhoto` maže i rotaci. Řeší
+  „Rozstání 91: foto naležato, focené nastojato".
 
 ## Hotovo v1.115 (tato session) — tlačítko „Vše" u Pracoviště + roletky se zavírají po výběru
 - **Nové tlačítko „Vše"** ve dvojici s „Pracoviště" (`.ctrl-row`) — zruší filtry a ukáže všechny

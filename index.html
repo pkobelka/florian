@@ -990,6 +990,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 /* malá fotka + mini-mapa vedle sebe + tlačítka */
 .media2{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 16px 2px}
 .media2 .pimg{width:100%;height:86px;object-fit:cover;border-radius:10px;cursor:zoom-in;display:block;border:1px solid var(--line)}
+.media2 .pimg.r90{transform:rotate(90deg)}
+.media2 .pimg.r180{transform:rotate(180deg)}
+.media2 .pimg.r270{transform:rotate(270deg)}
+.media2 .pimg.r90,.media2 .pimg.r270{object-fit:contain}
 .media2 .box{height:86px;border:2px dashed #cdd3da;border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:11.5px;background:#fafbfc;text-align:center}
 .media2 .m-map{height:86px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#dfe6ea}
 .pbtns{display:flex;gap:6px;padding:5px 16px 2px}
@@ -1002,6 +1006,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 #photoZoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1200;display:none;align-items:center;justify-content:center;padding:14px}
 #photoZoom.open{display:flex}
 #photoZoom img{max-width:100%;max-height:100%;border-radius:8px}
+#photoZoom img.r90{transform:rotate(90deg)}
+#photoZoom img.r180{transform:rotate(180deg)}
+#photoZoom img.r270{transform:rotate(270deg)}
+#photoZoom img.r90,#photoZoom img.r270{max-width:94vh;max-height:94vw}
 #photoZoom .pz-x{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:14px;background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
 /* širší obrazovky: dva sloupce vedle sebe + tři sloupce podrobností */
 @media(min-width:600px){
@@ -1046,6 +1054,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .pcard .pmedia{display:flex;gap:4mm;margin-top:3mm;align-items:stretch}
 .pcard .pmap{flex:1;height:105mm;border:1px solid #999;border-radius:2mm;overflow:hidden}
 .pcard .pphoto{max-width:45%;max-height:105mm;object-fit:contain;border:1px solid #999;border-radius:2mm}
+.pcard .pphoto.r90{transform:rotate(90deg)}
+.pcard .pphoto.r180{transform:rotate(180deg)}
+.pcard .pphoto.r270{transform:rotate(270deg)}
 /* mapa v tiskové kartě se načte mimo obrazovku (aby měla dlaždice) */
 @media screen{
   body.building-print #printArea{display:block;position:fixed;left:0;top:0;width:718px;opacity:0;pointer-events:none;z-index:-1}
@@ -1885,6 +1896,12 @@ const cardBody = document.getElementById('cardBody');
 let miniMap = null, current = null;
 let photoData = {};
 try{ photoData = JSON.parse(localStorage.getItem('florian_photos')||'{}') || {}; }catch(e){ photoData = {}; }
+// otočení fotky (0/90/180/270°) – jen příznak, pixely se nemění (funguje i pro cloud fotky)
+let photoRot = {};
+try{ photoRot = JSON.parse(localStorage.getItem('florian_photo_rot')||'{}') || {}; }catch(e){ photoRot = {}; }
+var cloudRot = {};
+function rotOf(id){ var r = (cloudRot[id]!=null?cloudRot[id]:photoRot[id]); r=parseInt(r,10)||0; return ((r%360)+360)%360; }
+function rotCls(id){ var d=rotOf(id); return d?(' r'+d):''; }
 
 function openCard(h){
   current = h;
@@ -1935,7 +1952,7 @@ function openCard(h){
       '</div>'+
       '<div class="cg-side">'+
         '<div class="media2">'+
-          (ph?'<img class="pimg" id="photoThumb" src="'+ph+'" alt="foto">':'<div class="box">📷 Bez fotky</div>')+
+          (ph?'<img class="pimg'+rotCls(h.id)+'" id="photoThumb" src="'+ph+'" alt="foto">':'<div class="box">📷 Bez fotky</div>')+
           '<div id="mini" class="m-map"></div>'+
         '</div>'+
         '<div class="pbtns">'+
@@ -1964,11 +1981,11 @@ function openCard(h){
   document.getElementById('fGal').onchange = (e)=> loadPhoto(e,h);
   var fDel=document.getElementById('fDel'); if(fDel) fDel.onclick = ()=> deletePhoto(h);
   var fRot=document.getElementById('fRot'); if(fRot) fRot.onclick = ()=> rotatePhoto(h);
-  var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src); };
+  var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src, rotOf(h.id)); };
   setTimeout(()=> buildMini(h), 60);
 }
 // zvětšení fotky přes celou obrazovku
-function flZoomPhoto(src){ var z=document.getElementById('photoZoom'); if(!z)return; z.querySelector('img').src=src; z.classList.add('open'); }
+function flZoomPhoto(src,deg){ var z=document.getElementById('photoZoom'); if(!z)return; var im=z.querySelector('img'); im.className=''; if(deg) im.classList.add('r'+deg); im.src=src; z.classList.add('open'); }
 (function(){ var z=document.getElementById('photoZoom'); if(z) z.onclick=function(){ z.classList.remove('open'); z.querySelector('img').src=''; }; })();
 
 function buildMini(h){
@@ -2024,35 +2041,20 @@ function deletePhoto(h){
   if(!photoData[h.id] && !cloudPhotos[h.id]) return;
   if(!confirm('Odebrat fotografii?')) return;
   delete photoData[h.id]; delete cloudPhotos[h.id];
-  try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }catch(e){}
+  delete photoRot[h.id]; delete cloudRot[h.id];
+  try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); localStorage.setItem('florian_photo_rot', JSON.stringify(photoRot)); }catch(e){}
   if(window._FDB){ try{ _FDB.ref('florian_foto/'+h.id).remove(); if(window._FST) _FST.ref('florian/foto/'+h.id+'.jpg').delete().catch(function(){}); }catch(e){} }
   reopenCard(h);
 }
-// otočení fotky o 90° po směru hodin (opakovaným klikem doladíš)
+// otočení fotky o 90° po směru hodin (opakovaným klikem doladíš) – jen příznak, funguje
+// i pro fotku od kolegy jen v cloudu (nemění pixely, jen se uloží úhel a otočí přes CSS)
 function rotatePhoto(h){
-  var src = photoData[h.id] || cloudPhotos[h.id];
-  if(!src) return;
-  var img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function(){
-    var w=img.width, ht=img.height;
-    var cv=document.createElement('canvas');
-    cv.width=ht; cv.height=w;                 // rozměry se prohodí
-    var ctx=cv.getContext('2d');
-    ctx.translate(cv.width,0);
-    ctx.rotate(Math.PI/2);
-    ctx.drawImage(img,0,0);
-    var data;
-    try{ data = cv.toDataURL('image/jpeg', 0.8); }
-    catch(err){ alert('Fotku tady nejde otočit (je jen v cloudu z jiného zařízení). Otoč ji na zařízení, kde jsi ji fotil, nebo ji přefoť.'); return; }
-    photoData[h.id]=data;
-    cloudPhotos[h.id]=data;                    // hned ukázat otočenou (než doběhne upload)
-    try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }catch(e){}
-    fbUploadFoto(h, cv);
-    reopenCard(h);
-  };
-  img.onerror = function(){ alert('Fotku se nepodařilo načíst pro otočení.'); };
-  img.src = src;
+  if(!photoData[h.id] && !cloudPhotos[h.id]) return;
+  var deg = (rotOf(h.id)+90)%360;
+  photoRot[h.id]=deg; cloudRot[h.id]=deg;
+  try{ localStorage.setItem('florian_photo_rot', JSON.stringify(photoRot)); }catch(e){}
+  if(window._FDB){ try{ _FDB.ref('florian_foto/'+h.id).update({rot:deg}); }catch(e){} }
+  reopenCard(h);
 }
 
 function closeCard(){
@@ -2097,7 +2099,7 @@ function doPrint(h){
       '<div class="pcols">'+tbl(rows.slice(0,half))+tbl(rows.slice(half))+'</div>'+
       '<div class="pmedia">'+
         '<div id="pmap" class="pmap"></div>'+
-        (ph?'<img class="pphoto" src="'+ph+'">':'')+
+        (ph?'<img class="pphoto'+rotCls(h.id)+'" src="'+ph+'">':'')+
       '</div>'+
     '</div>';
   // dej #printArea reálnou velikost mimo obrazovku, ať se mapa načte i s dlaždicemi
@@ -2367,7 +2369,7 @@ function openCandCard(h){
       '</div>'+
       '<div class="cg-side">'+
         '<div class="media2">'+
-          (ph?'<img class="pimg" id="photoThumb" src="'+ph+'" alt="foto">':'<div class="box">📷 Bez fotky</div>')+
+          (ph?'<img class="pimg'+rotCls(h.id)+'" id="photoThumb" src="'+ph+'" alt="foto">':'<div class="box">📷 Bez fotky</div>')+
           '<div id="mini" class="m-map"></div>'+
         '</div>'+
         '<div class="pbtns">'+
@@ -2397,7 +2399,7 @@ function openCandCard(h){
   var fg=document.getElementById('fGal'); if(fg) fg.onchange=function(e){ loadPhoto(e,h); };
   var fd=document.getElementById('fDel'); if(fd) fd.onclick=function(){ deletePhoto(h); };
   var fr=document.getElementById('fRot'); if(fr) fr.onclick=function(){ rotatePhoto(h); };
-  var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src); };
+  var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src, rotOf(h.id)); };
   wireUkoly(h);
   setTimeout(function(){ buildCandMini(h); },60);
 }
@@ -3085,7 +3087,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       // jednorázově (po prvním úspěšném čtení = přihlášen): nahraj lokální body, které v cloudu chybí
       if(_kandFirst){ _kandFirst=false; try{ Object.keys(kandMarked).forEach(function(id){ if(kandMarked[id] && !v[id]){ _FDB.ref('florian_kandidati/'+id).set(kandMarked[id]); } }); }catch(e){} }
       Object.keys(v).forEach(function(id){ kandMarked[id]=v[id]; }); try{localStorage.setItem('florian_kandidati',JSON.stringify(kandMarked));}catch(e){} if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof candOn!=='undefined'&&candOn)renderCand(); }, function(){});
-    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; }); }, function(){});
+    _FDB.ref('florian_foto').on('value',function(sn){ var v=sn.val()||{}; cloudPhotos={}; cloudRot={}; Object.keys(v).forEach(function(id){ if(v[id]&&v[id].url)cloudPhotos[id]=v[id].url; if(v[id]&&v[id].rot!=null)cloudRot[id]=v[id].rot; }); }, function(){});
     _FDB.ref('florian_ukoly').on('value',function(sn){ ukoly=sn.val()||{}; if(typeof refreshUkolBadge==='function')refreshUkolBadge(); }, function(){});
     _FDB.ref('florian_gis_requests').limitToLast(30).on('value',function(sn){ var out=[]; sn.forEach(function(c){ var v=c.val()||{}; if(v.ts) out.push(v); }); out.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); if(typeof flRenderGisReq==='function') flRenderGisReq(out); }, function(){});
     var _lideFirst=true;
