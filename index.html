@@ -827,6 +827,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .cov-sec{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:8px 6px 2px;border-top:1px solid var(--line);margin-top:6px}
 #covBtn.on{border-color:var(--blue);color:var(--blue);font-weight:800}
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
+#allBtn{flex:0 0 auto;padding-left:13px;padding-right:13px}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
   padding:8px 11px;font-size:12.5px;box-shadow:var(--shadow);line-height:1.7}
 .legend b{display:inline-flex;align-items:center;gap:6px;font-weight:600;margin-right:10px}
@@ -880,6 +881,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .tp-search:focus{outline:2px solid var(--blue);border-color:var(--blue);background:#fff}
 .tp-empty{color:var(--muted);font-size:13px;padding:10px 6px;text-align:center}
 #ownLbl,#townLbl,#stredLbl{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+#stredLbl{max-width:240px}
 /* tým / lidé */
 .ld-item{border:1px solid var(--line);border-radius:9px;padding:7px 8px;margin-bottom:6px;background:#fff}
 .ld-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -1205,9 +1207,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.115';
+const APP_VERSION = '1.116';
 const APP_YEAR = 2026;
-const APP_UPDATED = '24. 7. 2026';
+const APP_UPDATED = '27. 7. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -1939,6 +1941,7 @@ function openCard(h){
         '<div class="pbtns">'+
           '<label class="btn ghost" style="cursor:pointer">📷 Vyfotit<input id="fCam" type="file" accept="image/*" capture="environment" hidden></label>'+
           '<label class="btn ghost" style="cursor:pointer">🖼️ Galerie<input id="fGal" type="file" accept="image/*" hidden></label>'+
+          (ph?'<button class="btn ghost" id="fRot" title="Otočit fotku o 90°">🔄</button>':'')+
           (ph?'<button class="btn danger" id="fDel">🗑️</button>':'')+
         '</div>'+
         ukolySekce(h)+
@@ -1960,6 +1963,7 @@ function openCard(h){
   document.getElementById('fCam').onchange = (e)=> loadPhoto(e,h);
   document.getElementById('fGal').onchange = (e)=> loadPhoto(e,h);
   var fDel=document.getElementById('fDel'); if(fDel) fDel.onclick = ()=> deletePhoto(h);
+  var fRot=document.getElementById('fRot'); if(fRot) fRot.onclick = ()=> rotatePhoto(h);
   var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src); };
   setTimeout(()=> buildMini(h), 60);
 }
@@ -2023,6 +2027,32 @@ function deletePhoto(h){
   try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }catch(e){}
   if(window._FDB){ try{ _FDB.ref('florian_foto/'+h.id).remove(); if(window._FST) _FST.ref('florian/foto/'+h.id+'.jpg').delete().catch(function(){}); }catch(e){} }
   reopenCard(h);
+}
+// otočení fotky o 90° po směru hodin (opakovaným klikem doladíš)
+function rotatePhoto(h){
+  var src = photoData[h.id] || cloudPhotos[h.id];
+  if(!src) return;
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function(){
+    var w=img.width, ht=img.height;
+    var cv=document.createElement('canvas');
+    cv.width=ht; cv.height=w;                 // rozměry se prohodí
+    var ctx=cv.getContext('2d');
+    ctx.translate(cv.width,0);
+    ctx.rotate(Math.PI/2);
+    ctx.drawImage(img,0,0);
+    var data;
+    try{ data = cv.toDataURL('image/jpeg', 0.8); }
+    catch(err){ alert('Fotku tady nejde otočit (je jen v cloudu z jiného zařízení). Otoč ji na zařízení, kde jsi ji fotil, nebo ji přefoť.'); return; }
+    photoData[h.id]=data;
+    cloudPhotos[h.id]=data;                    // hned ukázat otočenou (než doběhne upload)
+    try{ localStorage.setItem('florian_photos', JSON.stringify(photoData)); }catch(e){}
+    fbUploadFoto(h, cv);
+    reopenCard(h);
+  };
+  img.onerror = function(){ alert('Fotku se nepodařilo načíst pro otočení.'); };
+  img.src = src;
 }
 
 function closeCard(){
@@ -2343,6 +2373,7 @@ function openCandCard(h){
         '<div class="pbtns">'+
           '<label class="btn ghost" style="cursor:pointer">📷 Vyfotit<input id="fCam" type="file" accept="image/*" capture="environment" hidden></label>'+
           '<label class="btn ghost" style="cursor:pointer">🖼️ Galerie<input id="fGal" type="file" accept="image/*" hidden></label>'+
+          (ph?'<button class="btn ghost" id="fRot" title="Otočit fotku o 90°">🔄</button>':'')+
           (ph?'<button class="btn danger" id="fDel">🗑️</button>':'')+
         '</div>'+
         ukolySekce(h)+
@@ -2365,6 +2396,7 @@ function openCandCard(h){
   var fc=document.getElementById('fCam'); if(fc) fc.onchange=function(e){ loadPhoto(e,h); };
   var fg=document.getElementById('fGal'); if(fg) fg.onchange=function(e){ loadPhoto(e,h); };
   var fd=document.getElementById('fDel'); if(fd) fd.onclick=function(){ deletePhoto(h); };
+  var fr=document.getElementById('fRot'); if(fr) fr.onclick=function(){ rotatePhoto(h); };
   var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src); };
   wireUkoly(h);
   setTimeout(function(){ buildCandMini(h); },60);

@@ -6,7 +6,21 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.115**, cache `florian-v122`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.116**, cache `florian-v123`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.116 (tato session) — delší tlačítko Pracoviště + otočení fotky
+- **Tlačítko „Pracoviště" delší, „Vše" zúžené.** `#allBtn` dostal `flex:0 0 auto`
+  (přes id, aby přebilo `.ctrl-row>button{flex:1}`) → „Vše" se smrskne na obsah a
+  „Pracoviště" (flex:1) zabere zbytek řádku. Jmenovka `#stredLbl` má vlastní
+  `max-width:240px` (dřív sdílených 150px) → vejde se celý název pracoviště.
+- **Otočení fotky v kartě.** Nové tlačítko **🔄** v `.pbtns` (u Vyfotit/Galerie/🗑️,
+  jen když fotka je) v obou kartách (požární i kandidát). `rotatePhoto(h)` načte
+  fotku (přednostně lokální `photoData`, jinak `cloudPhotos` s `crossOrigin`),
+  otočí ji o **90° po směru hodin** přes canvas (prohodí rozměry), uloží do
+  `photoData` + localStorage a přes `fbUploadFoto` nahraje do cloudu (přepíše
+  `florian/foto/<id>.jpg`, nový download token → bez cache). Opakovaným klikem
+  doladíš orientaci. Fotka jen z cloudu z jiného zařízení bez CORS → hláška
+  (otoč na zařízení, kde jsi fotil, nebo přefoť). Řeší „Rozstání 91: foto naležato".
 
 ## Hotovo v1.115 (tato session) — tlačítko „Vše" u Pracoviště + roletky se zavírají po výběru
 - **Nové tlačítko „Vše"** ve dvojici s „Pracoviště" (`.ctrl-row`) — zruší filtry a ukáže všechny
