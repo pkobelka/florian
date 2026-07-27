@@ -6,7 +6,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.117**, cache `florian-v124`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.118**, cache `florian-v125`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.118 (tato session) — poloměr 200 m napevno, poznámka v titulku mřížky
+- **Selektor poloměru (100/150/200 m) v mřížce zrušen** — poloměr je napevno `COVERAGE_RADIUS`
+  = 200 m (default). Ušetřen celý řádek. Místo něj **poznámka v titulku**:
+  „🎯 Zobrazení a pokrytí · poloměr 200 m" (`.cm-r`, decentní menší text). `setCoverageRadius`
+  zůstává v kódu (nevolá se), COVERAGE_RADIUS dál 200. (Kdyby bylo někdy potřeba měnit,
+  vrátit chipy.)
 
 ## Hotovo v1.117 (tato session) — mřížka „Zobrazení a pokrytí" (3 druhy H × vidět/pokrytí)
 - **Sloučené tlačítko „🎯 Pokrytí a zobrazení" (rozbalovací panel) nahrazeno kompaktní

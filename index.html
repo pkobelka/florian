@@ -828,6 +828,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 /* mřížka Zobrazení a pokrytí (3 druhy H × vidět/pokrytí) */
 .cov-matrix{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
 .cov-matrix .cm-title{font-weight:800;font-size:13px;margin-bottom:7px;color:var(--ink)}
+.cov-matrix .cm-title .cm-r{font-weight:600;font-size:11.5px;color:var(--muted)}
 .cm-grid{display:grid;grid-template-columns:1fr auto auto;gap:5px 7px;align-items:center}
 .cm-h{font-size:11px;color:var(--muted);text-align:center;font-weight:700;white-space:nowrap}
 .cm-lbl{font-size:13.5px;font-weight:700;white-space:nowrap}
@@ -1227,7 +1228,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.117';
+const APP_VERSION = '1.118';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1714,22 +1715,19 @@ function buildCovPanel(){
   var m=document.getElementById('covMatrix'); if(!m) return;
   var candShown=(typeof candOn!=='undefined' && candOn);
   function cell(rowKey,act,on){ return '<button class="cm-c r-'+rowKey+(on?' on':'')+'" data-row="'+rowKey+'" data-act="'+act+'">'+(on?'✓':'·')+'</button>'; }
-  var radChips=[100,150,200].map(function(r){ return '<button data-r="'+r+'"'+(r===COVERAGE_RADIUS?' class="on"':'')+'>'+r+' m</button>'; }).join('');
   var hint='';
   if(othersCovOn || candShown){
     if(typeof visibleObecSet==='function' && !visibleObecSet()) hint='„Ostatní" se kvůli výkonu ukáže až po zúžení na obec/středisko.';
   }
   m.innerHTML=
-    '<div class="cm-title">🎯 Zobrazení a pokrytí</div>'+
+    '<div class="cm-title">🎯 Zobrazení a pokrytí <span class="cm-r">· poloměr '+COVERAGE_RADIUS+' m</span></div>'+
     '<div class="cm-grid">'+
       '<div></div><div class="cm-h">👁 vidět</div><div class="cm-h">🎯 pokrytí</div>'+
       '<div class="cm-lbl">🔵 Pož.</div>'+cell('fire','show-fire',fireLayerOn)+cell('fire','cov-fire',coverageOn)+
       '<div class="cm-lbl">🟢 Vybr.</div>'+cell('marked','show-marked',markedShownOn)+cell('marked','cov-dom',domCovOn)+
       '<div class="cm-lbl">🟣 Ost.</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)+
     '</div>'+
-    '<div class="cov-rad" style="border-top:1px solid var(--line);margin-top:7px;padding-top:8px">Poloměr:<span class="cov-rchips">'+radChips+'</span></div>'+
     (hint?'<div class="cm-hint">'+hint+'</div>':'');
-  Array.prototype.forEach.call(m.querySelectorAll('.cov-rchips button'),function(b){ b.onclick=function(){ setCoverageRadius(this.getAttribute('data-r')); }; });
   Array.prototype.forEach.call(m.querySelectorAll('.cm-c'),function(c){ c.onclick=function(){
     var act=this.getAttribute('data-act'); var on=this.classList.contains('on');
     if(act==='show-fire') setFireLayer(!on);
