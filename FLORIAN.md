@@ -6,7 +6,18 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.130**, cache `florian-v137`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.131**, cache `florian-v138`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.131 (tato session) — větší čísla + jen při přiblížení + oprava filtru obcí
+- **Oprava filtru: hydranty bez adresy padaly pod špatné město.** `OBEC_NAME` se plnil PRVNÍM
+  viděným městem obce → 4 body bez adresy v obci 578789 (vlastník „Skupinový vodovod") spadly
+  pod „Radišov" (první v poli). Nově se `OBEC_NAME` plní **nejčastějším** městem obce → 578789
+  = „Staré Město". Radišov teď ve filtru ukáže jen své 4. (obec 578789 = Staré Město, katastry:
+  Radišov 754471, Staré Město+Bílá Studně 754480.)
+- **Čísla H na mapě větší** (`.num-badge` font 12,5 px, ø ~20 px, rámeček 2 px).
+- **Čísla se ukážou až při přiblížení** (`zoom ≥ NUM_ZOOM=16`): `flNumZoom` na `zoomend`
+  přepíná třídu `nums-on` na kontejneru mapy; `.num-badge{display:none}` → `.nums-on .num-badge
+  {display:block}`. Na přehledu se čísla nepletou, cluster je stejně schová.
 
 ## Hotovo v1.130 (tato session) — číslo hydrantu jako odznak na mapě
 - **Oficiální číslo H v obci se ukazuje jako malý odznak na značce na mapě** (`.num-badge`,
