@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.142**, cache `florian-v149`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.143**, cache `florian-v150`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.143 (tato session) — Číslo H černě, v kartě u názvu, a jako GIS round-trip pole
+- Čísla H na mapě (`.num-badge`) **černý text** (border šedý #444).
+- **Číslo H v kartě u názvu** — černý štítek `H<č.>` (`.h2num`) před názvem v `<h2>` (openCard).
+- **`cislo` přidáno do `FL_EXPORT_FIELDS`** → jde do CSV exportu změn do GISu a je sledované jako
+  změna (princip „GIS = jediný zdroj, tam i zpět").
+- ⚠️ OTEVŘENÉ (governance): 18 čísel Staré Město je zatím zapečené v základních datech HYDRANTY
+  (z Excelu), NE v reálném GISu. Aby GIS byl zdroj pravdy, je potřeba je do GISu dostat
+  (buď jednorázový CSV ID→číslo pro importy do GIS, nebo přes změnový report). + dořešit,
+  do kterého GIS atributu číslo patří (čeká na uživatele).
 
 ## Hotovo v1.142 (tato session) — Počty podle výřezu + čitelnější čísla H
 - **Počty 🔵🟢🟣 nahoře jsou teď podle VÝŘEZU mapy** (volba B): `flVisibleFireCount`,
