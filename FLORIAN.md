@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.143**, cache `florian-v150`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.144**, cache `florian-v151`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.144 (tato session) — Přepínač „🔢 Čísla" (čísla H na klik)
+- Čísla H (`.num-badge`) už NEnaskakují sama od zoomu – jsou za přepínačem **🔢 Čísla**
+  (`cisloToggle`, `numOn`, default vyplý) vedle 📷 Foto v řadě. Hlavně pro starosty.
+- `flNumZoom` gate změněn na `numOn && zoom>=NUM_ZOOM`. Zapnutí při oddáleném → hláška.
+- (Vzorová GIS tabulka Radišov: doplněn prázdný sloupec „Hydrodynamický tlak [MPa]" – dle ČSN
+  povinný, zatím nezměřeno. Karta už `0`/prázdno u tlakDyn zobrazuje jako „—" a nehodnotí jako
+  závadu – `hasVal` bere 0 jako nezměřeno.)
 
 ## Hotovo v1.143 (tato session) — Číslo H černě, v kartě u názvu, a jako GIS round-trip pole
 - Čísla H na mapě (`.num-badge`) **černý text** (border šedý #444).
