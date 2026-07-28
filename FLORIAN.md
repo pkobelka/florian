@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.146**, cache `florian-v153`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.151**, cache `florian-v158`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.151 (tato session) — Tlačítko „📄 Protokol o revizi"
+- Nové tlačítko v menu (nad Tisk mapy). `doPrintProtokol()` vygeneruje tiskovou HTML sestavu
+  (`.protokol` v `#printArea`, přes `window.print` → PDF) pro **vyfiltrovanou obec** (dle `matches`).
+- Obsah: hlavička (obec, středisko, vlastník, provozovatel, datum, kdo) + požadavky ČSN;
+  **A) tabulka hydrantů** (Č.H, umístění, typ, DN hydr/řadu, statický, hydrodyn., průtok l/s + m³/h,
+  hodnocení Vyhovuje/Nevyhovuje/Nezměřeno) + souhrn; **B) rozestupy** (nejbližší soused přes
+  `haversineM`, ≤ 2×poloměr) + verdikt; závěr, podpis. Seřazeno dle čísla H.
+- (v1.147–1.150: „i" zelené+klik=poznámka, Info=přepínač info u všech H, tisk mapy jen číslo H,
+  Číslo H v editaci, GPS v záhlaví karty – detaily v git logu.)
 
 ## Hotovo v1.146 (tato session) — Hover tooltip (číslo H + poznámka) + odznak „i"
 - `applyPoznTooltips`: v běžném režimu (poznOn off) bind **hover** tooltip s **H<číslo> + poznámka**
