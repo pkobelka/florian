@@ -37,6 +37,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - TODO (příště): tlačítko „Generovat protokol o revizi" (obdoba „změny do GIS") – vytvoří protokol
   z aktuálních dat obce (viz vzor docx pro Radišov).
 
+## Hotovo v1.150 (tato session) — GPS v záhlaví karty (náhled i tisk)
+- GPS přesunuto **do prvního řádku karty** (`head-gps` v `openCard`, titulek dostal `flex:1`).
+  Klik na GPS = **zkopírovat** do schránky (`cardGps`, navigator.clipboard). Odebráno z dolního
+  seznamu údajů (bylo by dvakrát). V tisku (`doPrint`) GPS zůstává v řádcích jako dřív.
+
 ## Hotovo v1.145 (tato session) — Číslo H v tiskové sestavě (bez poznámky)
 - `doPrint`: přidán řádek **„Číslo H v obci"** (první) a číslo do nadpisu tisku (`H<č.> · …`).
 - Odebrán řádek **„Poznámka"** z tisku (na přání – jen čísla, ne poznámka).

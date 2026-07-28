@@ -937,6 +937,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .card .head .sub{color:var(--muted);font-size:13px;margin-top:2px}
 .card .head .x{margin-left:auto;background:#f0f1f4;border:0;border-radius:50%;width:32px;height:32px;
   font-size:18px;cursor:pointer;color:var(--muted);flex:0 0 auto}
+.card .head .head-gps{align-self:center;flex:0 0 auto;font-size:12px;color:var(--muted);white-space:nowrap;
+  cursor:pointer;padding:3px 8px;border:1px solid var(--line);border-radius:7px;background:#f7f8fa}
+.card .head .head-gps:active{background:#e8eef7}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:6px 16px 2px}
 .chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
 .chip.type-nad{background:#e8f0fe;color:#0d47a1}
@@ -1259,7 +1262,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.149';
+const APP_VERSION = '1.150';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2090,7 +2093,8 @@ function openCard(h){
   const revSt = revStatusOnly(h);
   cardBody.innerHTML =
     '<div class="head"><div class="sym">'+sym+'</div>'+
-      '<div><h2>'+(candVal(h,'cislo')?'<span class="h2num">H'+esc(candVal(h,'cislo'))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
+      '<div style="flex:1;min-width:0"><h2>'+(candVal(h,'cislo')?'<span class="h2num">H'+esc(candVal(h,'cislo'))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
+      '<div class="head-gps" id="cardGps" title="GPS – klikni pro zkopírování">📍 '+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</div>'+
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="chips">'+
       '<span class="chip '+(nad?'type-nad':'type-pod')+'">'+(nad?'Nadzemní':'Podzemní')+'</span>'+
@@ -2109,7 +2113,6 @@ function openCard(h){
         '</div>'+
         '<div class="facts">'+
           rowsDetail.map(r=>'<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>').join('')+
-          '<div class="fact"><div class="fk">GPS</div><div class="fv">'+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</div></div>'+
         '</div>'+
       '</div>'+
       '<div class="cg-side">'+
@@ -2136,6 +2139,7 @@ function openCard(h){
   backdrop.classList.add('open');
   requestAnimationFrame(()=> card.classList.add('open'));
   document.getElementById('cardX').onclick = closeCard;
+  var _gps=document.getElementById('cardGps'); if(_gps) _gps.onclick=function(){ var t=h.lat.toFixed(6)+', '+h.lon.toFixed(6); try{ navigator.clipboard.writeText(t); var o=_gps.innerHTML; _gps.innerHTML='✓ zkopírováno'; setTimeout(function(){ _gps.innerHTML=o; },1200); }catch(e){} };
   document.getElementById('btnEdit').onclick = ()=> openEditForm(h);
   wireUkoly(h);
   document.getElementById('btnPrint').onclick = ()=> doPrint(h);
