@@ -28,6 +28,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - **Tisk mapy: jen číslo H, bez poznámky** — odebrán permanentní pozn tooltip; CSS `body.mapprint`
   `.num-badge` vždy zobrazit, `.pozn-badge` skrýt.
 
+## Hotovo v1.149 (tato session) — ℹ️ Info = přepínač info u všech H (zelený)
+- ℹ️ Info už NEotevírá panel nápovědy – je to **přepínač** (`infoAllOn`): ukáže **číslo H + poznámka
+  natrvalo u všech hydrantů** na mapě. `applyPoznTooltips` má 3 režimy: infoAllOn (perm. číslo+pozn
+  u všech) → poznOn (perm. jen poznámka) → jinak hover (číslo+pozn). Tlačítko `#infoBtn.on` **zelené**.
+- Odstraněn `buildInfoPanel` + `infoPanel` div. (Legenda/nápověda tím padla – pokud bude potřeba,
+  dá se vrátit jinam.)
+- TODO (příště): tlačítko „Generovat protokol o revizi" (obdoba „změny do GIS") – vytvoří protokol
+  z aktuálních dat obce (viz vzor docx pro Radišov).
+
 ## Hotovo v1.145 (tato session) — Číslo H v tiskové sestavě (bez poznámky)
 - `doPrint`: přidán řádek **„Číslo H v obci"** (první) a číslo do nadpisu tisku (`H<č.> · …`).
 - Odebrán řádek **„Poznámka"** z tisku (na přání – jen čísla, ne poznámka).
