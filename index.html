@@ -1130,7 +1130,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .uk-open{color:#e8881b;font-weight:700}.uk-done{color:#2e7d32;font-weight:700}
 .uk-empty{font-size:13px;color:#8a97a6;padding:4px 2px}
 .uk-badge{position:absolute;top:-9px;left:-10px;background:#d32f2f;border-radius:50%;font-size:11px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-.pozn-badge{position:absolute;top:-9px;right:-10px;background:#1976d2;color:#fff;border-radius:50%;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:13px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pozn-badge{position:absolute;top:-9px;right:-10px;background:#111;color:#fff;border-radius:50%;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:13px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);cursor:pointer;pointer-events:auto}
 .num-badge{display:none;position:absolute;left:100%;top:50%;transform:translate(3px,-50%);white-space:nowrap;background:#fff;color:#000;border:1.5px solid #444;border-radius:3px;padding:1px 5px;font-size:14px;line-height:16px;font-weight:600;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.45);z-index:550}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
 .h2num{display:inline-block;background:#111;color:#fff;border-radius:4px;font-size:.72em;font-weight:700;padding:1px 6px;vertical-align:middle;letter-spacing:.3px}
@@ -1257,7 +1257,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.146';
+const APP_VERSION = '1.147';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1431,6 +1431,21 @@ map.getContainer().addEventListener('click', function(e){
   e.stopPropagation();
   var id=b.getAttribute('data-id'); var src=(typeof cloudPhotos!=='undefined'&&cloudPhotos[id])||(typeof photoData!=='undefined'&&photoData[id]);
   if(src && typeof flZoomPhoto==='function') flZoomPhoto(src, (typeof rotOf==='function'?rotOf(id):0));
+}, true);
+// klik na odznak „i" u markeru = otevřít info panel v menu (a NE otevření karty/poznámky)
+function openInfoFromMap(){
+  try{
+    var ctrl=document.querySelector('.ctrl'); if(ctrl) ctrl.classList.add('open');
+    var burg=document.getElementById('ctrlBurger'); if(burg) burg.classList.add('on');
+    ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+    if(typeof buildInfoPanel==='function') buildInfoPanel();
+    var ip=document.getElementById('infoPanel'); if(ip){ ip.classList.add('open'); var ib=document.getElementById('infoBtn'); if(ib) ip.style.top=(ib.offsetTop+ib.offsetHeight+6)+'px'; }
+  }catch(_){}
+}
+map.getContainer().addEventListener('click', function(e){
+  var b=(e.target&&e.target.closest)?e.target.closest('.pozn-badge'):null; if(!b) return;
+  e.stopPropagation();
+  openInfoFromMap();
 }, true);
 
 /* Omez mapu na oblast hydrantů (+ kousek okolo), ať se nedá oddálit/odjet na celou Evropu.

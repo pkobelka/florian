@@ -16,6 +16,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - **Tlačítko ℹ️ Info v menu** (vedle Foto/Čísla) → panel `infoPanel` s legendou (počty, přepínače,
   odznaky u značky, limity ČSN, verze). `buildInfoPanel()`.
 
+## Hotovo v1.147 (tato session) — „i" černé + klik otevře Info panel
+- Odznak „i" (`.pozn-badge`) přebarven na **černou** (bílé „i"). `pointer-events:auto`.
+- **Klik na „i" u markeru** = otevře **ℹ️ Info panel** v menu (`openInfoFromMap`, capture listener +
+  stopPropagation, aby se neotevřela karta). Hover na značku dál ukazuje číslo H + poznámku.
+
 ## Hotovo v1.145 (tato session) — Číslo H v tiskové sestavě (bez poznámky)
 - `doPrint`: přidán řádek **„Číslo H v obci"** (první) a číslo do nadpisu tisku (`H<č.> · …`).
 - Odebrán řádek **„Poznámka"** z tisku (na přání – jen čísla, ne poznámka).
