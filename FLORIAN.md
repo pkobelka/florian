@@ -6,7 +6,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.144**, cache `florian-v151`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.145**, cache `florian-v152`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.145 (tato session) — Číslo H v tiskové sestavě (bez poznámky)
+- `doPrint`: přidán řádek **„Číslo H v obci"** (první) a číslo do nadpisu tisku (`H<č.> · …`).
+- Odebrán řádek **„Poznámka"** z tisku (na přání – jen čísla, ne poznámka).
 
 ## Hotovo v1.144 (tato session) — Přepínač „🔢 Čísla" (čísla H na klik)
 - Čísla H (`.num-badge`) už NEnaskakují sama od zoomu – jsou za přepínačem **🔢 Čísla**

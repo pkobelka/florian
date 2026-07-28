@@ -1255,7 +1255,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.144';
+const APP_VERSION = '1.145';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2208,6 +2208,7 @@ backdrop.onclick = closeCard;
 function doPrint(h){
   const nad = h.typ==='nadzemní';
   const rows = [
+    ['Číslo H v obci', txt(candVal(h,'cislo'))],
     ['Typ hydrantu', (nad?'nadzemní':'podzemní')],
     ['Funkce', txt(h.funkce)],
     ['Obec / město', town(h)],
@@ -2226,7 +2227,6 @@ function doPrint(h){
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['IČME', txt(h.icme)],
     ['GPS', h.lat.toFixed(6)+', '+h.lon.toFixed(6)],
-    ['Poznámka', txt(candVal(h,'poznamka'))],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
   const tbl = arr => '<table>'+arr.map(r=>'<tr><td class="k">'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</table>';
@@ -2235,7 +2235,7 @@ function doPrint(h){
     '<div class="pcard">'+
       '<div class="phead"><div style="font-size:14pt;font-weight:700">Karta hydrantu</div>'+
         '<div class="brand">Florián 2.0</div></div>'+
-      '<h1>'+esc(label(h))+'</h1>'+
+      '<h1>'+(candVal(h,'cislo')?'H'+esc(candVal(h,'cislo'))+' · ':'')+esc(label(h))+'</h1>'+
       '<div class="pmeta">'+(nad?'Nadzemní':'Podzemní')+' požární hydrant · pokrytí r = '+COVERAGE_RADIUS+' m</div>'+
       '<div class="pcols">'+tbl(rows.slice(0,half))+tbl(rows.slice(half))+'</div>'+
       '<div class="pmedia">'+
