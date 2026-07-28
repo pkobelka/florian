@@ -1130,7 +1130,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .uk-open{color:#e8881b;font-weight:700}.uk-done{color:#2e7d32;font-weight:700}
 .uk-empty{font-size:13px;color:#8a97a6;padding:4px 2px}
 .uk-badge{position:absolute;top:-9px;left:-10px;background:#d32f2f;border-radius:50%;font-size:11px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-.pozn-badge{position:absolute;top:-9px;right:-10px;background:#f59e0b;border-radius:50%;font-size:10px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pozn-badge{position:absolute;top:-9px;right:-10px;background:#1976d2;color:#fff;border-radius:50%;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:13px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .num-badge{display:none;position:absolute;left:100%;top:50%;transform:translate(3px,-50%);white-space:nowrap;background:#fff;color:#000;border:1.5px solid #444;border-radius:3px;padding:1px 5px;font-size:14px;line-height:16px;font-weight:600;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.45);z-index:550}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
 .h2num{display:inline-block;background:#111;color:#fff;border-radius:4px;font-size:.72em;font-weight:700;padding:1px 6px;vertical-align:middle;letter-spacing:.3px}
@@ -1181,7 +1181,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="ctrl-row">
     <button class="btn-toggle" id="fotoToggle" title="Zapni a přibliž mapu na obec – u hydrantů se ukážou miniatury fotek (hned je vidět, kde foto je a kde chybí). Číslo = počet fotek ve výřezu mapy.">📷 Foto<span id="fotoCnt"></span></button>
     <button class="btn-toggle" id="cisloToggle" title="Zobrazit čísla hydrantů (H v obci) u značek – po přiblížení. Hlavně pro starosty.">🔢 Čísla</button>
+    <button class="btn-toggle" id="infoBtn" title="Legenda a nápověda – co znamenají odznaky a přepínače">ℹ️ Info</button>
   </div>
+  <div class="town-panel" id="infoPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
@@ -1255,7 +1257,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.145';
+const APP_VERSION = '1.146';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -1330,7 +1332,7 @@ let revStatusFilter=null; // aktivní filtr stavu revize (expired/soon/missing/o
 function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" style="background:'+REV_COLOR[st]+'"></div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
-  var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" title="Má poznámku">📝</span>':'';
+  var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" title="Má poznámku – najeď myší">i</span>':'';
   var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
   var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
   // miniatura fotky (bublinka nad markerem) – jen když H fotku má; klik na ni = velké foto
@@ -1815,8 +1817,16 @@ function applyPoznTooltips(){
   allItems.forEach(function(it){
     var m=it.m; if(!m) return;
     try{ m.unbindTooltip(); }catch(_){}
-    if(typeof hasPozn==='function' && hasPozn(it.h)){
-      m.bindTooltip(esc(poznText(it.h)), {permanent:poznOn, direction:'top', className:'pozn-tip', offset:[0,-6], opacity:1});
+    var h=it.h;
+    var c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
+    var pz=(typeof poznText==='function')?poznText(h):'';
+    if(poznOn){
+      // režim „📝 Poznámky" – permanentně jen poznámka (kde je)
+      if(pz) m.bindTooltip(esc(pz), {permanent:true, direction:'top', className:'pozn-tip', offset:[0,-6], opacity:1});
+    } else if(c || pz){
+      // hover – číslo H + poznámka
+      var html=(c?'<b>H'+esc(c)+'</b>':'')+((c&&pz)?'<br>':'')+(pz?esc(pz):'');
+      m.bindTooltip(html, {permanent:false, direction:'top', className:'pozn-tip', offset:[0,-6], opacity:1});
     }
   });
 }
@@ -2661,6 +2671,37 @@ document.getElementById('pushBtn').onclick=function(e){ e.stopPropagation();
   ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','revListPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
   buildPushPanel();
   var pp=document.getElementById('pushPanel'); pp.classList.toggle('open'); if(pp.classList.contains('open')){var _b=document.getElementById('pushBtn'); pp.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';}
+};
+
+// ---- ℹ️ Info (legenda a nápověda) ----
+function buildInfoPanel(){
+  var wrap=document.getElementById('infoPanel'); if(!wrap) return;
+  var r=(typeof COVERAGE_RADIUS!=='undefined')?COVERAGE_RADIUS:200;
+  var tmin=(typeof TLAK_DYN_MIN!=='undefined')?String(TLAK_DYN_MIN).replace('.',','):'0,2';
+  var pmin=(typeof PRUTOK_MIN!=='undefined')?PRUTOK_MIN:4;
+  var ver=(typeof APP_VERSION!=='undefined')?APP_VERSION:'';
+  wrap.innerHTML=
+    '<div style="font-weight:700;margin-bottom:6px">ℹ️ Legenda a nápověda</div>'+
+    '<div style="font-size:12px;line-height:1.55">'+
+      '<b>Počty nahoře</b> (v zobrazené ploše mapy):<br>🔵 Požární · 🟢 Vybrané (k doměření) · 🟣 Ostatní<br><br>'+
+      '<b>Přepínače:</b><br>'+
+      '📷 Foto – miniatury fotek u H (číslo = počet ve výřezu)<br>'+
+      '🔢 Čísla – čísla hydrantů u značek<br>'+
+      '📝 Poznámky – zobrazí poznámky natrvalo<br>'+
+      '💡 Nepokryto – místa mimo dosah hydrantu<br>'+
+      '🚦 Revize – obarví značky dle stavu revize<br><br>'+
+      '<b>U značky:</b><br>'+
+      'číslo v rámečku = číslo H v obci<br>'+
+      'modré „i" = má poznámku (najeď myší → číslo + poznámka)<br>'+
+      '🛠️ = otevřený úkol<br><br>'+
+      '<b>ČSN 73 0873:</b> hydrodynamický tlak ≥ '+tmin+' MPa · průtok ≥ '+pmin+' l/s · pokrytí r = '+r+' m<br><br>'+
+      '<span style="color:#777">Florián 2.0 · verze '+ver+'</span>'+
+    '</div>';
+}
+document.getElementById('infoBtn').onclick=function(e){ e.stopPropagation();
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  buildInfoPanel();
+  var ip=document.getElementById('infoPanel'); ip.classList.toggle('open'); if(ip.classList.contains('open')){var _b=document.getElementById('infoBtn'); ip.style.top=(_b.offsetTop+_b.offsetHeight+6)+'px';}
 };
 
 refreshUkolBadge();

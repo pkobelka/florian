@@ -6,7 +6,15 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.145**, cache `florian-v152`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.146**, cache `florian-v153`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.146 (tato session) — Hover tooltip (číslo H + poznámka) + odznak „i"
+- `applyPoznTooltips`: v běžném režimu (poznOn off) bind **hover** tooltip s **H<číslo> + poznámka**
+  (pro markery s číslem nebo poznámkou). V režimu „📝 Poznámky" (poznOn) zůstává permanentně jen
+  poznámka. Používá `candVal(h,'cislo')` a `poznText(h)`.
+- Odznak u markeru **📝 → malé modré „i"** (info); `.pozn-badge` přebarven na modrou, serif kurzíva „i".
+- **Tlačítko ℹ️ Info v menu** (vedle Foto/Čísla) → panel `infoPanel` s legendou (počty, přepínače,
+  odznaky u značky, limity ČSN, verze). `buildInfoPanel()`.
 
 ## Hotovo v1.145 (tato session) — Číslo H v tiskové sestavě (bez poznámky)
 - `doPrint`: přidán řádek **„Číslo H v obci"** (první) a číslo do nadpisu tisku (`H<č.> · …`).
