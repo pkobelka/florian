@@ -1112,7 +1112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .candmk .ci-pod{border-radius:50%}
 .candmk .ci-nad{border-radius:3px}
 .candmk .ci-badge{position:absolute;top:-8px;right:-10px;background:#16a34a;color:#fff;border-radius:9px;font-size:10px;font-weight:800;padding:0 4px;border:1.5px solid #fff;line-height:15px;transform:none}
-.reclmk{width:18px;height:18px;border-radius:50%;background:#9e9e9e;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);color:#fff;font-size:12px;font-weight:800;line-height:14px;text-align:center;box-sizing:border-box;opacity:.85}
+.reclmk{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #d32f2f;box-shadow:0 1px 4px rgba(0,0,0,.55);color:#d32f2f;font-size:13px;font-weight:900;line-height:14px;text-align:center;box-sizing:border-box}
 .cluster.candcl{background:#8e24aa !important;border-color:#6a1b9a !important}
 .cluster.markcl{background:#16a34a !important;border-color:#0f7a37 !important}
 #candToggle.on{background:#8e24aa;color:#fff;border-color:#8e24aa}
@@ -1288,7 +1288,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.155';
+const APP_VERSION = '1.156';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -1296,10 +1296,12 @@ const APP_UPDATED = '29. 7. 2026';
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
 const SVG_POD = '<svg viewBox="0 0 28 22" width="26" height="20"><ellipse cx="14" cy="11" rx="13" ry="10" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><ellipse cx="14" cy="11" rx="8.5" ry="6" fill="none" stroke="#cfe3fb" stroke-width="1.6"/><circle cx="14" cy="11" r="2.7" fill="#cfe3fb"/></svg>';
 
-function iconFor(typ){
+function iconFor(typ,h){
   const nad = typ === 'nadzemní';
+  var nb='';
+  if(h){ var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():''; if(_c) nb='<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>'; } // číslo H i u povýšeného kandidáta
   return L.divIcon({
-    className:'', html:'<div class="mk">'+(nad?SVG_NAD:SVG_POD)+'</div>',
+    className:'', html:'<div class="mk" style="position:relative">'+(nad?SVG_NAD:SVG_POD)+nb+'</div>',
     iconSize: nad?[28,37]:[26,20],
     iconAnchor: nad?[14,36]:[13,10],
   });
@@ -2627,7 +2629,7 @@ function renderMarked(){
     if(!markInSel(id,obecSet)) return; // filtr dle výběru pracoviště/obce/vlastníka (stejně jako požární H a jako renderCand)
     var h=(KAND||[]).find(function(x){return x.id===id;}) || {id:id,lat:m.lat,lon:m.lon,typ:m.typ||'podzemní',obec:m.obec};
     if(domereni[id] && domereni[id].povyseno){ // povýšený kandidát = požární hydrant (modrý symbol, ne zelené „k doměření" s H-číslem)
-      var fm=L.marker([m.lat,m.lon],{icon:iconFor(h.typ||m.typ||'podzemní')}); fm._h=h;
+      var fm=L.marker([m.lat,m.lon],{icon:iconFor(h.typ||m.typ||'podzemní',h)}); fm._h=h;
       fm.on('click',function(){ ensureKand(function(){ var hh=(KAND||[]).find(function(x){return x.id===id;}); openCandCard(hh||h); }); });
       markedLayer.addLayer(fm);
       if(coverageOn) L.circle([m.lat,m.lon],{radius:COVERAGE_RADIUS,color:'#1565c0',weight:1,fillColor:'#1565c0',fillOpacity:.10}).addTo(markedCovLayer); // kruh jen když je zapnuté „Pokrytí" (jako u požárních)
@@ -2638,6 +2640,18 @@ function renderMarked(){
     markedLayer.addLayer(mk);
     if(domCovOn) L.circle([m.lat,m.lon],{radius:COVERAGE_RADIUS,color:'#16a34a',weight:2,fillColor:'#16a34a',fillOpacity:.12}).addTo(markedCovLayer);
   });
+  // „Ostatní" hydrant, kterému bylo přiděleno číslo H, ukázat VŽDY (i s vyplou vrstvou 🟣 Ostatní),
+  // ať se číslo zobrazí stejně jako u požárních. (Bod bez čísla se bez zapnuté vrstvy nekreslí.)
+  var cisloIds=Object.keys(domereni||{}).filter(function(id){ var d=domereni[id]; return d && String(d.cislo||'').trim()!=='' && !FIRE_IDS.has(id) && !kandMarked[id] && !d.povyseno; });
+  if(cisloIds.length){
+    if(typeof KAND==='undefined' || !KAND){ if(typeof ensureKand==='function') ensureKand(function(){ if(typeof renderMarked==='function') renderMarked(); }); }
+    else {
+      cisloIds.forEach(function(id){ if(!markInSel(id,obecSet)) return; var h=KAND.find(function(x){return x.id===id;}); if(!h) return;
+        var mk=L.marker([h.lat,h.lon],{icon:candIcon(h,'base')}); mk._h=h;
+        mk.on('click',(function(hh){return function(){ openCandCard(hh); };})(h));
+        markedLayer.addLayer(mk); });
+    }
+  }
 }
 map.addLayer(markedLayer); map.addLayer(markedCovLayer);
 function renderCand(){ candCluster.clearLayers(); candCovLayer.clearLayers(); if(revStatusFilter) return; if(!candOn||!KAND) return;
@@ -2649,7 +2663,7 @@ function renderCand(){ candCluster.clearLayers(); candCovLayer.clearLayers(); if
     if(FIRE_IDS.has(h.id)) return; // reklasifikováno na požární → kreslí hlavní vrstva
     if(obecSet && !obecSet.has(h.obec)) return;
     if(domereni[h.id] && domereni[h.id].povyseno){
-      var fm=L.marker([h.lat,h.lon],{icon:iconFor(h.typ)}); fm._h=h; fm.on('click',function(){ openCandCard(h); }); candCluster.addLayer(fm);
+      var fm=L.marker([h.lat,h.lon],{icon:iconFor(h.typ,h)}); fm._h=h; fm.on('click',function(){ openCandCard(h); }); candCluster.addLayer(fm);
       if(coverageOn) L.circle([h.lat,h.lon],{radius:COVERAGE_RADIUS,color:'#1565c0',weight:1,fillColor:'#1565c0',fillOpacity:.10}).addTo(candCovLayer); // kruh jen když je zapnuté „Pokrytí" (jako u požárních)
       return;
     }
@@ -3220,6 +3234,7 @@ function flCollectExportRows(){
     var h=byId[id];
     if(h){ // požární hydrant z GISu – změny údajů
       var changes=fieldChanges(h,d);
+      if(d.neniPozarni) changes.unshift('Klasifikace: požární hydrant → NEPOŽÁRNÍ (dle aktuálního seznamu z pracoviště)'); // reklasifikace se promítne i do reportu, i když je to jediná změna
       if(changes.length) rows.push({h:h,d:d,changes:changes});
     } else if(d.povyseno && kandById[id]){ // povýšený kandidát → reklasifikace na požární (+ případné doměřené hodnoty)
       var hk=kandById[id];
