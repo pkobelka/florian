@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a2331">
+<title>Míla – Historická klikačka</title>
+<style>
+  :root{
+    --parchment:#f3e7cf;
+    --parchment-2:#efe0c2;
+    --cream:#fffaf0;
+    --ink:#3a2c1a;
+    --ink-soft:#6a5637;
+    --gold:#b8860b;
+    --gold-soft:#c9a24b;
+    --burgundy:#7a2331;
+    --burgundy-dark:#5c1a25;
+    --green:#2e7d32;
+    --green-bg:#e6f2e6;
+    --red:#c0392b;
+    --red-bg:#fbe7e5;
+    --shadow:0 8px 26px rgba(60,40,15,.18);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:Georgia,'Times New Roman',serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #fbf3e0 0%, rgba(251,243,224,0) 60%),
+      linear-gradient(180deg,var(--parchment) 0%,var(--parchment-2) 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    max-width:660px;
+    margin:0 auto;
+    padding:20px 16px calc(28px + env(safe-area-inset-bottom));
+    padding-top:calc(18px + env(safe-area-inset-top));
+  }
+
+  /* ---- Hlavička ---- */
+  header{text-align:center;margin:6px 0 18px}
+  .crown{font-size:40px;line-height:1;margin-bottom:2px}
+  h1{
+    font-size:34px;margin:2px 0 4px;letter-spacing:.5px;
+    color:var(--burgundy);
+    text-shadow:0 1px 0 #fff6e2;
+  }
+  .subtitle{color:var(--ink-soft);font-style:italic;font-size:17px;margin:0}
+  .rule{
+    height:2px;width:120px;margin:14px auto 0;
+    background:linear-gradient(90deg,transparent,var(--gold-soft),transparent);
+  }
+
+  /* ---- Karty ---- */
+  .card{
+    background:var(--cream);
+    border:1px solid var(--gold-soft);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:22px 20px;
+    margin:16px 0;
+  }
+
+  .lead{font-size:19px;margin:0 0 6px}
+  .muted{color:var(--ink-soft)}
+
+  /* ---- Tlačítka ---- */
+  button{font-family:inherit;cursor:pointer}
+  .btn{
+    display:block;width:100%;
+    font-size:21px;
+    padding:16px 18px;
+    border-radius:14px;
+    border:2px solid var(--burgundy);
+    background:var(--burgundy);
+    color:#fff5e6;
+    box-shadow:0 4px 0 var(--burgundy-dark);
+    transition:transform .05s ease, box-shadow .05s ease, background .15s;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--burgundy-dark)}
+  .btn.secondary{
+    background:transparent;color:var(--burgundy);box-shadow:none;
+    border-color:var(--gold-soft);font-size:19px;
+  }
+
+  .choices{display:grid;gap:12px;margin-top:6px}
+  .pick{
+    display:flex;align-items:center;gap:14px;text-align:left;
+    width:100%;
+    font-size:20px;
+    padding:16px 16px;
+    border-radius:14px;
+    border:2px solid var(--gold-soft);
+    background:#fffdf6;
+    color:var(--ink);
+    transition:border-color .12s, background .12s, transform .05s;
+  }
+  .pick:active{transform:scale(.995)}
+  .pick .key{
+    flex:0 0 auto;
+    width:34px;height:34px;border-radius:50%;
+    display:grid;place-items:center;
+    background:var(--parchment);
+    border:2px solid var(--gold-soft);
+    font-size:17px;font-weight:bold;color:var(--burgundy);
+  }
+  .pick .txt{flex:1 1 auto}
+  .pick .mark{flex:0 0 auto;font-size:22px;width:24px;text-align:center}
+  .pick.correct{border-color:var(--green);background:var(--green-bg)}
+  .pick.correct .key{background:var(--green);border-color:var(--green);color:#fff}
+  .pick.wrong{border-color:var(--red);background:var(--red-bg)}
+  .pick.wrong .key{background:var(--red);border-color:var(--red);color:#fff}
+  .pick.dim{opacity:.62}
+  .pick[disabled]{cursor:default}
+
+  /* ---- Průběh / skóre ---- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:10px;font-size:16px;color:var(--ink-soft);
+  }
+  .cat{
+    display:inline-block;font-size:14px;letter-spacing:.3px;
+    color:var(--burgundy);background:#f6ead0;
+    border:1px solid var(--gold-soft);border-radius:999px;
+    padding:4px 12px;font-style:normal;
+  }
+  .progress{height:10px;background:#eaddc0;border-radius:999px;overflow:hidden;margin:4px 0 16px;border:1px solid #e3d3af}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-soft),var(--gold));transition:width .35s ease}
+
+  .question{font-size:23px;line-height:1.4;margin:6px 0 16px;font-weight:bold;color:var(--ink)}
+
+  .explain{
+    margin-top:16px;padding:14px 16px;border-radius:12px;
+    background:#f7efdd;border:1px dashed var(--gold-soft);
+    font-size:17px;color:var(--ink);display:none;
+  }
+  .explain.show{display:block;animation:fade .3s ease}
+  .explain b{color:var(--burgundy)}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .verdict{font-weight:bold;font-size:18px;margin:0 0 6px}
+  .verdict.ok{color:var(--green)}
+  .verdict.no{color:var(--red)}
+
+  .next-row{margin-top:16px}
+
+  /* ---- Výběr délky ---- */
+  .lengths{display:grid;gap:12px;margin-top:8px}
+
+  /* ---- Výsledky ---- */
+  .score-big{font-size:56px;color:var(--burgundy);text-align:center;margin:6px 0 0;font-weight:bold}
+  .score-of{text-align:center;color:var(--ink-soft);font-size:18px;margin:0 0 8px}
+  .medal{font-size:52px;text-align:center;margin:2px 0}
+  .msg{text-align:center;font-size:19px;margin:8px 4px 2px}
+
+  footer{text-align:center;color:var(--ink-soft);font-size:14px;margin-top:22px;font-style:italic}
+
+  .hide{display:none !important}
+  @media (max-width:380px){
+    h1{font-size:29px}
+    .question{font-size:21px}
+    .pick,.btn{font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="crown">👑</div>
+    <h1>Míla</h1>
+    <p class="subtitle">Historická klikačka · 12.–18. století</p>
+    <div class="rule"></div>
+  </header>
+
+  <!-- ÚVOD -->
+  <section id="intro">
+    <div class="card">
+      <p class="lead">Vítej u vědomostní hry o historii, kterou máš ráda 📜</p>
+      <p class="muted" style="margin:0 0 4px">
+        Panovníci, sňatky, vraždy a intriky, slavní spisovatelé i umělci.
+        U každé otázky vybereš z <b>4 odpovědí</b>. Hned uvidíš, zda ses trefila,
+        i tu správnou odpověď s malým vysvětlením.
+      </p>
+      <p class="muted" style="margin:10px 0 0">Kolik otázek si dáš?</p>
+      <div class="lengths">
+        <button class="btn" data-n="8">Krátká hra · 8 otázek</button>
+        <button class="btn" data-n="12">Střední hra · 12 otázek</button>
+        <button class="btn secondary" data-n="0">Velká hra · všechny otázky</button>
+      </div>
+    </div>
+    <footer>Tip: odpovídat můžeš i klávesami 1–4.</footer>
+  </section>
+
+  <!-- HRA -->
+  <section id="game" class="hide">
+    <div class="card">
+      <div class="topbar">
+        <span id="counter">Otázka 1 / 8</span>
+        <span id="score">Body: 0</span>
+      </div>
+      <div class="progress"><i id="bar"></i></div>
+
+      <div><span class="cat" id="cat">Panovníci</span></div>
+      <p class="question" id="q">…</p>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="explain" id="explain">
+        <p class="verdict" id="verdict"></p>
+        <div id="explainText"></div>
+      </div>
+
+      <div class="next-row hide" id="nextRow">
+        <button class="btn" id="next">Další otázka →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VÝSLEDKY -->
+  <section id="result" class="hide">
+    <div class="card">
+      <div class="medal" id="medal">🏅</div>
+      <div class="score-big" id="finalScore">0</div>
+      <p class="score-of" id="finalOf">z 8 otázek</p>
+      <p class="msg" id="finalMsg"></p>
+      <div style="margin-top:18px;display:grid;gap:12px">
+        <button class="btn" id="again">Hrát znovu 🔄</button>
+        <button class="btn secondary" id="home">Zpět na začátek</button>
+      </div>
+    </div>
+    <footer>Vytvořeno s úctou pro dámu, která má ráda historii. 🌹</footer>
+  </section>
+</div>
+
+<script>
+/* ------- Otázky (12.–18. století) ------- */
+/* a[0] je vždy správná odpověď; pořadí se při hře náhodně zamíchá. */
+const QUESTIONS = [
+ {cat:"Panovníci", q:"Který český kníže získal roku 1212 Zlatou bulu sicilskou, potvrzující dědičný královský titul?",
+  a:["Přemysl Otakar I.","Václav I.","Přemysl Otakar II.","Vratislav II."],
+  e:"Zlatou bulu sicilskou udělil roku 1212 Fridrich II. — potvrdila Přemyslu Otakaru I. dědičnost českého královského titulu."},
+ {cat:"Panovníci", q:"Který panovník založil roku 1348 pražskou univerzitu, dnešní Univerzitu Karlovu?",
+  a:["Karel IV.","Václav IV.","Jan Lucemburský","Zikmund Lucemburský"],
+  e:"Karel IV. téhož roku založil i Nové Město pražské; univerzita dnes nese jeho jméno."},
+ {cat:"Panovníci", q:"Kdo byl posledním mužským Přemyslovcem na českém trůně, zavražděným roku 1306?",
+  a:["Václav III.","Václav II.","Přemysl Otakar II.","Václav I."],
+  e:"Václav III. byl zavražděn v Olomouci — Přemyslovci tím vymřeli po meči."},
+ {cat:"Panovníci", q:"Který král zahynul roku 1526 v bitvě u Moháče, po níž na český trůn nastoupili Habsburkové?",
+  a:["Ludvík Jagellonský","Vladislav Jagellonský","Matyáš Korvín","Jiří z Poděbrad"],
+  e:"Mladý Ludvík utonul na útěku; trůn převzal Ferdinand I. Habsburský."},
+ {cat:"Panovníci", q:"Za vlády kterého Habsburka došlo roku 1620 k bitvě na Bílé hoře?",
+  a:["Ferdinand II.","Rudolf II.","Matyáš Habsburský","Ferdinand I."],
+  e:"Porážka českých stavů za Ferdinanda II. vedla k rekatolizaci a popravám na Staroměstském náměstí."},
+ {cat:"Panovníci", q:"Která habsburská panovnice vládla v letech 1740–1780 a provedla rozsáhlé reformy?",
+  a:["Marie Terezie","Kateřina Veliká","Alžběta I.","Marie Antoinetta"],
+  e:"Marie Terezie byla jedinou vládnoucí ženou habsburského rodu; zavedla mj. povinnou školní docházku."},
+ {cat:"Panovníci", q:"Který osvícenský panovník zrušil roku 1781 v českých zemích nevolnictví?",
+  a:["Josef II.","Leopold II.","Karel VI.","František I."],
+  e:"Josef II. vydal roku 1781 patent o zrušení nevolnictví i toleranční patent."},
+ {cat:"Panovníci", q:"Který francouzský král byl zvaný „Král Slunce\" a nechal vystavět Versailles?",
+  a:["Ludvík XIV.","Ludvík XIII.","Ludvík XV.","František I."],
+  e:"Ludvík XIV. vládl 72 let a stal se symbolem absolutismu."},
+ {cat:"Panovníci", q:"Který anglický král zvítězil roku 1485 u Bosworthu a založil dynastii Tudorovců?",
+  a:["Jindřich VII.","Richard III.","Jindřich VIII.","Eduard IV."],
+  e:"Porazil Richarda III. a ukončil války růží."},
+ {cat:"Panovníci", q:"Který ruský vládce přijal roku 1547 jako první titul cara?",
+  a:["Ivan IV. Hrozný","Petr Veliký","Ivan III.","Boris Godunov"],
+  e:"Ivan IV. Hrozný se nechal korunovat prvním ruským carem."},
+ {cat:"Panovníci", q:"Který husita usedl roku 1458 na český trůn jako jediný král nepocházející z panovnické dynastie?",
+  a:["Jiří z Poděbrad","Ladislav Pohrobek","Zikmund Lucemburský","Albrecht Habsburský"],
+  e:"Jiří z Poděbrad, „král dvojího lidu\", usiloval i o mírovou unii evropských panovníků."},
+
+ {cat:"Sňatky", q:"Kdo byla první manželka anglického krále Jindřicha VIII., s níž se dal rozvést?",
+  a:["Kateřina Aragonská","Anna Boleynová","Jana Seymourová","Anna Klevská"],
+  e:"Rozvod s Kateřinou vedl k roztržce s Římem a vzniku anglikánské církve."},
+ {cat:"Sňatky", q:"Koho si vzal Karel IV. za svou první manželku?",
+  a:["Blanku z Valois","Annu Svídnickou","Alžbětu Pomořanskou","Annu Falckou"],
+  e:"Karel IV. měl postupně čtyři manželky; první byla Francouzka Blanka z Valois."},
+ {cat:"Sňatky", q:"Za koho se provdala Marie Terezie, s nímž měla šestnáct dětí?",
+  a:["František Štěpán Lotrinský","Karel VI.","Bedřich II.","Ludvík XV."],
+  e:"František Štěpán se stal císařem; jejich dcerou byla i Marie Antoinetta."},
+ {cat:"Sňatky", q:"Eleonora Akvitánská byla postupně manželkou dvou králů. Kterých?",
+  a:["Ludvíka VII. Francouzského a Jindřicha II. Anglického","Filipa II. a Richarda I.","Jana Bezzemka a Ludvíka IX.","Karla V. a Františka I."],
+  e:"Po zrušení sňatku s Ludvíkem VII. se provdala za Jindřicha II. a stala se anglickou královnou."},
+ {cat:"Sňatky", q:"Čí sňatek roku 1469 položil základ sjednoceného Španělska?",
+  a:["Isabely Kastilské a Ferdinanda Aragonského","Marie Burgundské a Maxmiliána I.","Jany Šílené a Filipa I.","Kateřiny a Artura Tudora"],
+  e:"„Katoličtí králové\" dokončili reconquistu a podpořili výpravu Kryštofa Kolumba."},
+
+ {cat:"Vraždy a intriky", q:"Kde byl roku 1306 zavražděn poslední Přemyslovec Václav III.?",
+  a:["V Olomouci","V Praze","V Brně","Ve Znojmě"],
+  e:"Václav III. byl ubodán v Olomouci při tažení do Polska."},
+ {cat:"Vraždy a intriky", q:"Který arcibiskup byl roku 1170 zavražděn rytíři přímo v katedrále v Canterbury?",
+  a:["Tomáš Becket","Thomas More","Tomáš Akvinský","Anselm z Canterbury"],
+  e:"Becket zahynul po sporu s králem Jindřichem II. a brzy byl prohlášen za svatého."},
+ {cat:"Vraždy a intriky", q:"Který císařský vojevůdce byl roku 1634 zavražděn v Chebu pro podezření ze zrady?",
+  a:["Albrecht z Valdštejna","Jan Žižka","Petr Vok","Karel Škréta"],
+  e:"Valdštejna dal odstranit císař Ferdinand II. za třicetileté války."},
+ {cat:"Vraždy a intriky", q:"Kterou svou manželku, matku pozdější Alžběty I., nechal Jindřich VIII. roku 1536 popravit?",
+  a:["Annu Boleynovou","Kateřinu Aragonskou","Janu Seymourovou","Kateřinu Parrovou"],
+  e:"Anna Boleynová byla sťata na obvinění z cizoložství a velezrady."},
+ {cat:"Vraždy a intriky", q:"Která skotská královna byla roku 1587 popravena na rozkaz Alžběty I.?",
+  a:["Marie Stuartovna","Jana Grayová","Markéta Tudorovna","Anna Boleynová"],
+  e:"Katolická Marie Stuartovna byla vnímána jako hrozba pro protestantskou Alžbětu I."},
+ {cat:"Vraždy a intriky", q:"Co odstartovala „druhá pražská defenestrace\" roku 1618?",
+  a:["České stavovské povstání a třicetiletou válku","Husitské války","Válku o dědictví rakouské","Sedmiletou válku"],
+  e:"Vyhození místodržících z okna Pražského hradu bylo počátkem velké války v Evropě."},
+ {cat:"Vraždy a intriky", q:"Který italský rod je pověstný údajným travičstvím a intrikami v renesanci?",
+  a:["Borgiové","Medicejové","Sforzové","Gonzagové"],
+  e:"Kolem papeže Alexandra VI. a jeho dětí Cesara a Lucrezie koluje řada pověstí o jedu."},
+ {cat:"Vraždy a intriky", q:"Kdo byl otcem Cesara a Lucrezie Borgiových, proslulý renesanční papež?",
+  a:["Alexandr VI.","Julius II.","Lev X.","Inocenc VIII."],
+  e:"Alexandr VI. (Rodrigo Borgia) patří k nejkontroverznějším papežům dějin."},
+ {cat:"Vraždy a intriky", q:"Která uherská šlechtična, „čachtická paní\", byla počátkem 17. století obviněna z krutostí?",
+  a:["Alžběta Báthoryová","Marie Stuartovna","Kateřina Medicejská","Lucrezia Borgia"],
+  e:"Alžběta Báthoryová byla obviněna z mučení mladých žen a zemřela roku 1614 ve vězení."},
+
+ {cat:"Spisovatelé", q:"Kdo je autorem „Božské komedie\" z počátku 14. století?",
+  a:["Dante Alighieri","Francesco Petrarca","Giovanni Boccaccio","Torquato Tasso"],
+  e:"Dante napsal svou pouť peklem, očistcem a rájem lidovou italštinou."},
+ {cat:"Spisovatelé", q:"Kdo napsal renesanční sbírku novel „Dekameron\"?",
+  a:["Giovanni Boccaccio","Dante Alighieri","Francesco Petrarca","Miguel de Cervantes"],
+  e:"„Dekameron\" tvoří sto příběhů, které si vypráví společnost prchající před morem."},
+ {cat:"Spisovatelé", q:"Kdo je autorem románu „Důmyslný rytíř don Quijote de la Mancha\"?",
+  a:["Miguel de Cervantes","Lope de Vega","Pedro Calderón","Francisco de Quevedo"],
+  e:"Cervantesův „Don Quijote\" bývá označován za první moderní román."},
+ {cat:"Spisovatelé", q:"Který „učitel národů\" napsal „Labyrint světa a ráj srdce\"?",
+  a:["Jan Amos Komenský","Bohuslav Balbín","Kryštof Harant","Daniel Adam z Veleslavína"],
+  e:"Jan Amos Komenský byl posledním biskupem Jednoty bratrské a zakladatelem moderní pedagogiky."},
+ {cat:"Spisovatelé", q:"Kdo napsal politický spis „Vladař\" (Il Principe)?",
+  a:["Niccolò Machiavelli","Thomas More","Erasmus Rotterdamský","Dante Alighieri"],
+  e:"Machiavelliho „Vladař\" je nejslavnějším pojednáním o získání a udržení moci."},
+ {cat:"Spisovatelé", q:"Kdo je autorem „Utopie\" z roku 1516?",
+  a:["Thomas More","Niccolò Machiavelli","Erasmus Rotterdamský","Francis Bacon"],
+  e:"Thomas More vymyslel i samotné slovo „utopie\" jako název ostrova ideální společnosti."},
+ {cat:"Spisovatelé", q:"Kdo napsal tragédie „Hamlet\" a „Romeo a Julie\"?",
+  a:["William Shakespeare","Christopher Marlowe","Ben Jonson","Molière"],
+  e:"Shakespeare je považován za největšího dramatika alžbětinské doby."},
+ {cat:"Spisovatelé", q:"Kdo napsal satiru „Chvála bláznovství\"?",
+  a:["Erasmus Rotterdamský","Thomas More","Martin Luther","Niccolò Machiavelli"],
+  e:"Erasmus v ní s ironií kritizoval poměry a mravy své doby."},
+ {cat:"Spisovatelé", q:"Kdo je autorem komedií „Lakomec\" a „Tartuffe\" na dvoře Ludvíka XIV.?",
+  a:["Molière","Jean Racine","Pierre Corneille","Voltaire"],
+  e:"Molière psal a hrál komedie pro dvůr Krále Slunce."},
+
+ {cat:"Umění a věda", q:"Který mnich zahájil roku 1517 reformaci vyvěšením 95 tezí?",
+  a:["Martin Luther","Jan Kalvín","Erasmus Rotterdamský","Ulrich Zwingli"],
+  e:"Luther přeložil Bibli do němčiny a rozdělil západní křesťanství."},
+ {cat:"Umění a věda", q:"Který astronom na dvoře Rudolfa II. v Praze formuloval zákony pohybu planet?",
+  a:["Johannes Kepler","Tycho Brahe","Galileo Galilei","Mikuláš Koperník"],
+  e:"Kepler využil přesná pozorování Tychona Brahe, který v Praze rovněž pobýval."},
+ {cat:"Umění a věda", q:"Kdo roku 1543 publikoval heliocentrický model sluneční soustavy?",
+  a:["Mikuláš Koperník","Galileo Galilei","Johannes Kepler","Isaac Newton"],
+  e:"Koperník vydal spis „O obězích nebeských sfér\", který posunul Zemi ze středu vesmíru."},
+ {cat:"Umění a věda", q:"Který renesanční mistr namaloval „Monu Lisu\"?",
+  a:["Leonardo da Vinci","Michelangelo","Rafael Santi","Sandro Botticelli"],
+  e:"Leonardova „Mona Lisa\" je nejslavnějším obrazem světa."},
+ {cat:"Umění a věda", q:"Kdo vytesal sochu Davida a vymaloval strop Sixtinské kaple?",
+  a:["Michelangelo","Leonardo da Vinci","Rafael Santi","Donatello"],
+  e:"Michelangelo byl mistrem sochařství i malby vrcholné renesance."}
+];
+
+/* ------- Logika hry ------- */
+const $ = id => document.getElementById(id);
+let deck = [], idx = 0, score = 0, answered = false;
+
+/* Pestré pochvaly za správnou odpověď */
+const PRAISE = [
+  "Výborně!", "Skvěle, přesně tak!", "Bravo!", "Trefa do černého!",
+  "Znáš to dokonale!", "Perfektní!", "Klobouk dolů!", "Máš pravdu!",
+  "Nádhera, správně!", "Jde ti to skvěle!", "Ano, přesně!", "To je ono!",
+  "Paráda!", "Máš to v malíčku!", "Chytře!"
+];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startGame(n){
+  deck = shuffle(QUESTIONS);
+  if(n && n>0) deck = deck.slice(0, Math.min(n, deck.length));
+  idx = 0; score = 0;
+  $('intro').classList.add('hide');
+  $('result').classList.add('hide');
+  $('game').classList.remove('hide');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  const item = deck[idx];
+  const total = deck.length;
+
+  $('counter').textContent = `Otázka ${idx+1} / ${total}`;
+  $('score').textContent = `Body: ${score}`;
+  $('bar').style.width = ((idx)/total*100) + '%';
+  $('cat').textContent = item.cat;
+  $('q').textContent = item.q;
+
+  // zamíchat odpovědi, zapamatovat si správnou
+  const correct = item.a[0];
+  const opts = shuffle(item.a);
+  const keys = ['A','B','C','D'];
+
+  const box = $('choices');
+  box.innerHTML = '';
+  opts.forEach((text,i)=>{
+    const b = document.createElement('button');
+    b.className = 'pick';
+    b.innerHTML = `<span class="key">${keys[i]}</span><span class="txt">${text}</span><span class="mark"></span>`;
+    b.addEventListener('click', ()=>choose(b, text===correct, correct));
+    box.appendChild(b);
+  });
+
+  const ex = $('explain');
+  ex.classList.remove('show');
+  $('nextRow').classList.add('hide');
+
+  // poslední otázka -> jiný text tlačítka
+  $('next').textContent = (idx+1 >= total) ? 'Zobrazit výsledek 🏁' : 'Další otázka →';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function choose(btn, isCorrect, correctText){
+  if(answered) return;
+  answered = true;
+
+  const buttons = [...$('choices').querySelectorAll('.pick')];
+  buttons.forEach(b=>{
+    b.disabled = true;
+    const txt = b.querySelector('.txt').textContent;
+    if(txt === correctText){
+      b.classList.add('correct');
+      b.querySelector('.mark').textContent = '✓';
+    } else {
+      b.classList.add('dim');
+    }
+  });
+  if(!isCorrect){
+    btn.classList.remove('dim');
+    btn.classList.add('wrong');
+    btn.querySelector('.mark').textContent = '✗';
+  }
+
+  if(isCorrect) score++;
+  $('score').textContent = `Body: ${score}`;
+  $('bar').style.width = ((idx+1)/deck.length*100) + '%';
+
+  const v = $('verdict');
+  if(isCorrect){
+    v.textContent = '✓ ' + PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    v.className = 'verdict ok';
+  } else {
+    v.textContent = '✗ Tentokrát ne. Správně je: ' + correctText;
+    v.className = 'verdict no';
+  }
+  $('explainText').innerHTML = '<b>Věděla jsi?</b> ' + deck[idx].e;
+  $('explain').classList.add('show');
+  $('nextRow').classList.remove('hide');
+}
+
+function next(){
+  idx++;
+  if(idx >= deck.length){ showResult(); }
+  else { renderQuestion(); }
+}
+
+function showResult(){
+  $('game').classList.add('hide');
+  $('result').classList.remove('hide');
+  const total = deck.length;
+  const pct = Math.round(score/total*100);
+
+  $('finalScore').textContent = score;
+  $('finalOf').textContent = `z ${total} ` + (total===1?'otázky':(total>=2&&total<=4?'otázek':'otázek'));
+
+  let medal, msg;
+  if(pct===100){ medal='👑'; msg='Dokonale! Historii vládneš jako pravá královna.'; }
+  else if(pct>=80){ medal='🏆'; msg='Skvělé! Máš vzácně bohaté znalosti.'; }
+  else if(pct>=60){ medal='🥇'; msg='Moc pěkné! Znalosti máš na výbornou.'; }
+  else if(pct>=40){ medal='🌟'; msg='Dobrá práce – a příště to bude ještě lepší.'; }
+  else { medal='📚'; msg='Každá hra tě posune dál. Zkus to znovu!'; }
+
+  $('medal').textContent = medal;
+  $('finalMsg').textContent = msg;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ------- Události ------- */
+document.querySelectorAll('#intro [data-n]').forEach(b=>{
+  b.addEventListener('click', ()=> startGame(parseInt(b.dataset.n,10)));
+});
+$('next').addEventListener('click', next);
+$('again').addEventListener('click', ()=> startGame(deck.length));
+$('home').addEventListener('click', ()=>{
+  $('result').classList.add('hide');
+  $('game').classList.add('hide');
+  $('intro').classList.remove('hide');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* Klávesy 1–4 pro odpověď, Enter/mezerník pro Další */
+document.addEventListener('keydown', e=>{
+  if($('game').classList.contains('hide')) return;
+  if(['1','2','3','4'].includes(e.key)){
+    const b = $('choices').querySelectorAll('.pick')[parseInt(e.key,10)-1];
+    if(b && !answered) b.click();
+  } else if((e.key==='Enter'||e.key===' ') && answered){
+    e.preventDefault(); next();
+  }
+});
+</script>
+</body>
+</html>
