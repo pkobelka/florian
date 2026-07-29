@@ -1307,7 +1307,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.167';
+const APP_VERSION = '1.168';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -3398,6 +3398,7 @@ function flMyPracSet(){
 var flPracDefaulted=false;
 function flApplyMyPracDefault(){
   if(flPracDefaulted) return;
+  if(document.body.classList.contains('starosta')){ flPracDefaulted=true; return; } // náhled pro obec = celý svazek, ne jen pracoviště přihlášeného
   if(!flMe() || !lide[flMe()]) return;      // ještě nevím, kdo jsem
   if(flIsVedeni()){ flPracDefaulted=true; return; }
   var set=flMyPracSet(); if(!set.length) return;
@@ -3798,6 +3799,8 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
     function _norm(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
     var nl=_norm(decodeURIComponent(nh));
     var match=owners.find(function(o){return _norm(o).indexOf(nl)>=0;});
+    if(typeof selectedStrediska!=='undefined'){ selectedStrediska=new Set(); } // svazek jako celek – bez omezení na pracoviště
+    if(typeof selectedTowns!=='undefined'){ selectedTowns=new Set(); }
     if(match && typeof selectedOwners!=='undefined'){ selectedOwners=new Set([match]); }
     var bn=document.getElementById('starostaBanner'); if(bn) bn.textContent='👁️ Náhled pro obec — '+(match||nh);
     if(typeof ownerLbl==='function') ownerLbl();
