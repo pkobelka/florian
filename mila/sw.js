@@ -1,6 +1,6 @@
 /* Service worker pro appku Míla – jednoduchý offline režim.
    Po každé změně obsahu zvyš číslo verze v CACHE. */
-const CACHE = 'mila-v3';
+const CACHE = 'mila-v4';
 const ASSETS = [
   './',
   './index.html',

@@ -268,6 +268,7 @@
           <button class="periodbtn" data-period="husitstvi">Husitství<small>15. století</small></button>
           <button class="periodbtn" data-period="habsburkove">Habsburkové a Rudolf II.<small>1526–1620</small></button>
           <button class="periodbtn" data-period="baroko">Baroko a osvícenství<small>1620–1800</small></button>
+          <button class="periodbtn wide" data-period="spisovatele">📖 Spisovatelé a knihy<small>české i světové · pro čtenářky</small></button>
         </div>
       </div>
 
@@ -536,7 +537,51 @@ const QUESTIONS = [
   e:"Leonardova „Mona Lisa“ je nejslavnějším obrazem světa."},
  {cat:"Umění a věda", q:"Kdo vytesal sochu Davida a vymaloval strop Sixtinské kaple?",
   a:["Michelangelo","Leonardo da Vinci","Rafael Santi","Donatello"],
-  e:"Michelangelo byl mistrem sochařství i malby vrcholné renesance."}
+  e:"Michelangelo byl mistrem sochařství i malby vrcholné renesance."},
+ /* ---- SPISOVATELÉ A KNIHY (tematický level: české i světové) ---- */
+ {cat:"Spisovatelé", cz:true, period:"premyslovci", q:"Kdo je autorem nejstarší česky… totiž latinsky psané „Kroniky české“ z počátku 12. století?",
+  a:["Kosmas","Dalimil","Tomáš ze Štítného","Přibík Pulkava"],
+  e:"Kanovník Kosmas sepsal „Chronica Boemorum“ – nejstarší dějiny Čechů, latinsky kolem roku 1120."},
+ {cat:"Spisovatelé", cz:true, period:"lucemburkove", q:"Jak se nazývá nejstarší kronika psaná už česky, jejíž autor zůstal neznámý?",
+  a:["Dalimilova kronika","Zbraslavská kronika","Kosmova kronika","Kronika trojánská"],
+  e:"Tzv. Dalimilova kronika vznikla na počátku 14. století a je psána veršem v češtině."},
+ {cat:"Spisovatelé", cz:true, period:"habsburkove", q:"Který knihtiskař dal jméno „zlatému věku“ češtiny na konci 16. století?",
+  a:["Daniel Adam z Veleslavína","Kryštof Harant","Bohuslav Balbín","Bedřich Bridel"],
+  e:"Podle Daniela Adama z Veleslavína se době rozkvětu spisovné češtiny říká veleslavínská."},
+ {cat:"Spisovatelé", cz:true, period:"habsburkove", q:"Který český šlechtic proslul cestopisem z cesty do Egypta a Palestiny a byl roku 1621 popraven?",
+  a:["Kryštof Harant z Polžic","Bohuslav Balbín","Daniel Adam z Veleslavína","Václav Hollar"],
+  e:"Kryštof Harant byl spisovatel, cestovatel i hudebník; skončil mezi 27 popravenými pány."},
+ {cat:"Spisovatelé", cz:true, period:"baroko", q:"Který barokní básník a skladatel je autorem vánoční písně „Chtíc, aby spal“?",
+  a:["Adam Michna z Otradovic","Bedřich Bridel","Bohuslav Balbín","Bohuslav Matěj Černohorský"],
+  e:"Adam Michna z Otradovic patří k vrcholům českého barokního básnictví a hudby."},
+ {cat:"Spisovatelé", cz:true, period:"baroko", q:"Který barokní jezuita se proslavil spisem na obranu českého jazyka?",
+  a:["Bohuslav Balbín","Adam Michna z Otradovic","Kryštof Harant","Bedřich Bridel"],
+  e:"Bohuslav Balbín v „Rozpravě na obranu jazyka slovanského, zvláště českého“ hájil rodný jazyk."},
+
+ {cat:"Spisovatelé", q:"Který italský básník, „otec humanismu“, opěvoval v sonetech svou múzu Lauru?",
+  a:["Francesco Petrarca","Dante Alighieri","Giovanni Boccaccio","Torquato Tasso"],
+  e:"Petrarkovy sonety Lauře patří k nejslavnějším milostným veršům světové literatury."},
+ {cat:"Spisovatelé", q:"Kdo je autorem „Canterburských povídek“, jednoho ze základů anglické literatury?",
+  a:["Geoffrey Chaucer","William Shakespeare","Thomas More","John Milton"],
+  e:"Chaucerovy „Canterburské povídky“ vznikly na sklonku 14. století."},
+ {cat:"Spisovatelé", q:"Kdo napsal rozpustilý renesanční příběh „Gargantua a Pantagruel“?",
+  a:["François Rabelais","Michel de Montaigne","Molière","Voltaire"],
+  e:"Rabelaisovo dílo je plné nadsázky, satiry a lidové bujarosti."},
+ {cat:"Spisovatelé", q:"Který anglický básník napsal roku 1667 „Ztracený ráj“, ačkoli byl v té době slepý?",
+  a:["John Milton","William Shakespeare","Geoffrey Chaucer","John Donne"],
+  e:"Slepý Milton dílo diktoval; „Ztracený ráj“ líčí pád člověka z rajské zahrady."},
+ {cat:"Spisovatelé", q:"Kdo je autorem dobrodružného románu „Robinson Crusoe“ z roku 1719?",
+  a:["Daniel Defoe","Jonathan Swift","Henry Fielding","Samuel Richardson"],
+  e:"Defoův Robinson, trosečník na pustém ostrově, se stal symbolem lidské vynalézavosti."},
+ {cat:"Spisovatelé", q:"Kdo napsal satirické „Gulliverovy cesty“ (1726)?",
+  a:["Jonathan Swift","Daniel Defoe","Voltaire","Alexander Pope"],
+  e:"Swift v Gulliverovi zesměšnil lidské slabosti – od trpaslíků z Liliputu po obry."},
+ {cat:"Spisovatelé", q:"Který italský básník je autorem eposu „Osvobozený Jeruzalém“?",
+  a:["Torquato Tasso","Ludovico Ariosto","Dante Alighieri","Francesco Petrarca"],
+  e:"Tassův epos o první křížové výpravě je vrcholem italské renesanční poezie."},
+ {cat:"Spisovatelé", q:"Který plodný dramatik je považován za zakladatele španělského národního divadla „zlatého věku“?",
+  a:["Lope de Vega","Miguel de Cervantes","Pedro Calderón","Tirso de Molina"],
+  e:"Lope de Vega napsal stovky divadelních her a byl nesmírně oblíbený."}
 ];
 
 /* ------- Logika hry ------- */
@@ -566,7 +611,10 @@ function shuffle(arr){
 function startGame(n){
   lastN = n;
   let pool;
-  if(focus === 'cz'){
+  if(period === 'spisovatele'){
+    // tematický level: všichni spisovatelé (čeští i světoví), bez ohledu na zaměření
+    pool = QUESTIONS.filter(q => q.cat === 'Spisovatelé');
+  } else if(focus === 'cz'){
     pool = QUESTIONS.filter(q => q.cz && (period === 'all' || q.period === period));
   } else {
     pool = QUESTIONS;   // celý svět = všechny otázky
@@ -686,7 +734,9 @@ document.querySelectorAll('#intro [data-focus]').forEach(b=>{
   b.addEventListener('click', ()=>{
     focus = b.dataset.focus;
     document.querySelectorAll('#intro [data-focus]').forEach(x=> x.classList.toggle('sel', x===b));
-    // výběr období dává smysl jen u české historie
+    // výběr období dává smysl jen u české historie; při přepnutí ho vynuluj
+    period = 'all';
+    document.querySelectorAll('#intro [data-period]').forEach(x=> x.classList.toggle('sel', x.dataset.period==='all'));
     $('periodWrap').classList.toggle('hide', focus !== 'cz');
   });
 });
