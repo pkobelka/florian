@@ -1288,7 +1288,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.156';
+const APP_VERSION = '1.157';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2640,16 +2640,18 @@ function renderMarked(){
     markedLayer.addLayer(mk);
     if(domCovOn) L.circle([m.lat,m.lon],{radius:COVERAGE_RADIUS,color:'#16a34a',weight:2,fillColor:'#16a34a',fillOpacity:.12}).addTo(markedCovLayer);
   });
-  // „Ostatní" hydrant, kterému bylo přiděleno číslo H, ukázat VŽDY (i s vyplou vrstvou 🟣 Ostatní),
-  // ať se číslo zobrazí stejně jako u požárních. (Bod bez čísla se bez zapnuté vrstvy nekreslí.)
-  var cisloIds=Object.keys(domereni||{}).filter(function(id){ var d=domereni[id]; return d && String(d.cislo||'').trim()!=='' && !FIRE_IDS.has(id) && !kandMarked[id] && !d.povyseno; });
-  if(cisloIds.length){
+  // „Ostatní" hydrant, který je POVÝŠEN na požární nebo má přidělené číslo H, ukázat VŽDY
+  // (i s vyplou vrstvou 🟣 Ostatní), ať se chová jako požární. (Bod bez toho se bez vrstvy nekreslí.)
+  var extraIds=Object.keys(domereni||{}).filter(function(id){ var d=domereni[id]; return d && !FIRE_IDS.has(id) && !kandMarked[id] && (d.povyseno || String(d.cislo||'').trim()!==''); });
+  if(extraIds.length){
     if(typeof KAND==='undefined' || !KAND){ if(typeof ensureKand==='function') ensureKand(function(){ if(typeof renderMarked==='function') renderMarked(); }); }
     else {
-      cisloIds.forEach(function(id){ if(!markInSel(id,obecSet)) return; var h=KAND.find(function(x){return x.id===id;}); if(!h) return;
-        var mk=L.marker([h.lat,h.lon],{icon:candIcon(h,'base')}); mk._h=h;
+      extraIds.forEach(function(id){ if(!markInSel(id,obecSet)) return; var h=KAND.find(function(x){return x.id===id;}); if(!h) return;
+        var d=domereni[id];
+        var mk=L.marker([h.lat,h.lon],{icon: d.povyseno ? iconFor(h.typ,h) : candIcon(h,'base')}); mk._h=h;
         mk.on('click',(function(hh){return function(){ openCandCard(hh); };})(h));
-        markedLayer.addLayer(mk); });
+        markedLayer.addLayer(mk);
+        if(d.povyseno && coverageOn) L.circle([h.lat,h.lon],{radius:COVERAGE_RADIUS,color:'#1565c0',weight:1,fillColor:'#1565c0',fillOpacity:.10}).addTo(markedCovLayer); });
     }
   }
 }
