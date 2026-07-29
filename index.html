@@ -1112,6 +1112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .candmk .ci-pod{border-radius:50%}
 .candmk .ci-nad{border-radius:3px}
 .candmk .ci-badge{position:absolute;top:-8px;right:-10px;background:#16a34a;color:#fff;border-radius:9px;font-size:10px;font-weight:800;padding:0 4px;border:1.5px solid #fff;line-height:15px;transform:none}
+.reclmk{width:18px;height:18px;border-radius:50%;background:#9e9e9e;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);color:#fff;font-size:12px;font-weight:800;line-height:14px;text-align:center;box-sizing:border-box;opacity:.85}
 .cluster.candcl{background:#8e24aa !important;border-color:#6a1b9a !important}
 .cluster.markcl{background:#16a34a !important;border-color:#0f7a37 !important}
 #candToggle.on{background:#8e24aa;color:#fff;border-color:#8e24aa}
@@ -1287,9 +1288,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.152';
+const APP_VERSION = '1.153';
 const APP_YEAR = 2026;
-const APP_UPDATED = '27. 7. 2026';
+const APP_UPDATED = '29. 7. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -1385,8 +1386,16 @@ let othersCovOn = false; // pokrytí „ostatních" (neoznačených) kandidátů
 let fireLayerOn = true;   // vidět vrstvu požárních H (mřížka „vidět" u 🔵 Pož.)
 let markedShownOn = true; // vidět vrstvu vybraných „k doměření" (mřížka „vidět" u 🟢 Vybr.)
 
+// „Zrušené jako požární" – hydrant je sice v GISu požární, ale dle aktuálnějšího seznamu z pracoviště
+// už jím není. Ukládá se do domereni[id].neniPozarni (sdílí se přes Firebase). Nekreslí se v požární
+// vrstvě ani se nepočítá; místo toho šedý křížek ve vlastní vrstvě reclassLayer. Lze vrátit zpět.
+const reclassLayer = L.layerGroup();
+function isNeniPozarni(h){ var d=(typeof domereni!=='undefined'&&domereni)?domereni[h.id]:null; return !!(d&&d.neniPozarni); }
+function reclassIcon(){ return L.divIcon({className:'',html:'<div class="reclmk" title="Zrušeno jako požární (dle aktuálního seznamu z pracoviště)">✕</div>',iconSize:[18,18],iconAnchor:[9,9]}); }
+
 const cluster = L.markerClusterGroup({
   maxClusterRadius: 50,
+  disableClusteringAtZoom: 16, // = NUM_ZOOM: po přiblížení (kde se ukazují čísla H) se značky nesmí slučovat, jinak by čísla u H v hustých obcích nebyla vidět
   showCoverageOnHover:false,
   iconCreateFunction: (c)=>{
     const n = c.getChildCount();
@@ -1413,6 +1422,7 @@ const allItems = HYDRANTY.map(h=>{
   return {h,m,c};
 });
 map.addLayer(cluster);
+map.addLayer(reclassLayer);
 // ID reálných požárních hydrantů (z GISu) – body s tímto ID už NEJSOU kandidáti,
 // i kdyby po nich zůstal starý „označený/povýšený" stav (kandMarked/domereni) z doby,
 // než byly reklasifikovány do dat. Kreslí je hlavní vrstva, ne renderCand/renderMarked.
@@ -1429,12 +1439,18 @@ function matches(h){
   const okType  = (h.typ==='nadzemní') ? !typeOff.nad : !typeOff.pod; // prázdný typ = podzemní (jako u markeru)
   return okStred && okOwner && okTown && okType;
 }
-function applyFilter(){
+function applyFilter(noFit){
   cluster.clearLayers();
   coverage.clearLayers();
+  reclassLayer.clearLayers();
   const pts=[];
   allItems.forEach(it=>{
     if(matches(it.h) && (!revStatusFilter || dimStatus(it.h)===revStatusFilter)){
+      if(isNeniPozarni(it.h)){ // zrušený požární → šedý křížek, mimo požární vrstvu i pokrytí
+        var rm=L.marker([it.h.lat,it.h.lon],{icon:reclassIcon()}); rm.on('click',(function(hh){return function(){ openCard(hh); };})(it.h)); reclassLayer.addLayer(rm);
+        pts.push([it.h.lat,it.h.lon]);
+        return;
+      }
       cluster.addLayer(it.m);
       coverage.addLayer(it.c);
       pts.push([it.h.lat,it.h.lon]);
@@ -1442,7 +1458,7 @@ function applyFilter(){
   });
   if(typeof flRenderCount==='function') flRenderCount(); else document.getElementById('count').textContent = pts.length + ' hydrantů';
   if(typeof flHeaderSub==='function') flHeaderSub();
-  if(pts.length) map.fitBounds(pts,{padding:[40,40]});
+  if(!noFit && pts.length) map.fitBounds(pts,{padding:[40,40]});
   if(candReady) renderCand();
   if(typeof markedLayer!=='undefined' && typeof renderMarked==='function') renderMarked(); // překreslí „k doměření" (schová při filtru stavu revize)
   if(revMode){ if(typeof renderLegend==='function') renderLegend(); if(typeof flRevList==='function') flRevList(); } // v semaforu osvěž počty i seznam H
@@ -1562,7 +1578,7 @@ function flHeaderSub(){
 // počet viditelných požárních H (dle filtrů + případného stavu revize)
 // pomůcka: je bod v aktuálním výřezu mapy? (počty nahoře se počítají podle plochy na obrazovce)
 function _inView(lat,lon){ try{ return map.getBounds().contains([lat,lon]); }catch(e){ return true; } }
-function flVisibleFireCount(){ var b=null; try{ b=map.getBounds(); }catch(e){} var n=0; allItems.forEach(function(it){ if(matches(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter) && (!b||b.contains([it.h.lat,it.h.lon]))) n++; }); return n; }
+function flVisibleFireCount(){ var b=null; try{ b=map.getBounds(); }catch(e){} var n=0; allItems.forEach(function(it){ if(matches(it.h) && !isNeniPozarni(it.h) && (typeof revStatusFilter==='undefined'||!revStatusFilter||dimStatus(it.h)===revStatusFilter) && (!b||b.contains([it.h.lat,it.h.lon]))) n++; }); return n; }
 // počet zobrazených „ostatních" (kandidátů) – nezapočítává reklasifikované na požární; respektuje filtr obce/pracoviště
 function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os=(typeof visibleObecSet==='function')?visibleObecSet():null; var b=null; try{ b=map.getBounds(); }catch(e){} var n=0; KAND.forEach(function(h){ if(FIRE_IDS.has(h.id)) return; if(os && !os.has(h.obec)) return; if(b && !b.contains([h.lat,h.lon])) return; n++; }); return n; }
 // počet vybraných „k doměření" (🟢) v aktuálním výběru – bez povýšených a reklasifikovaných
@@ -2157,15 +2173,18 @@ function openCard(h){
     '</div>'+
     '<div class="actions">'+
       '<button class="btn line" id="btnEdit">✏️ Upravit</button>'+
+      '<button class="btn line" id="btnReclass">'+(isNeniPozarni(h)?'↩︎ Vrátit mezi požární':'🚫 Zrušit jako požární')+'</button>'+
       '<button class="btn line" id="btnPdf">📥 Stáhnout</button>'+
       '<button class="btn primary" id="btnPrint">🖨️ Tisk</button>'+
-    '</div>';
+    '</div>'+
+    (isNeniPozarni(h)?'<div class="note" style="color:#b71c1c">🚫 Tento hydrant je označen jako <b>nepožární</b> (dle aktuálního seznamu z pracoviště) – nezobrazuje se v požární vrstvě ani v počtech.</div>':'');
 
   backdrop.classList.add('open');
   requestAnimationFrame(()=> card.classList.add('open'));
   document.getElementById('cardX').onclick = closeCard;
   var _gps=document.getElementById('cardGps'); if(_gps) _gps.onclick=function(){ var t=h.lat.toFixed(6)+', '+h.lon.toFixed(6); try{ navigator.clipboard.writeText(t); var o=_gps.innerHTML; _gps.innerHTML='✓ zkopírováno'; setTimeout(function(){ _gps.innerHTML=o; },1200); }catch(e){} };
   document.getElementById('btnEdit').onclick = ()=> openEditForm(h);
+  var _brc=document.getElementById('btnReclass'); if(_brc) _brc.onclick = ()=> toggleNeniPozarni(h);
   wireUkoly(h);
   document.getElementById('btnPrint').onclick = ()=> doPrint(h);
   document.getElementById('btnPdf').onclick = ()=>{ alert('V dialogu tisku zvol „Uložit jako PDF".'); doPrint(h); };
@@ -2470,6 +2489,7 @@ function resolveTown(h){ var t=townKey(h); if(t) return t;
   return OBEC_NAME[h.obec] || '—'; }
 function candTown(h){ return resolveTown(h); }
 var domereni={}; try{ domereni=JSON.parse(localStorage.getItem('florian_domereni')||'{}')||{}; }catch(e){ domereni={}; }
+try{ if(typeof applyFilter==='function') applyFilter(true); }catch(e){} // po načtení domereni z localStorage projev i „nepožární" reklasifikaci (i offline)
 function saveDomereni(){ try{ localStorage.setItem('florian_domereni', JSON.stringify(domereni)); }catch(e){} }
 function candVal(h,f){ var d=(typeof domereni!=='undefined'&&domereni)?domereni[h.id]:null; return (d&&d[f]!==undefined&&d[f]!=='')?d[f]:(h[f]||''); }
 function csnLbl(v){ return ((v||'').trim()==='Ne')?'Ne ✗':'Ano ✓'; }
@@ -2480,6 +2500,23 @@ function isDomereno(h){ var d=domereni[h.id]; return !!(d&&(hasVal(d.prutok)||ha
 function isPovyseno(h){ var d=domereni[h.id]; return !!(d&&d.povyseno); }
 function promoteCand(h){ if(!domereni[h.id])domereni[h.id]={}; domereni[h.id].povyseno=true; domereni[h.id].cislo=(kandMarked[h.id]&&kandMarked[h.id].idx)||domereni[h.id].cislo||''; domereni[h.id].povTs=Date.now(); domereni[h.id].povBy=(typeof flMeName==='function'&&flMeName())||flMe()||''; domereni[h.id].funkcePuvodni=domereni[h.id].funkcePuvodni||(h.funkce||'kandidát'); domereni[h.id].funkce='požární hydrant'; domereni[h.id].by=domereni[h.id].povBy; domereni[h.id].ts=domereni[h.id].povTs; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); openCandCard(h); }
 function unpromoteCand(h){ if(domereni[h.id])domereni[h.id].povyseno=false; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof renderMarked==='function')renderMarked(); openCandCard(h); }
+// Zrušit / vrátit označení „požární hydrant" (dle aktuálnějšího seznamu z pracoviště). Ukládá se do
+// domereni[id].neniPozarni a sdílí přes Firebase; hydrant pak mizí z požární vrstvy, počtů i pokrytí.
+function toggleNeniPozarni(h){
+  if(!domereni[h.id]) domereni[h.id]={};
+  var d=domereni[h.id];
+  if(!d.neniPozarni){
+    if(!confirm('Označit tento hydrant jako NEPOŽÁRNÍ (dle aktuálního seznamu z pracoviště)?\n\nZmizí z vrstvy požárních H, z počtů i z pokrytí. Půjde kdykoli vrátit zpět.')) return;
+    d.neniPozarni=true; d.neniPozarniTs=Date.now(); d.neniPozarniBy=(typeof flMeName==='function'&&flMeName())||flMe()||'';
+  } else {
+    d.neniPozarni=false;
+  }
+  d.ts=Date.now();
+  domereni[h.id]=d; saveDomereni(); fbSaveDomereni(h.id);
+  if(typeof applyFilter==='function') applyFilter(true); // překresli vrstvy (bez přeostření mapy)
+  if(typeof flUpdChangeCount==='function') flUpdChangeCount();
+  reopenCard(h);
+}
 function reopenCard(h){ if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(h.funkce==='požární hydrant') openCard(h); else openCandCard(h); }
 function openEditForm(h){
   if(miniMap){ miniMap.remove(); miniMap=null; }
@@ -2563,7 +2600,9 @@ const candCluster=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:
 function candIcon(h,state){ var col=state==='marked'?'#16a34a':(state==='gap'?'#f59e0b':'#8e24aa');
   var nad=h.typ==='nadzemní'; var inner=nad?'<div class="ci-nad"></div>':'<div class="ci-pod"></div>';
   var mk=kandMarked[h.id]?'<span class="ci-badge">✓</span>':'';
-  var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+  var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
+  var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // číslo H i na kandidátské/vybrané ikoně (řízeno stejným přepínačem 🔢)
+  var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)){ var t=filterTown(it.h); if(t)s.add(t); } }); return s; }
 /* vrstva označených bodů (k doměření) – viditelná VŽDY, i když je vrstva „Ostatní hydranty" vypnutá,
    aby rozdělaná práce (fotka/poznámka/úkol) po načtení nemizela */
@@ -3229,7 +3268,7 @@ function flPendingCount(){ if(typeof domereni==='undefined'||!domereni) return 0
   var byId={}; HYDRANTY.forEach(function(h){ byId[h.id]=h; }); var n=0;
   Object.keys(domereni).forEach(function(id){ var d=domereni[id]||{}; if((d.ts||0)<=last) return;
     var h=byId[id], changed=false;
-    if(h){ FL_EXPORT_FIELDS.forEach(function(f){ var k=f[0]; var neu=(d[k]!=null&&String(d[k]).trim()!=='')?String(d[k]).trim():''; var orig=(h[k]!=null)?String(h[k]).trim():''; if(neu!==''&&neu!==orig) changed=true; }); }
+    if(h){ FL_EXPORT_FIELDS.forEach(function(f){ var k=f[0]; var neu=(d[k]!=null&&String(d[k]).trim()!=='')?String(d[k]).trim():''; var orig=(h[k]!=null)?String(h[k]).trim():''; if(neu!==''&&neu!==orig) changed=true; }); if(d.neniPozarni) changed=true; /* reklasifikace na nepožární = změna pro GIS */ }
     else if(d.povyseno){ changed=true; } // povýšený kandidát
     if(changed) n++;
   });
@@ -3425,7 +3464,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
     if(_dataStarted) return; _dataStarted=true;
     try{ flPresenceStart(); }catch(_){}
     _FDB.ref('florian_seq').on('value',function(sn){ var v=parseInt(sn.val())||0; if(v>flSeq){ flSeq=v; try{localStorage.setItem('florian_seq',String(flSeq));}catch(e){} } }, function(){});
-    _FDB.ref('florian_domereni').on('value',function(sn){ var v=sn.val()||{}; Object.keys(v).forEach(function(id){ domereni[id]=v[id]; }); saveDomereni(); if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(typeof candOn!=='undefined'&&candOn)renderCand(); if(typeof flUpdChangeCount==='function')flUpdChangeCount(); }, function(){});
+    _FDB.ref('florian_domereni').on('value',function(sn){ var v=sn.val()||{}; Object.keys(v).forEach(function(id){ domereni[id]=v[id]; }); saveDomereni(); if(typeof updDomCount==='function')updDomCount(); if(typeof renderMarked==='function')renderMarked(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(typeof applyFilter==='function')applyFilter(true); /* projeví i reklasifikaci „nepožární" od kolegů */ if(typeof candOn!=='undefined'&&candOn)renderCand(); if(typeof flUpdChangeCount==='function')flUpdChangeCount(); }, function(){});
     var _kandFirst=true;
     _FDB.ref('florian_kandidati').on('value',function(sn){ var v=sn.val()||{};
       // jednorázově (po prvním úspěšném čtení = přihlášen): nahraj lokální body, které v cloudu chybí
