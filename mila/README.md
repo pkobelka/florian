@@ -31,8 +31,26 @@ V `index.html` najdi pole `QUESTIONS`. Každá otázka je objekt:
 - `cat` je okruh (klidně vymysli nový).
 - `e` je zajímavost, která se zobrazí po kliknutí.
 
+## Instalace na telefon (Android)
+Appka je **PWA** – jde přidat na plochu a spouštět jako běžnou aplikaci
+(na celou obrazovku, funguje i offline):
+
+1. Otevři adresu appky v **Chrome** na Androidu.
+2. Menu (⋮ vpravo nahoře) → **Přidat na plochu / Nainstalovat aplikaci**.
+3. Potvrď – na ploše přibude ikona 👑 „Míla". Spouští se pak jako appka.
+
+Po první návštěvě (s připojením) funguje i bez internetu.
+
+## Kam dál
+- **Další úrovně / okruhy** (těžší otázky, jiná období, obrázky).
+- Výběr okruhu na úvodní obrazovce.
+- Případně ukládání nejlepšího skóre.
+
 ## Soubory
 | soubor | účel |
 |---|---|
 | `index.html` | celá hra (otázky + logika + vzhled) |
+| `manifest.json` | PWA manifest (název, ikony, barvy) |
+| `sw.js` | service worker (offline režim; po změně zvyš `CACHE`) |
+| `icon-*.png` | ikony appky (zlatá koruna na vínovém poli) |
 | `README.md` | tento popis |
