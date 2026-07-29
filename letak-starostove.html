@@ -120,32 +120,28 @@
         <stop offset="100%" stop-color="#8fd0ff" stop-opacity="0"/></radialGradient></defs>
       <!-- pokrytí 200 m kolem hydrantů -->
       <g fill="url(#covg)" stroke="#8fd0ff" stroke-opacity="0.5" stroke-dasharray="5 6" stroke-width="1.6">
-        <circle cx="150" cy="150" r="92"/><circle cx="272" cy="118" r="82"/><circle cx="228" cy="212" r="80"/></g>
-      <!-- vodovodní řad (síť) — jemné zvýraznění potrubí -->
+        <circle cx="130" cy="118" r="88"/><circle cx="350" cy="118" r="78"/><circle cx="250" cy="210" r="85"/></g>
+      <!-- vodovodní řad — pravoúhlá síť (kolmé řady pod ulicemi) -->
       <g stroke="#7fc0ff" stroke-opacity="0.32" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none">
-        <path d="M30 205 L150 150 L272 118 L400 150"/>
-        <path d="M150 150 L120 288"/>
-        <path d="M272 118 L228 212 L250 292"/>
-        <path d="M228 212 L400 150"/>
-        <path d="M150 150 L228 212"/></g>
+        <path d="M30 118 H360"/><path d="M100 210 H400"/>
+        <path d="M130 118 V292"/><path d="M250 118 V210"/><path d="M350 118 V210"/>
+        <path d="M400 150 V210"/><path d="M185 210 V292"/></g>
       <g stroke="#dbeefb" stroke-opacity="0.92" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-        <path d="M30 205 L150 150 L272 118 L400 150"/>
-        <path d="M150 150 L120 288"/>
-        <path d="M272 118 L228 212 L250 292"/>
-        <path d="M228 212 L400 150"/>
-        <path d="M150 150 L228 212"/></g>
+        <path d="M30 118 H360"/><path d="M100 210 H400"/>
+        <path d="M130 118 V292"/><path d="M250 118 V210"/><path d="M350 118 V210"/>
+        <path d="M400 150 V210"/><path d="M185 210 V292"/></g>
       <!-- tok vody v řadu -->
       <g class="flow" stroke="#ffd9cf" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 13" fill="none">
-        <path d="M30 205 L150 150 L272 118 L400 150"/>
-        <path d="M272 118 L228 212 L250 292"/></g>
-      <!-- hydranty přímo na síti -->
+        <path d="M30 118 H350 V210"/><path d="M130 118 V292"/></g>
+      <!-- hydranty na křížení řadů -->
       <g font-family="system-ui,Arial" font-weight="800" font-size="15">
-        <circle cx="400" cy="150" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
-        <circle cx="120" cy="288" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
-        <circle cx="250" cy="292" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
-        <g><circle cx="150" cy="150" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="150" y="155.5" text-anchor="middle" fill="#fff">H</text></g>
-        <g><circle cx="272" cy="118" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="272" y="123.5" text-anchor="middle" fill="#fff">H</text></g>
-        <g><circle cx="228" cy="212" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="228" y="217.5" text-anchor="middle" fill="#fff">H</text></g></g>
+        <circle cx="250" cy="118" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
+        <circle cx="130" cy="210" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
+        <circle cx="350" cy="210" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
+        <circle cx="400" cy="210" r="4.6" fill="#dbeefb" fill-opacity="0.9"/>
+        <g><circle cx="130" cy="118" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="130" y="123.5" text-anchor="middle" fill="#fff">H</text></g>
+        <g><circle cx="350" cy="118" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="350" y="123.5" text-anchor="middle" fill="#fff">H</text></g>
+        <g><circle cx="250" cy="210" r="13" fill="#e2451f" stroke="#fff" stroke-width="2.8"/><text x="250" y="215.5" text-anchor="middle" fill="#fff">H</text></g></g>
     </svg>
     <div class="in">
       <div class="brandrow">
