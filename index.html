@@ -1288,7 +1288,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.154';
+const APP_VERSION = '1.155';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2594,7 +2594,7 @@ function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   return 2*R*Math.asin(Math.sqrt(x)); }
 var candCovLayer=L.layerGroup(); var previewLayer=L.layerGroup(); var previewCirc={};
 function togglePreview(h){ if(previewCirc[h.id]){ previewLayer.removeLayer(previewCirc[h.id]); delete previewCirc[h.id]; } else { var c=L.circle([h.lat,h.lon],{radius:COVERAGE_RADIUS,color:'#ca8a04',weight:2.5,dashArray:'6 4',fillColor:'#facc15',fillOpacity:.22}); previewLayer.addLayer(c); previewCirc[h.id]=c; if(!map.hasLayer(previewLayer)) map.addLayer(previewLayer); } }
-const candCluster=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false,
+const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZoom:16,showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u „ostatních" */
   iconCreateFunction:function(c){ var n=c.getChildCount(); var s=n<10?34:(n<50?42:50);
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
     return L.divIcon({html:'<div class="cluster candcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }});
@@ -2610,7 +2610,7 @@ function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(
 // „k doměření" body se teď shlukují do zeleného kolečka (jako požární do modrého).
 // Cluster nesmí obsahovat kruhy pokrytí (shlukoval by je) → kruhy jdou do markedCovLayer.
 var markedCovLayer=L.layerGroup();
-var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, showCoverageOnHover:false,
+var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, disableClusteringAtZoom:16, showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u vybraných „k doměření" */
   iconCreateFunction:function(c){ var n=c.getChildCount(); var s=n<10?34:(n<50?42:50);
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
     return L.divIcon({html:'<div class="cluster markcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }
@@ -3565,7 +3565,15 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
 })();
 // ---- PWA ----
 if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  window.addEventListener('load', function(){
+    var hadController = !!navigator.serviceWorker.controller; // false = úplně první instalace (nereloaduj)
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+    // nový SW (nová verze) sám dělá skipWaiting+claim → převezme řízení → jednou načti čerstvou stránku
+    var _reloaded=false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){ if(_reloaded||!hadController) return; _reloaded=true; location.reload(); });
+    // kontrola aktualizace při návratu do appky (přepnutí zpět na záložku/okno)
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden){ navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }).catch(function(){}); } });
+  });
 }
 </script>
 </body>
