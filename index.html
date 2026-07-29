@@ -796,7 +796,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 /* coverage toggle + legend */
 .ctrl{position:absolute;z-index:900;right:10px;top:calc(env(safe-area-inset-top) + 62px);
   display:flex;flex-direction:column;gap:8px}
-.ctrl-row{display:flex;gap:8px}
+.ctrl-row{display:flex;gap:8px;flex-wrap:wrap}
 .ctrl-row>button{flex:1;min-width:0;justify-content:center}
 .gis-stav{font-size:13px;color:var(--ink);margin:2px 0 8px}
 .gis-acts{display:flex;flex-direction:column;gap:6px}
@@ -1208,12 +1208,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="ctrl-row">
     <button class="btn-toggle" id="gapToggle">💡 Nepokryto</button>
     <button class="btn-toggle" id="poznToggle">📝 Poznámky</button>
+    <button class="btn-toggle" id="satToggle" title="Přepnout podklad na satelitní (leteckou) mapu">🛰️ Satelit</button>
   </div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="fotoToggle" title="Zapni a přibliž mapu na obec – u hydrantů se ukážou miniatury fotek (hned je vidět, kde foto je a kde chybí). Číslo = počet fotek ve výřezu mapy.">📷 Foto<span id="fotoCnt"></span></button>
     <button class="btn-toggle" id="cisloToggle" title="Zobrazit čísla hydrantů (H v obci) u značek – po přiblížení. Hlavně pro starosty.">🔢 Čísla</button>
     <button class="btn-toggle" id="infoBtn" title="Zobrazit info (upřesnění + poznámka) u všech hydrantů na mapě">ℹ️ Info</button>
-    <button class="btn-toggle" id="satToggle" title="Přepnout podklad na satelitní (leteckou) mapu">🛰️ Satelit</button>
   </div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
@@ -1292,7 +1292,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.160';
+const APP_VERSION = '1.161';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
