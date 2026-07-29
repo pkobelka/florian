@@ -1211,7 +1211,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <div class="cov-matrix" id="covMatrix"></div>
   <button class="btn-toggle op-only" id="candToggle" style="display:none">➕ Ostatní hydranty</button>
   <div class="ctrl-row">
-    <button class="btn-toggle" id="gapToggle">Nepokryto</button>
+    <button class="btn-toggle op-only" id="gapToggle">Nepokryto</button>
     <button class="btn-toggle" id="poznToggle">Poznámky</button>
   </div>
   <div class="ctrl-row">
@@ -1236,8 +1236,8 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <div class="town-panel" id="pushPanel"></div>
   <button class="btn-toggle op-only" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
-  <div class="ctrl-row op-only">
-    <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
+  <div class="ctrl-row">
+    <button class="btn-toggle op-only" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
     <button class="btn-toggle btn-all" id="allBtn" title="Zrušit filtry – všechny požární H">Vše</button>
   </div>
   <div class="town-panel" id="stredPanel"></div>
@@ -1299,7 +1299,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.164';
+const APP_VERSION = '1.165';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -1748,7 +1748,8 @@ document.addEventListener('click', ()=>{
   var cvp=document.getElementById('covPanel'); if(cvp) cvp.classList.remove('open');
 });
 document.getElementById('allBtn').onclick=()=>{
-  selectedStrediska=new Set(); selectedOwners=new Set(); selectedTowns=new Set();
+  var _star=document.body.classList.contains('starosta');
+  selectedStrediska=new Set(); if(!_star) selectedOwners=new Set(); selectedTowns=new Set();
   typeOff={nad:false, pod:false}; // vrať i typové filtry z legendy
   if(!fireLayerOn) setFireLayer(true); // „Vše" = ukaž i schované požární
   if(!markedShownOn) setMarkedShown(true); // i schované vybrané
@@ -1882,8 +1883,9 @@ function buildCovPanel(){
     '<div class="cm-grid">'+
       '<div></div><div class="cm-h">👁 vidět</div><div class="cm-h">🎯 pokrytí</div>'+
       '<div class="cm-lbl">🔵 Požární</div>'+cell('fire','show-fire',fireLayerOn)+cell('fire','cov-fire',coverageOn)+
+      (document.body.classList.contains('starosta')?'':(
       '<div class="cm-lbl">🟢 Vybrané</div>'+cell('marked','show-marked',markedShownOn)+cell('marked','cov-dom',domCovOn)+
-      '<div class="cm-lbl">🟣 Ostatní</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)+
+      '<div class="cm-lbl">🟣 Ostatní</div>'+cell('oth','show-oth',candShown)+cell('oth','cov-oth',othersCovOn)))+
     '</div>'+
     (hint?'<div class="cm-hint">'+hint+'</div>':'');
   Array.prototype.forEach.call(m.querySelectorAll('.cm-c'),function(c){ c.onclick=function(){
@@ -3751,6 +3753,7 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
     if(typeof ownerLbl==='function') ownerLbl();
     if(typeof buildOwnerFilter==='function') buildOwnerFilter();
     if(typeof buildTownFilter==='function') buildTownFilter();
+    if(typeof buildCovPanel==='function') buildCovPanel(); // přebuduj „Zobrazení a pokrytí" bez Vybrané/Ostatní
     if(typeof applyFilter==='function') applyFilter();
   }catch(e){ try{console.warn('nahled',e);}catch(_){ } }
 })();
