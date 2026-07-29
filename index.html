@@ -1288,7 +1288,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.157';
+const APP_VERSION = '1.158';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -1370,9 +1370,10 @@ function iconForItem(h){
   var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
   // miniatura fotky (bublinka nad markerem) – jen když H fotku má; klik na ni = velké foto
   var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
-  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+  if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10],tooltipAnchor:[0,-13]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
-  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10]});
+  // tooltipAnchor nad vršek ikony, ať Info (poznámka/upřesnění) nepřekrývá číslo H vpravo (hlavně u nadzemních, ukotvených dole)
+  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10],tooltipAnchor:nad?[0,-39]:[0,-13]});
 }
 function rebuildMarkersBadges(){ try{ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
 
