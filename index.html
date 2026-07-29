@@ -1186,6 +1186,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .uk-k{background:#f4f7fb;border-radius:10px;padding:8px 11px;margin:6px 0;font-size:14px}
 .uk-k .kmeta{font-size:11px;color:#8a97a6;margin-top:3px}
 .uk-play{margin-top:6px}
+/* Režim „Náhled pro obec" (starosta) – read-only, skryté provozní nástroje */
+body.starosta .op-only{display:none !important}
+.starosta-banner{display:none}
+body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:1500;background:rgba(11,58,99,.94);color:#fff;font-weight:700;font-size:12.5px;padding:6px 15px;border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -1202,9 +1206,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 </div>
 
 <button class="ctrl-burger" id="ctrlBurger" aria-label="Nabídka">☰</button>
+<div id="starostaBanner" class="starosta-banner"></div>
 <div class="ctrl">
   <div class="cov-matrix" id="covMatrix"></div>
-  <button class="btn-toggle" id="candToggle" style="display:none">➕ Ostatní hydranty</button>
+  <button class="btn-toggle op-only" id="candToggle" style="display:none">➕ Ostatní hydranty</button>
   <div class="ctrl-row">
     <button class="btn-toggle" id="gapToggle">Nepokryto</button>
     <button class="btn-toggle" id="poznToggle">Poznámky</button>
@@ -1217,7 +1222,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
     <button class="btn-toggle" id="infoBtn" title="Zobrazit info (upřesnění + poznámka) u všech hydrantů na mapě">ℹ️ Info</button>
     <button class="btn-toggle" id="satToggle" title="Přepnout podklad na satelitní (leteckou) mapu">🛰️ Satelit</button>
   </div>
-  <div class="ctrl-row">
+  <div class="ctrl-row op-only">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
   </div>
@@ -1225,33 +1230,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="ukolPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
-    <button class="btn-toggle" id="pushBtn">🔔 Oznámení</button>
+    <button class="btn-toggle op-only" id="pushBtn">🔔 Oznámení</button>
   </div>
   <div class="town-panel" id="lidePanel"></div>
   <div class="town-panel" id="pushPanel"></div>
-  <button class="btn-toggle" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
+  <button class="btn-toggle op-only" id="revToggle"><span class="sw"></span> 🚦 Revize <select id="revDimSel" class="cov-r"><option value="termin">Termíny</option><option value="csn">ČSN</option></select></button>
   <div class="town-panel" id="revListPanel"></div>
-  <div class="ctrl-row">
+  <div class="ctrl-row op-only">
     <button class="btn-toggle" id="stredBtn">🏭 <span id="stredLbl">Pracoviště</span> ▾</button>
     <button class="btn-toggle btn-all" id="allBtn" title="Zrušit filtry – všechny požární H">Vše</button>
   </div>
   <div class="town-panel" id="stredPanel"></div>
   <div class="ctrl-row">
-    <button class="btn-toggle" id="ownBtn">🏢 <span id="ownLbl">Svazek</span> ▾</button>
+    <button class="btn-toggle op-only" id="ownBtn">🏢 <span id="ownLbl">Svazek</span> ▾</button>
     <button class="btn-toggle" id="townBtn">🏘️ <span id="townLbl">Obce</span> ▾</button>
   </div>
   <div class="town-panel" id="ownPanel"></div>
   <div class="town-panel" id="townPanel"></div>
-  <button class="btn-toggle btn-print" id="protokolBtn" title="Protokol o revizi (dle ČSN 73 0873) – zaškrtni obce a stáhni Word k doplnění">📄 Protokol o revizi</button>
+  <button class="btn-toggle btn-print op-only" id="protokolBtn" title="Protokol o revizi (dle ČSN 73 0873) – zaškrtni obce a stáhni Word k doplnění">📄 Protokol o revizi</button>
   <div class="town-panel" id="protokolPanel"></div>
-  <button class="btn-toggle btn-print" id="aktualBtn" title="Aktualizace údajů a čísel hydrantů – zaškrtni obce a stáhni Word (data + čísla H + co se změnilo)">📝 Aktualizace údajů</button>
+  <button class="btn-toggle btn-print op-only" id="aktualBtn" title="Aktualizace údajů a čísel hydrantů – zaškrtni obce a stáhni Word (data + čísla H + co se změnilo)">📝 Aktualizace údajů</button>
   <div class="town-panel" id="aktualPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
-    <button class="btn-toggle" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
+    <button class="btn-toggle op-only" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
   </div>
   <div class="town-panel" id="gisPanel"></div>
-  <button class="btn-toggle btn-share" id="shareBtn" style="display:none">📤 Sdílet appku</button>
+  <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
 </div>
 
@@ -1294,7 +1299,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.163';
+const APP_VERSION = '1.164';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2210,8 +2215,8 @@ function openCard(h){
       '</div>'+
     '</div>'+
     '<div class="actions">'+
-      '<button class="btn line" id="btnEdit">✏️ Upravit</button>'+
-      '<button class="btn line" id="btnReclass">'+(isNeniPozarni(h)?'↩︎ Vrátit mezi požární':'🚫 Zrušit jako požární')+'</button>'+
+      '<button class="btn line op-only" id="btnEdit">✏️ Upravit</button>'+
+      '<button class="btn line op-only" id="btnReclass">'+(isNeniPozarni(h)?'↩︎ Vrátit mezi požární':'🚫 Zrušit jako požární')+'</button>'+
       '<button class="btn line" id="btnPdf">📥 Stáhnout</button>'+
       '<button class="btn primary" id="btnPrint">🖨️ Tisk</button>'+
     '</div>'+
@@ -3731,6 +3736,25 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
   }
   flAuthGate();
 })();
+// ---- Režim „Náhled pro obec" (starosta) – read-only, aktivace přes ?nahled=<svazek> ----
+(function(){
+  try{
+    var q=new URLSearchParams(location.search);
+    var nh=q.get('nahled')||q.get('starosta'); if(!nh) return;
+    document.body.classList.add('starosta');
+    var owners=Array.from(new Set(HYDRANTY.map(function(h){return h.vlastnik;})));
+    function _norm(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+    var nl=_norm(decodeURIComponent(nh));
+    var match=owners.find(function(o){return _norm(o).indexOf(nl)>=0;});
+    if(match && typeof selectedOwners!=='undefined'){ selectedOwners=new Set([match]); }
+    var bn=document.getElementById('starostaBanner'); if(bn) bn.textContent='👁️ Náhled pro obec — '+(match||nh);
+    if(typeof ownerLbl==='function') ownerLbl();
+    if(typeof buildOwnerFilter==='function') buildOwnerFilter();
+    if(typeof buildTownFilter==='function') buildTownFilter();
+    if(typeof applyFilter==='function') applyFilter();
+  }catch(e){ try{console.warn('nahled',e);}catch(_){ } }
+})();
+
 // ---- PWA ----
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
