@@ -876,6 +876,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .town-panel{display:none;position:absolute;right:0;top:98px;width:236px;max-height:56vh;overflow:auto;
   background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;z-index:901}
 .town-panel.open{display:block}
+.nh-row{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid #eef2f6}
+.nh-row:last-child{border-bottom:0}
+.nh-nm{flex:1;font-size:13px;font-weight:600;color:#263238;overflow-wrap:anywhere}
+.nh-c{color:var(--muted);font-size:11px;white-space:nowrap}
+.nh-open{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+.nh-copy{border:1px solid var(--line);background:#fff;color:#37474f;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 #ownPanel{top:100px}
 #townPanel{top:152px}
 .tp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -1256,6 +1262,8 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
     <button class="btn-toggle op-only" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
   </div>
   <div class="town-panel" id="gisPanel"></div>
+  <button class="btn-toggle op-only" id="nahledBtn" title="Odkazy na náhledy pro obce (svazky) – pro odkliknutí při prezentaci">👁️ Náhledy pro obce</button>
+  <div class="town-panel" id="nahledPanel"></div>
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
 </div>
@@ -1299,7 +1307,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.165';
+const APP_VERSION = '1.166';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2618,6 +2626,38 @@ if(_ab) _ab.onclick=function(e){ e.stopPropagation();
   ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel','protokolPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
   buildAktualPanel();
   var ap=document.getElementById('aktualPanel'); ap.classList.toggle('open'); if(ap.classList.contains('open')){ ap.style.top=(_ab.offsetTop+_ab.offsetHeight+6)+'px'; }
+};
+
+/* ===== Náhledy pro obce (svazky) – odkazy pro odkliknutí při prezentaci ===== */
+function buildNahledPanel(){
+  var p=document.getElementById('nahledPanel'); if(!p) return;
+  var cnt={};
+  HYDRANTY.forEach(function(h){ var o=h.vlastnik; if(!o) return; cnt[o]=(cnt[o]||0)+1; });
+  var owners=Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a] || a.localeCompare(b,'cs'); });
+  var base=location.origin+location.pathname;
+  var html='<div class="tp-head"><span>👁️ Náhledy pro obce</span><button class="tp-clear" id="nhClose">Zavřít</button></div>';
+  html+='<div class="tp-sub">Otevře náhled pro celý svazek (jen pro čtení).</div>';
+  owners.forEach(function(o){
+    var url=base+'?nahled='+encodeURIComponent(o);
+    html+='<div class="nh-row"><span class="nh-nm">'+esc(o)+' <span class="nh-c">('+cnt[o]+' H)</span></span>'+
+      '<a class="nh-open" href="'+esc(url)+'" target="_blank" rel="noopener">Otevřít ↗</a>'+
+      '<button class="nh-copy" data-url="'+esc(url)+'">Kopírovat</button></div>';
+  });
+  p.innerHTML=html;
+  var cb=document.getElementById('nhClose'); if(cb) cb.onclick=function(e){ e.stopPropagation(); p.classList.remove('open'); };
+  Array.prototype.forEach.call(p.querySelectorAll('.nh-copy'), function(btn){
+    btn.onclick=function(e){ e.stopPropagation(); var u=btn.getAttribute('data-url');
+      var done=function(){ var t=btn.textContent; btn.textContent='✓ Zkop.'; setTimeout(function(){ btn.textContent=t; },1400); };
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(done).catch(function(){ window.prompt('Zkopíruj odkaz:',u); }); }
+      else { window.prompt('Zkopíruj odkaz:',u); }
+    };
+  });
+}
+var _nb=document.getElementById('nahledBtn');
+if(_nb) _nb.onclick=function(e){ e.stopPropagation();
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel','protokolPanel','aktualPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  buildNahledPanel();
+  var np=document.getElementById('nahledPanel'); np.classList.toggle('open'); if(np.classList.contains('open')){ np.style.top=(_nb.offsetTop+_nb.offsetHeight+6)+'px'; }
 };
 
 /* ===== Kandidáti (ostatní hydranty) – doplnění pokrytí ===== */
