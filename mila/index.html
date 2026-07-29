@@ -268,7 +268,7 @@
           <button class="periodbtn" data-period="husitstvi">Husitství<small>15. století</small></button>
           <button class="periodbtn" data-period="habsburkove">Habsburkové a Rudolf II.<small>1526–1620</small></button>
           <button class="periodbtn" data-period="baroko">Baroko a osvícenství<small>1620–1800</small></button>
-          <button class="periodbtn wide" data-period="spisovatele">📖 Spisovatelé a knihy<small>české i světové · pro čtenářky</small></button>
+          <button class="periodbtn wide" data-period="spisovatele">📖 Čeští spisovatelé a knihy<small>od Kosmy po Komenského</small></button>
         </div>
       </div>
 
@@ -581,7 +581,29 @@ const QUESTIONS = [
   e:"Tassův epos o první křížové výpravě je vrcholem italské renesanční poezie."},
  {cat:"Spisovatelé", q:"Který plodný dramatik je považován za zakladatele španělského národního divadla „zlatého věku“?",
   a:["Lope de Vega","Miguel de Cervantes","Pedro Calderón","Tirso de Molina"],
-  e:"Lope de Vega napsal stovky divadelních her a byl nesmírně oblíbený."}
+  e:"Lope de Vega napsal stovky divadelních her a byl nesmírně oblíbený."},
+ /* ---- ČEŠTÍ SPISOVATELÉ (doplnění pro level „Čeští spisovatelé“) ---- */
+ {cat:"Spisovatelé", cz:true, period:"lucemburkove", q:"Který zeman ve 14. století jako jeden z prvních psal učené naučné spisy česky pro obyčejné čtenáře?",
+  a:["Tomáš ze Štítného","Kosmas","Jan Blahoslav","Bohuslav Balbín"],
+  e:"Tomáš ze Štítného přinášel filozofická a náboženská témata srozumitelně v češtině."},
+ {cat:"Spisovatelé", cz:true, period:"husitstvi", q:"Který reformátor zjednodušil český pravopis a místo spřežek zavedl háčky a čárky?",
+  a:["Jan Hus","Jan Blahoslav","Tomáš ze Štítného","Daniel Adam z Veleslavína"],
+  e:"Janu Husovi se připisuje spis o českém pravopise, který nahradil spřežky nabodeníčky (háčky a čárkami)."},
+ {cat:"Spisovatelé", cz:true, period:"husitstvi", q:"Který myslitel odmítal veškeré násilí a spisem „Síť víry pravé“ ovlivnil Jednotu bratrskou?",
+  a:["Petr Chelčický","Jan Rokycana","Petr z Mladoňovic","Jan Želivský"],
+  e:"Petr Chelčický kázal o neodplácení zla; jeho myšlenky obdivoval i Lev Nikolajevič Tolstoj."},
+ {cat:"Spisovatelé", cz:true, period:"habsburkove", q:"Který biskup Jednoty bratrské napsal „Gramatiku českou“ a přeložil Nový zákon?",
+  a:["Jan Blahoslav","Daniel Adam z Veleslavína","Václav Hájek z Libočan","Bohuslav Balbín"],
+  e:"Blahoslavův překlad se stal základem pozdější Bible kralické."},
+ {cat:"Spisovatelé", cz:true, period:"habsburkove", q:"Kdo sepsal roku 1541 velmi oblíbenou, byť nespolehlivou „Kroniku českou“ plnou pověstí?",
+  a:["Václav Hájek z Libočan","Kosmas","Přibík Pulkava","Daniel Adam z Veleslavína"],
+  e:"Hájkova kronika po staletí utvářela představy o českých dějinách, ačkoli si leccos vymyslel."},
+ {cat:"Spisovatelé", cz:true, period:"baroko", q:"Kterou obrázkovou učebnicí naučil Jan Amos Komenský děti poznávat svět?",
+  a:["Orbis pictus (Svět v obrazech)","Labyrint světa a ráj srdce","Dalimilova kronika","Bible kralická"],
+  e:"„Orbis pictus“ z roku 1658 je považován za první obrázkovou učebnici pro děti."},
+ {cat:"Spisovatelé", cz:true, period:"baroko", q:"Který barokní básník je autorem rozjímavé skladby „Co Bůh? Člověk?“?",
+  a:["Bedřich Bridel","Adam Michna z Otradovic","Bohuslav Balbín","Kryštof Harant"],
+  e:"Bedřich (Fridrich) Bridel patří k vrcholům české barokní poezie."}
 ];
 
 /* ------- Logika hry ------- */
@@ -612,8 +634,8 @@ function startGame(n){
   lastN = n;
   let pool;
   if(period === 'spisovatele'){
-    // tematický level: všichni spisovatelé (čeští i světoví), bez ohledu na zaměření
-    pool = QUESTIONS.filter(q => q.cat === 'Spisovatelé');
+    // tematický level: jen čeští spisovatelé a česká literatura
+    pool = QUESTIONS.filter(q => q.cat === 'Spisovatelé' && q.cz);
   } else if(focus === 'cz'){
     pool = QUESTIONS.filter(q => q.cz && (period === 'all' || q.period === period));
   } else {
