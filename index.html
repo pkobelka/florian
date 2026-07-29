@@ -1235,7 +1235,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <div class="town-panel" id="menuPanel"></div>
   <div class="town-panel" id="ukolPanel"></div>
   <div class="ctrl-row">
-    <button class="btn-toggle" id="lideBtn" style="display:none">👥 Tým</button>
+    <button class="btn-toggle op-only" id="lideBtn" style="display:none">👥 Tým</button>
     <button class="btn-toggle op-only" id="pushBtn">🔔 Oznámení</button>
   </div>
   <div class="town-panel" id="lidePanel"></div>
@@ -1307,7 +1307,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.166';
+const APP_VERSION = '1.167';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2629,11 +2629,19 @@ if(_ab) _ab.onclick=function(e){ e.stopPropagation();
 };
 
 /* ===== Náhledy pro obce (svazky) – odkazy pro odkliknutí při prezentaci ===== */
+// Fakturované svazky (jen ty se platí → jen ty mají náhled pro obec)
+var NAHLED_SVAZKY=[
+  'Svazek obcí Vodovody Poličsko',
+  'Skupinový vodovod Moravskotřebovska',
+  'Svazek obcí skupinového vodovodu Malá Haná',
+  'Svazek majitelů skupinového vodovodu Janov - Strakov - Mikuleč',
+  'SO TEPLICE'
+];
 function buildNahledPanel(){
   var p=document.getElementById('nahledPanel'); if(!p) return;
   var cnt={};
   HYDRANTY.forEach(function(h){ var o=h.vlastnik; if(!o) return; cnt[o]=(cnt[o]||0)+1; });
-  var owners=Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a] || a.localeCompare(b,'cs'); });
+  var owners=NAHLED_SVAZKY.filter(function(o){ return cnt[o]; }).sort(function(a,b){ return cnt[b]-cnt[a] || a.localeCompare(b,'cs'); });
   var base=location.origin+location.pathname;
   var html='<div class="tp-head"><span>👁️ Náhledy pro obce</span><button class="tp-clear" id="nhClose">Zavřít</button></div>';
   html+='<div class="tp-sub">Otevře náhled pro celý svazek (jen pro čtení).</div>';
@@ -2821,10 +2829,12 @@ function renderMarked(){
   if(!markedShownOn) return; // vrstva Vybraných schovaná (mřížka „vidět" u 🟢 Vybr.)
   if(revStatusFilter) return; // filtr stavu revize = jen požární daného stavu, „k doměření" pryč
   if(candOn) return; // v režimu kandidátů je vykresluje renderCand()
+  var _star=document.body.classList.contains('starosta'); // náhled pro obec = jen požární, žádné provozní „k doměření"
   var obecSet=visibleObecSet();
   Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m||m.lat==null) return;
     if(FIRE_IDS.has(id)) return; // už je to reálný požární hydrant (reklasifikováno v datech) → kreslí hlavní vrstva, ne tady
     if(!markInSel(id,obecSet)) return; // filtr dle výběru pracoviště/obce/vlastníka (stejně jako požární H a jako renderCand)
+    if(_star && !(domereni[id] && domereni[id].povyseno)) return; // starosta: „k doměření" neukazuj, jen povýšené na požární
     var h=(KAND||[]).find(function(x){return x.id===id;}) || {id:id,lat:m.lat,lon:m.lon,typ:m.typ||'podzemní',obec:m.obec};
     if(domereni[id] && domereni[id].povyseno){ // povýšený kandidát = požární hydrant (modrý symbol, ne zelené „k doměření" s H-číslem)
       var fm=L.marker([m.lat,m.lon],{icon:iconFor(h.typ||m.typ||'podzemní',h)}); fm._h=h;
