@@ -1240,6 +1240,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   <div class="town-panel" id="townPanel"></div>
   <button class="btn-toggle btn-print" id="protokolBtn" title="Protokol o revizi (dle ČSN 73 0873) – zaškrtni obce a stáhni Word k doplnění">📄 Protokol o revizi</button>
   <div class="town-panel" id="protokolPanel"></div>
+  <button class="btn-toggle btn-print" id="aktualBtn" title="Aktualizace údajů a čísel hydrantů – zaškrtni obce a stáhni Word (data + čísla H + co se změnilo)">📝 Aktualizace údajů</button>
+  <div class="town-panel" id="aktualPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
     <button class="btn-toggle" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
@@ -1288,7 +1290,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.158';
+const APP_VERSION = '1.159';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -2458,9 +2460,125 @@ function buildProtokolPanel(){
 }
 var _pb=document.getElementById('protokolBtn');
 if(_pb) _pb.onclick=function(e){ e.stopPropagation();
-  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel','aktualPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
   buildProtokolPanel();
   var pp=document.getElementById('protokolPanel'); pp.classList.toggle('open'); if(pp.classList.contains('open')){ pp.style.top=(_pb.offsetTop+_pb.offsetHeight+6)+'px'; }
+};
+
+// ---- Aktualizace údajů a čísel (Word ke stažení; výběr více obcí) – NE revize, ale přehled aktualizovaných dat + čísel H ----
+// změny hydrantu (staré → nové) dle uložených úprav; + reklasifikace
+function _aktChanges(h,d){ if(!d) return '';
+  var out=[];
+  if(d.povyseno) out.push('Klasifikace: → požární hydrant');
+  if(d.neniPozarni) out.push('Klasifikace: → NEPOŽÁRNÍ');
+  FL_EXPORT_FIELDS.forEach(function(f){ var k=f[0];
+    var neu=(d[k]!=null&&String(d[k]).trim()!=='')?String(d[k]).trim():'';
+    var orig=(h&&h[k]!=null)?String(h[k]).trim():'';
+    if(neu!==''&&neu!==orig) out.push(f[1]+': '+(orig||'—')+' → '+neu);
+  });
+  return out.join('; ');
+}
+// hydranty obce t: hlavní (allItems) + „ostatní" kandidáti povýšení / s číslem H
+function aktualItemsForTown(t){
+  var arr=allItems.filter(function(it){ var h=it.h;
+    if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return false;
+    if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return false;
+    return filterTown(h)===t;
+  }).map(function(it){return it.h;});
+  if(typeof KAND!=='undefined' && KAND){ KAND.forEach(function(h){
+    if(typeof FIRE_IDS!=='undefined' && FIRE_IDS.has(h.id)) return;
+    var d=domereni[h.id]; if(!(d&&(d.povyseno||String(d.cislo||'').trim()!==''))) return;
+    if(filterTown(h)!==t) return; arr.push(h);
+  }); }
+  return arr;
+}
+function aktualSectionHtml(items, oblast){
+  items=items.slice().sort(function(a,b){ var ca=parseInt(candVal(a,'cislo'),10), cb=parseInt(candVal(b,'cislo'),10);
+    if(isFinite(ca)&&isFinite(cb)&&ca!==cb) return ca-cb; if(isFinite(ca)&&!isFinite(cb)) return -1; if(!isFinite(ca)&&isFinite(cb)) return 1;
+    return String(label(a)).localeCompare(String(label(b)),'cs',{numeric:true}); });
+  var h0=items[0]||{};
+  var dnes=(function(){ var d=new Date(); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); })();
+  var kdo=(typeof flMeName==='function'&&flMeName())||'';
+  var updN=0;
+  var rows=items.map(function(h){
+    var d=domereni[h.id]; var ch=_aktChanges(h,d); if(ch) updN++;
+    var gps=(h.lat!=null&&h.lon!=null)?(h.lat.toFixed(5)+', '+h.lon.toFixed(5)):'';
+    return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(candVal(h,'cislo')))+'</td><td>'+esc(String(h.id))+'</td>'+
+      '<td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
+      '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td>'+
+      '<td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
+      '<td>'+esc(gps)+'</td>'+
+      '<td>'+esc(txt(candVal(h,'datumRevize')))+'</td>'+
+      '<td class="l">'+esc(txt(candVal(h,'poznamka')))+'</td>'+
+      '<td class="l">'+esc(ch||'—')+'</td></tr>';
+  }).join('');
+  return '<div class="protokol">'+
+    '<div class="phead"><span class="brand">Florián 2.0</span></div>'+
+    '<h1>AKTUALIZACE ÚDAJŮ A ČÍSEL HYDRANTŮ</h1>'+
+    '<div class="psub">přehled aktuálních údajů a čísel H v obci · podklad pro provoz / GIS</div>'+
+    '<div class="meta"><div><b>Obec / lokalita:</b> '+esc(oblast)+'</div>'+
+      '<div><b>Provozní středisko:</b> '+esc(txt(h0.provozniStredisko))+'</div>'+
+      '<div><b>Vlastník:</b> '+esc(txt(h0.vlastnik))+'</div><div><b>Provozovatel:</b> '+esc(provoz(h0.provozovatel))+'</div>'+
+      '<div><b>Datum:</b> '+dnes+'</div><div><b>Zpracoval:</b> '+(kdo?esc(kdo):'………………………')+'</div></div>'+
+    '<table><thead><tr><th>Č. H</th><th>ID (GIS)</th><th>Adresa / upřesnění</th><th>Typ</th><th>DN hydr.</th><th>DN řadu</th><th>GPS (lat, lon)</th><th>Datum revize</th><th>Poznámka</th><th>Změny (staré → nové)</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div class="sum">Celkem '+items.length+' hydrantů · z toho aktualizováno '+updN+'.</div>'+
+    '<div class="note">Vygenerováno aplikací Florián 2.0 · verze '+APP_VERSION+'. „Č. H" = číslo hydrantu v obci. Řádky se změnou jsou zvýrazněné.</div>'+
+  '</div>';
+}
+function generateAktualWord(towns){
+  var sections=[];
+  towns.forEach(function(t){ var items=aktualItemsForTown(t); if(items.length) sections.push(aktualSectionHtml(items,t)); });
+  if(!sections.length){ alert('Ve vybraných obcích nejsou žádné hydranty.'); return; }
+  var css='@page{size:29.7cm 21cm;margin:1.2cm}'+ /* na šířku (A4 landscape) kvůli široké tabulce */
+    'body{font-family:Arial,sans-serif;font-size:10pt;color:#000}'+
+    '.phead{border-bottom:2px solid #1565c0;padding-bottom:4pt;margin-bottom:6pt}'+
+    '.phead .brand{float:right;font-weight:bold;color:#1565c0;font-size:12pt}'+
+    'h1{font-size:15pt;text-align:center;margin:0 0 3pt}'+
+    '.psub{text-align:center;font-size:9pt;color:#444;margin-bottom:8pt}'+
+    '.meta div{margin-bottom:2pt;font-size:9.5pt;display:inline-block;margin-right:18pt}'+
+    'table{border-collapse:collapse;width:100%;font-size:8.5pt;margin-bottom:3pt}'+
+    'th,td{border:1px solid #999;padding:2pt 3pt;text-align:center}'+
+    'th{background:#1f4e78;color:#fff}'+
+    'td.l{text-align:left}'+
+    'tr.upd td{background:#fff8e1}'+
+    '.sum{font-weight:bold;margin:4pt 0}'+
+    '.note{margin-top:10pt;font-size:8pt;color:#777;font-style:italic}';
+  var body=sections.join('<br clear="all" style="page-break-before:always">');
+  var doc='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'+
+    '<head><meta charset="utf-8"><title>Aktualizace údajů a čísel</title><style>'+css+'</style></head><body>'+body+'</body></html>';
+  var blob=new Blob(['﻿'+doc],{type:'application/msword'});
+  var url=URL.createObjectURL(blob);
+  var d=new Date(); var stamp=d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  var nm=(towns.length===1?towns[0].replace(/[^0-9A-Za-zÁ-Žá-ž]+/g,'_'):(towns.length+'_obci'));
+  var a=document.createElement('a'); a.href=url; a.download='Aktualizace_udaju_'+nm+'_'+stamp+'.doc'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+}
+function buildAktualPanel(){
+  var wrap=document.getElementById('aktualPanel'); if(!wrap) return;
+  var obce=protokolObce(); // stejná nabídka obcí jako protokol
+  if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📝 Aktualizace údajů</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
+  var pre=selectedTowns;
+  wrap.innerHTML=
+    '<div class="tp-head"><b>📝 Aktualizace – zaškrtni obce</b><button class="tp-clear" id="aktAll">Vše / nic</button></div>'+
+    '<div class="tp-list" id="aktList">'+
+      obce.map(function(o){ var ch=(pre.size===0||pre.has(o.t))?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+    '</div>'+
+    '<button class="btn-toggle btn-share" id="aktGen" style="margin-top:6px">⬇️ Stáhnout aktualizaci (Word)</button>';
+  wrap.onclick=function(e){ e.stopPropagation(); };
+  var allOn=false;
+  document.getElementById('aktAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#aktList input[type=checkbox]').forEach(function(c){ c.checked=allOn; }); };
+  document.getElementById('aktGen').onclick=function(){
+    var towns=[]; wrap.querySelectorAll('#aktList input[type=checkbox]:checked').forEach(function(c){ towns.push(c.value); });
+    if(!towns.length){ alert('Zaškrtni aspoň jednu obec.'); return; }
+    if(typeof kandLoaded!=='undefined' && !kandLoaded && typeof ensureKand==='function'){ ensureKand(function(){ generateAktualWord(towns); }); } // ať se do sestavy dostanou i povýšení/číslovaní kandidáti
+    else generateAktualWord(towns);
+  };
+}
+var _ab=document.getElementById('aktualBtn');
+if(_ab) _ab.onclick=function(e){ e.stopPropagation();
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel','protokolPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  buildAktualPanel();
+  var ap=document.getElementById('aktualPanel'); ap.classList.toggle('open'); if(ap.classList.contains('open')){ ap.style.top=(_ab.offsetTop+_ab.offsetHeight+6)+'px'; }
 };
 
 /* ===== Kandidáti (ostatní hydranty) – doplnění pokrytí ===== */
