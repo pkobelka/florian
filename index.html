@@ -1237,7 +1237,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   </div>
   <div class="town-panel" id="ownPanel"></div>
   <div class="town-panel" id="townPanel"></div>
-  <button class="btn-toggle btn-print" id="protokolBtn" title="Vygenerovat protokol o revizi pro vybranou obec (dle ČSN 73 0873) – otevře tisk / uložení do PDF">📄 Protokol o revizi</button>
+  <button class="btn-toggle btn-print" id="protokolBtn" title="Protokol o revizi (dle ČSN 73 0873) – zaškrtni obce a stáhni Word k doplnění">📄 Protokol o revizi</button>
+  <div class="town-panel" id="protokolPanel"></div>
   <div class="ctrl-row">
     <button class="btn-toggle btn-print" id="printMapBtn">🖨️ Tisk mapy</button>
     <button class="btn-toggle" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
@@ -1286,7 +1287,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.151';
+const APP_VERSION = '1.152';
 const APP_YEAR = 2026;
 const APP_UPDATED = '27. 7. 2026';
 
@@ -2316,22 +2317,29 @@ function cleanupCardPrint(){
   window.removeEventListener('afterprint', cleanupCardPrint);
 }
 
-// ---- Protokol o revizi (tisková sestava pro vybranou obec, dle ČSN 73 0873) ----
-function cleanupProtokol(){ document.getElementById('printArea').innerHTML=''; window.removeEventListener('afterprint', cleanupProtokol); }
-function doPrintProtokol(){
-  if(typeof allItems==='undefined') return;
-  var items=allItems.filter(function(it){ return matches(it.h); }).map(function(it){ return it.h; });
-  if(!items.length){ alert('Nejsou vybrané žádné hydranty. Vyber obec (🏘️ Obce) nebo pracoviště/svazek a zkus to znovu.'); return; }
-  var oblast='';
-  if(selectedTowns.size===1) oblast=[].concat(Array.from(selectedTowns))[0];
-  else if(selectedTowns.size>1) oblast='Obce ('+selectedTowns.size+')';
-  else if(selectedOwners.size||selectedStrediska.size) oblast='Vybraná oblast';
-  if(!oblast){ if(!confirm('Není vybraná obec – protokol se vytvoří pro VŠECHNY zobrazené hydranty ('+items.length+'). Doporučuji vybrat obec. Pokračovat?')) return; oblast='Všechny zobrazené'; }
-  if(items.length>60 && !confirm('Protokol bude mít '+items.length+' hydrantů. Pokračovat?')) return;
-  items.sort(function(a,b){ var ca=parseInt(candVal(a,'cislo'),10), cb=parseInt(candVal(b,'cislo'),10);
+// ---- Protokol o revizi (Word ke stažení; výběr více obcí) – dle ČSN 73 0873 ----
+// obce dostupné ve výběru (pracoviště/svazek); ignoruje filtr obcí
+function protokolObce(){
+  var m={}; allItems.forEach(function(it){ var h=it.h;
+    if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return;
+    if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return;
+    var t=filterTown(h); if(t) m[t]=(m[t]||0)+1;
+  });
+  return Object.keys(m).sort(function(a,b){return a.localeCompare(b,'cs');}).map(function(t){return {t:t,n:m[t]};});
+}
+function protokolItemsForTown(t){
+  return allItems.filter(function(it){ var h=it.h;
+    if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return false;
+    if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return false;
+    return filterTown(h)===t;
+  }).map(function(it){return it.h;});
+}
+// HTML jednoho protokolu (jedna obec)
+function protokolSectionHtml(items, oblast){
+  items=items.slice().sort(function(a,b){ var ca=parseInt(candVal(a,'cislo'),10), cb=parseInt(candVal(b,'cislo'),10);
     if(isFinite(ca)&&isFinite(cb)&&ca!==cb) return ca-cb; if(isFinite(ca)&&!isFinite(cb)) return -1; if(!isFinite(ca)&&isFinite(cb)) return 1;
     return String(label(a)).localeCompare(String(label(b)),'cs',{numeric:true}); });
-  var h0=items[0];
+  var h0=items[0]||{};
   var dnes=(function(){ var d=new Date(); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); })();
   var kdo=(typeof flMeName==='function'&&flMeName())||'';
   var okC=0,badC=0,naC=0;
@@ -2353,29 +2361,84 @@ function doPrintProtokol(){
     return '<tr><td>'+esc(txt(candVal(h,'cislo')))+'</td><td class="l">H'+esc(txt(candVal(bestH,'cislo')))+' · '+esc(bestH.upresneni||'')+'</td>'+
       '<td>'+Math.round(best)+'</td><td class="'+(ok?'ok':'bad')+'">'+(ok?'Vyhovuje':'Nevyhovuje')+'</td></tr>';
   }).join('');
-  var html='<div class="protokol">'+
-    '<div class="phead"><div style="font-weight:800;font-size:12pt">Protokol o kontrole provozuschopnosti PH</div><div class="brand">Florián 2.0</div></div>'+
+  return '<div class="protokol">'+
+    '<div class="phead"><span class="brand">Florián 2.0</span></div>'+
     '<h1>PROTOKOL O KONTROLE PROVOZUSCHOPNOSTI POŽÁRNÍCH HYDRANTŮ</h1>'+
     '<div class="psub">vnější odběrní místa požární vody · dle ČSN 73 0873</div>'+
-    '<div class="meta"><div><b>Obec / lokalita:</b> '+esc(oblast)+'</div><div><b>Provozní středisko:</b> '+esc(txt(h0.provozniStredisko))+'</div>'+
+    '<div class="meta"><div><b>Obec / lokalita:</b> '+esc(oblast)+'</div>'+
+      '<div><b>Provozní středisko:</b> '+esc(txt(h0.provozniStredisko))+'</div>'+
       '<div><b>Vlastník:</b> '+esc(txt(h0.vlastnik))+'</div><div><b>Provozovatel:</b> '+esc(provoz(h0.provozovatel))+'</div>'+
       '<div><b>Datum kontroly:</b> '+dnes+'</div><div><b>Kontrolu provedl:</b> '+(kdo?esc(kdo):'………………………')+'</div></div>'+
     '<div class="req">Požadavky ČSN 73 0873: hydrodynamický přetlak ≥ '+String(TLAK_DYN_MIN).replace('.',',')+' MPa · průtok ≥ '+PRUTOK_MIN+' l/s · rozestup hydrantů ≤ '+lim+' m (2× poloměr pokrytí '+COVERAGE_RADIUS+' m) · 1 l/s = 3,6 m³/h.</div>'+
     '<h2>A) Kontrola hydrantů – tlak a průtok</h2>'+
-    '<table><thead><tr><th>Č. H</th><th>Umístění</th><th>Typ</th><th>DN<br>hydr.</th><th>DN<br>řadu</th><th>Stat.<br>[MPa]</th><th>Hydrodyn.<br>[MPa]</th><th>Průtok<br>[l/s]</th><th>Průtok<br>[m³/h]</th><th>Hodnocení</th></tr></thead><tbody>'+rowsA+'</tbody></table>'+
+    '<table><thead><tr><th>Č. H</th><th>Umístění</th><th>Typ</th><th>DN hydr.</th><th>DN řadu</th><th>Stat. [MPa]</th><th>Hydrodyn. [MPa]</th><th>Průtok [l/s]</th><th>Průtok [m³/h]</th><th>Hodnocení</th></tr></thead><tbody>'+rowsA+'</tbody></table>'+
     '<div class="sum">Souhrn: kontrolováno '+items.length+' · vyhovuje '+okC+' · nevyhovuje '+badC+(naC?(' · nezměřeno '+naC):'')+'</div>'+
     '<h2>B) Posouzení rozmístění (rozestup hydrantů)</h2>'+
     '<table><thead><tr><th>Č. H</th><th>Nejbližší hydrant</th><th>Vzdálenost [m]</th><th>Hodnocení</th></tr></thead><tbody>'+rowsB+'</tbody></table>'+
-    '<div class="zav">'+(items.length>1?('Rozmístění '+(allOk?'vyhovuje':'NEvyhovuje')+' – největší vzdálenost k nejbližšímu hydrantu '+Math.round(maxD)+' m ('+(allOk?'≤':'>')+' '+lim+' m).'):'Jediný hydrant v oblasti – rozestup se neposuzuje.')+'</div>'+
+    '<div class="zav">'+(items.length>1?('Rozmístění '+(allOk?'vyhovuje':'NEvyhovuje')+' – největší vzdálenost k nejbližšímu hydrantu '+Math.round(maxD)+' m ('+(allOk?'≤':'>')+' '+lim+' m).'):'Jediný hydrant v obci – rozestup se neposuzuje.')+'</div>'+
     '<div class="zav"><b>Závěr:</b> Kontrolované požární hydranty byly prověřeny dle ČSN 73 0873 (funkčnost i rozmístění). '+(badC?('Nevyhovuje '+badC+' hydrantů – viz tabulka.'):'Uvedené hydranty vyhovují požadavkům normy.')+'</div>'+
-    '<div class="sign"><span>V ……………………… dne '+dnes+'</span><span>Podpis a razítko: ………………………………</span></div>'+
+    '<table class="sign"><tr><td>V ……………………… dne '+dnes+'</td><td style="text-align:right">Podpis a razítko: ………………………………</td></tr></table>'+
     '<div class="note">Vygenerováno aplikací Florián 2.0 · verze '+APP_VERSION+'.'+(naC?' U nezměřených hydrantů doplňte hodnoty (dle ČSN je hydrodynamický tlak povinný).':'')+'</div>'+
   '</div>';
-  document.getElementById('printArea').innerHTML=html;
-  window.addEventListener('afterprint', cleanupProtokol);
-  setTimeout(function(){ window.print(); setTimeout(cleanupProtokol, 3000); }, 250);
 }
-var _pb=document.getElementById('protokolBtn'); if(_pb) _pb.onclick=doPrintProtokol;
+// stáhne Word (.doc = HTML, otevře se ve Wordu a jde doplnit) pro zaškrtnuté obce
+function generateProtokolWord(towns){
+  var sections=[];
+  towns.forEach(function(t){ var items=protokolItemsForTown(t); if(items.length) sections.push(protokolSectionHtml(items,t)); });
+  if(!sections.length){ alert('Ve vybraných obcích nejsou žádné hydranty.'); return; }
+  var css='@page{size:21cm 29.7cm;margin:1.4cm}'+
+    'body{font-family:Arial,sans-serif;font-size:10pt;color:#000}'+
+    '.phead{border-bottom:2px solid #1565c0;padding-bottom:4pt;margin-bottom:6pt}'+
+    '.phead .brand{float:right;font-weight:bold;color:#1565c0;font-size:12pt}'+
+    'h1{font-size:15pt;text-align:center;margin:0 0 3pt}'+
+    '.psub{text-align:center;font-size:9pt;color:#444;margin-bottom:8pt}'+
+    '.meta div{margin-bottom:2pt;font-size:9.5pt}'+
+    '.req{font-size:8.5pt;color:#333;margin:6pt 0}'+
+    'h2{font-size:11pt;color:#1565c0;margin:8pt 0 3pt}'+
+    'table{border-collapse:collapse;width:100%;font-size:8.5pt;margin-bottom:3pt}'+
+    'th,td{border:1px solid #999;padding:2pt 3pt;text-align:center}'+
+    'th{background:#1f4e78;color:#fff}'+
+    'td.l{text-align:left}'+
+    '.ok{color:#1b5e20;font-weight:bold}.bad{color:#b71c1c;font-weight:bold}.na{color:#8a6d00;font-weight:bold}'+
+    '.sum{font-weight:bold;margin:4pt 0}.zav{margin:4pt 0}'+
+    'table.sign{border:none;margin-top:22pt}table.sign td{border:none;font-size:9.5pt}'+
+    '.note{margin-top:10pt;font-size:8pt;color:#777;font-style:italic}';
+  var body=sections.join('<br clear="all" style="page-break-before:always">');
+  var doc='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'+
+    '<head><meta charset="utf-8"><title>Protokol o revizi</title><style>'+css+'</style></head><body>'+body+'</body></html>';
+  var blob=new Blob(['﻿'+doc],{type:'application/msword'});
+  var url=URL.createObjectURL(blob);
+  var d=new Date(); var stamp=d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  var nm=(towns.length===1?towns[0].replace(/[^0-9A-Za-zÁ-Žá-ž]+/g,'_'):(towns.length+'_obci'));
+  var a=document.createElement('a'); a.href=url; a.download='Protokol_revize_'+nm+'_'+stamp+'.doc'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+}
+function buildProtokolPanel(){
+  var wrap=document.getElementById('protokolPanel'); if(!wrap) return;
+  var obce=protokolObce();
+  if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📄 Protokol o revizi</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
+  var pre=selectedTowns;
+  wrap.innerHTML=
+    '<div class="tp-head"><b>📄 Protokol – zaškrtni obce</b><button class="tp-clear" id="prtAll">Vše / nic</button></div>'+
+    '<div class="tp-list" id="prtList">'+
+      obce.map(function(o){ var ch=(pre.size===0||pre.has(o.t))?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+    '</div>'+
+    '<button class="btn-toggle btn-share" id="prtGen" style="margin-top:6px">⬇️ Stáhnout protokol (Word)</button>';
+  wrap.onclick=function(e){ e.stopPropagation(); };
+  var allOn=false;
+  document.getElementById('prtAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#prtList input[type=checkbox]').forEach(function(c){ c.checked=allOn; }); };
+  document.getElementById('prtGen').onclick=function(){
+    var towns=[]; wrap.querySelectorAll('#prtList input[type=checkbox]:checked').forEach(function(c){ towns.push(c.value); });
+    if(!towns.length){ alert('Zaškrtni aspoň jednu obec.'); return; }
+    generateProtokolWord(towns);
+  };
+}
+var _pb=document.getElementById('protokolBtn');
+if(_pb) _pb.onclick=function(e){ e.stopPropagation();
+  ['ownPanel','townPanel','stredPanel','menuPanel','ukolPanel','lidePanel','pushPanel','revListPanel','gisPanel'].forEach(function(id){ var p=document.getElementById(id); if(p)p.classList.remove('open'); });
+  buildProtokolPanel();
+  var pp=document.getElementById('protokolPanel'); pp.classList.toggle('open'); if(pp.classList.contains('open')){ pp.style.top=(_pb.offsetTop+_pb.offsetHeight+6)+'px'; }
+};
 
 /* ===== Kandidáti (ostatní hydranty) – doplnění pokrytí ===== */
 var KAND=null, kandLoaded=false, candOn=false, gapOn=false, kandMarked={}, candReady=false;

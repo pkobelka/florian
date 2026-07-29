@@ -6,7 +6,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.151**, cache `florian-v158`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.152 (tato session) — Protokol: výběr více obcí + Word ke stažení
+- Klik na **📄 Protokol o revizi** → panel `protokolPanel` se **seznamem obcí (zaškrtávátka)**
+  v rámci vybraného pracoviště/svazku (`protokolObce`, `buildProtokolPanel`, reuse tp-item/tp-c).
+- **Stáhnout Word** (ne PDF) – `generateProtokolWord(towns)` složí protokoly vybraných obcí (každá
+  na novou stránku, `page-break-before`) do **HTML-docu** (`application/msword`, `.doc`), otevře se
+  ve Wordu a jde doplnit. Bez knihovny (inline CSS, BOM).
+- `protokolSectionHtml(items,oblast)` = jeden protokol (refaktor z doPrintProtokol). `doPrintProtokol`
+  a tisk přes #printArea zrušeny (nahrazeno Wordem).
+- TODO: víc obcí = zatím jeden .doc (stránka/obec). Separátní soubory per obec = na požádání.
 
 ## Hotovo v1.151 (tato session) — Tlačítko „📄 Protokol o revizi"
 - Nové tlačítko v menu (nad Tisk mapy). `doPrintProtokol()` vygeneruje tiskovou HTML sestavu
