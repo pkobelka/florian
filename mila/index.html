@@ -135,6 +135,20 @@
     box-shadow:inset 0 0 0 2px var(--burgundy);font-weight:bold;
   }
 
+  /* ---- Výběr období (levely) ---- */
+  .periods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+  .periodbtn{
+    font-size:18px;padding:13px 10px;border-radius:12px;text-align:center;
+    border:2px solid var(--gold-soft);background:#fffdf6;color:var(--ink);line-height:1.2;
+  }
+  .periodbtn small{display:block;font-size:14px;color:var(--ink-soft);margin-top:3px;font-style:italic}
+  .periodbtn.sel{
+    border-color:var(--burgundy);background:#f6ead0;color:var(--burgundy);
+    box-shadow:inset 0 0 0 2px var(--burgundy);font-weight:bold;
+  }
+  .periodbtn.sel small{color:var(--burgundy)}
+  .periodbtn.wide{grid-column:1 / -1}
+
   .choices{display:grid;gap:12px;margin-top:6px}
   .pick{
     display:flex;align-items:center;gap:14px;text-align:left;
@@ -245,6 +259,18 @@
         </button>
       </div>
 
+      <div id="periodWrap">
+        <p class="label">Vyber období (level):</p>
+        <div class="periods">
+          <button class="periodbtn wide sel" data-period="all">Všechna období</button>
+          <button class="periodbtn" data-period="premyslovci">Přemyslovci<small>12.–13. století</small></button>
+          <button class="periodbtn" data-period="lucemburkove">Lucemburkové<small>14. století</small></button>
+          <button class="periodbtn" data-period="husitstvi">Husitství<small>15. století</small></button>
+          <button class="periodbtn" data-period="habsburkove">Habsburkové a Rudolf II.<small>1526–1620</small></button>
+          <button class="periodbtn" data-period="baroko">Baroko a osvícenství<small>1620–1800</small></button>
+        </div>
+      </div>
+
       <p class="label">Kolik otázek si dáš?</p>
       <div class="lengths">
         <button class="btn" data-n="8">Krátká hra · 8 otázek</button>
@@ -300,31 +326,145 @@
 /* ------- Otázky (12.–18. století) ------- */
 /* a[0] je vždy správná odpověď; pořadí se při hře náhodně zamíchá. */
 const QUESTIONS = [
- /* ---- PANOVNÍCI ---- */
- {cat:"Panovníci", cz:true, q:"Který český kníže získal roku 1212 Zlatou bulu sicilskou, potvrzující dědičný královský titul?",
+ /* ===================== ČESKÁ HISTORIE (podle období) ===================== */
+
+ /* ---- PŘEMYSLOVCI (12.–13. století) ---- */
+ {cat:"Panovníci", cz:true, period:"premyslovci", q:"Který český kníže získal roku 1212 Zlatou bulu sicilskou, potvrzující dědičný královský titul?",
   a:["Přemysl Otakar I.","Václav I.","Přemysl Otakar II.","Vratislav II."],
   e:"Zlatou bulu sicilskou udělil roku 1212 Fridrich II. — potvrdila Přemyslu Otakaru I. dědičnost českého královského titulu."},
- {cat:"Panovníci", cz:true, q:"Který panovník založil roku 1348 pražskou univerzitu, dnešní Univerzitu Karlovu?",
-  a:["Karel IV.","Václav IV.","Jan Lucemburský","Zikmund Lucemburský"],
-  e:"Karel IV. téhož roku založil i Nové Město pražské; univerzita dnes nese jeho jméno."},
- {cat:"Panovníci", cz:true, q:"Který panovník nechal roku 1357 založit nový kamenný most v Praze, dnešní Karlův most?",
-  a:["Karel IV.","Václav IV.","Přemysl Otakar II.","Rudolf II."],
-  e:"Most, univerzitu i Nové Město pražské založil Karel IV."},
- {cat:"Panovníci", cz:true, q:"Kdo byl posledním mužským Přemyslovcem na českém trůně, zavražděným roku 1306?",
+ {cat:"Panovníci", cz:true, period:"premyslovci", q:"Který král zakládal nová královská města, mezi nimi České Budějovice a Písek?",
+  a:["Přemysl Otakar II.","Václav I.","Václav II.","Přemysl Otakar I."],
+  e:"Přemysl Otakar II. rozšířil svou moc až k Jadranu a proslul zakládáním měst."},
+ {cat:"Panovníci", cz:true, period:"premyslovci", q:"Který přemyslovský král zavedl kolem roku 1300 pevnou stříbrnou minci – pražský groš?",
+  a:["Václav II.","Přemysl Otakar II.","Václav I.","Václav III."],
+  e:"Václav II. díky stříbru z Kutné Hory zavedl pražský groš, který platil po staletí."},
+ {cat:"Panovníci", cz:true, period:"premyslovci", q:"Kdo byl posledním mužským Přemyslovcem na českém trůně, zavražděným roku 1306?",
   a:["Václav III.","Václav II.","Přemysl Otakar II.","Václav I."],
   e:"Václav III. byl zavražděn v Olomouci — Přemyslovci tím vymřeli po meči."},
- {cat:"Panovníci", cz:true, q:"Který husita usedl roku 1458 na český trůn jako jediný král nepocházející z panovnické dynastie?",
+ {cat:"Bitvy a války", cz:true, period:"premyslovci", q:"Který český král, zvaný „král železný a zlatý“, padl roku 1278 v bitvě na Moravském poli?",
+  a:["Přemysl Otakar II.","Václav II.","Václav I.","Jan Lucemburský"],
+  e:"Přemysl Otakar II. podlehl Rudolfu Habsburskému v boji o rakouské země."},
+ {cat:"Vraždy a intriky", cz:true, period:"premyslovci", q:"Kde byl roku 1306 zavražděn poslední Přemyslovec Václav III.?",
+  a:["V Olomouci","V Praze","V Brně","Ve Znojmě"],
+  e:"Václav III. byl ubodán v Olomouci při tažení do Polska."},
+ {cat:"Světci a osobnosti", cz:true, period:"premyslovci", q:"Která přemyslovská princezna založila v Praze špitál a klášter a byla roku 1989 svatořečena?",
+  a:["Anežka Česká","Ludmila","Zdislava z Lemberka","Eliška Přemyslovna"],
+  e:"Svatá Anežka Česká, dcera Přemysla Otakara I., se vzdala výhodných sňatků a zasvětila život chudým."},
+ {cat:"Světci a osobnosti", cz:true, period:"premyslovci", q:"Která šlechtična 13. století, uctívaná pro péči o nemocné, je patronkou rodin?",
+  a:["Zdislava z Lemberka","Anežka Česká","Ludmila","Kunhuta"],
+  e:"Svatá Zdislava z Lemberka pomáhala chudým a nemocným v severních Čechách."},
+
+ /* ---- LUCEMBURKOVÉ (14. – počátek 15. století) ---- */
+ {cat:"Panovníci", cz:true, period:"lucemburkove", q:"Kterému panovníkovi se pro rozkvět zemí přezdívá „Otec vlasti“?",
+  a:["Karel IV.","Václav IV.","Přemysl Otakar II.","Jan Lucemburský"],
+  e:"Karel IV. byl českým králem i císařem Svaté říše římské; za jeho vlády Čechy vzkvétaly."},
+ {cat:"Panovníci", cz:true, period:"lucemburkove", q:"Který panovník založil roku 1348 pražskou univerzitu, dnešní Univerzitu Karlovu?",
+  a:["Karel IV.","Václav IV.","Jan Lucemburský","Zikmund Lucemburský"],
+  e:"Karel IV. téhož roku založil i Nové Město pražské; univerzita dnes nese jeho jméno."},
+ {cat:"Panovníci", cz:true, period:"lucemburkove", q:"Který panovník nechal roku 1357 založit nový kamenný most v Praze, dnešní Karlův most?",
+  a:["Karel IV.","Václav IV.","Přemysl Otakar II.","Rudolf II."],
+  e:"Most, univerzitu i Nové Město pražské založil Karel IV."},
+ {cat:"Panovníci", cz:true, period:"lucemburkove", q:"Který hrad nechal Karel IV. vystavět jako pokladnici pro říšské korunovační klenoty?",
+  a:["Karlštejn","Křivoklát","Bezděz","Kašperk"],
+  e:"Na Karlštejně byly uloženy korunovační klenoty a vzácné relikvie."},
+ {cat:"Bitvy a války", cz:true, period:"lucemburkove", q:"Který český král, ačkoli byl slepý, hrdinně padl roku 1346 v bitvě u Kresčaku?",
+  a:["Jan Lucemburský","Karel IV.","Václav IV.","Zikmund Lucemburský"],
+  e:"Jan Lucemburský, otec Karla IV., bojoval na straně Francie proti Anglii."},
+ {cat:"Sňatky", cz:true, period:"lucemburkove", q:"Koho si vzal Karel IV. za svou první manželku?",
+  a:["Blanku z Valois","Annu Svídnickou","Alžbětu Pomořanskou","Annu Falckou"],
+  e:"Karel IV. měl postupně čtyři manželky; první byla Francouzka Blanka z Valois."},
+ {cat:"Sňatky", cz:true, period:"lucemburkove", q:"Kdo byla matka Karla IV., pocházející z rodu Přemyslovců?",
+  a:["Eliška Přemyslovna","Blanka z Valois","Anežka Česká","Kunhuta Uherská"],
+  e:"Eliška Přemyslovna se provdala za Jana Lucemburského; jejich synem byl Karel IV."},
+ {cat:"Vraždy a intriky", cz:true, period:"lucemburkove", q:"Který generální vikář byl roku 1393 na rozkaz krále Václava IV. utopen ve Vltavě?",
+  a:["Jan Nepomucký","Jan Hus","Jan Milíč z Kroměříže","Jeroným Pražský"],
+  e:"Jan Nepomucký byl později svatořečen; jeho socha stojí na Karlově mostě."},
+
+ /* ---- HUSITSTVÍ (15. století) ---- */
+ {cat:"Vraždy a intriky", cz:true, period:"husitstvi", q:"Který český kazatel a reformátor byl roku 1415 upálen v Kostnici?",
+  a:["Jan Hus","Jeroným Pražský","Jan Milíč z Kroměříže","Konrád Waldhauser"],
+  e:"Husova smrt rozpoutala husitské války; jeho stoupenci se nazývali husité."},
+ {cat:"Vraždy a intriky", cz:true, period:"husitstvi", q:"Čím roku 1419 fakticky začaly husitské války v Praze?",
+  a:["První pražskou defenestrací – svržením konšelů z oken radnice","Bitvou u Lipan","Upálením Jana Husa","Korunovací Zikmunda"],
+  e:"Vyházení konšelů z oken Novoměstské radnice rozpoutalo husitskou revoluci."},
+ {cat:"Bitvy a války", cz:true, period:"husitstvi", q:"Který husitský vojevůdce nikdy neprohrál bitvu a zvítězil roku 1420 na vrchu Vítkově?",
+  a:["Jan Žižka","Prokop Holý","Jan Roháč z Dubé","Zikmund Lucemburský"],
+  e:"Slepý Jan Žižka patří k nejlepším vojevůdcům své doby."},
+ {cat:"Bitvy a války", cz:true, period:"husitstvi", q:"Který kněz vedl husitská polní vojska po smrti Jana Žižky?",
+  a:["Prokop Holý","Jan Roháč z Dubé","Jan Želivský","Zikmund Lucemburský"],
+  e:"Prokop Holý velel při vítězných „spanilých jízdách“ i v bitvě u Domažlic."},
+ {cat:"Bitvy a války", cz:true, period:"husitstvi", q:"Co se roku 1431 stalo u Domažlic, když se přiblížila křížová výprava proti husitům?",
+  a:["Křižáci uprchli, sotva zaslechli husitský chorál","Husité byli poraženi","Byl zajat Prokop Holý","Zikmund dobyl Prahu"],
+  e:"Podle kronik křižáci utekli už při zpěvu chorálu „Ktož jsú boží bojovníci“."},
+ {cat:"Bitvy a války", cz:true, period:"husitstvi", q:"Kterou bitvou roku 1434 fakticky skončily husitské války?",
+  a:["Bitvou u Lipan","Bitvou u Domažlic","Bitvou na Vítkově","Bitvou u Sudoměře"],
+  e:"U Lipan porazila umírněná strana radikální husity."},
+ {cat:"Vraždy a intriky", cz:true, period:"husitstvi", q:"Který husitský hejtman byl roku 1437 jako poslední vzdorující velitel popraven v Praze?",
+  a:["Jan Roháč z Dubé","Prokop Holý","Jan Žižka","Jan Želivský"],
+  e:"Jan Roháč z Dubé se odmítl podřídit Zikmundovi a byl po pádu hradu Sion popraven."},
+ {cat:"Panovníci", cz:true, period:"husitstvi", q:"Který husita usedl roku 1458 na český trůn jako jediný král nepocházející z panovnické dynastie?",
   a:["Jiří z Poděbrad","Ladislav Pohrobek","Zikmund Lucemburský","Albrecht Habsburský"],
   e:"Jiří z Poděbrad, „král dvojího lidu“, usiloval o mírovou unii evropských panovníků."},
- {cat:"Panovníci", cz:true, q:"Který habsburský císař přenesl své sídlo do Prahy a proslul jako mecenáš umění a vědy?",
+
+ /* ---- HABSBURKOVÉ A RUDOLFÍNSKÁ DOBA (1526–1620) ---- */
+ {cat:"Bitvy a války", cz:true, period:"habsburkove", q:"Který český a uherský král zahynul roku 1526 v bitvě u Moháče, po níž nastoupili Habsburkové?",
+  a:["Ludvík Jagellonský","Vladislav Jagellonský","Matyáš Korvín","Jiří z Poděbrad"],
+  e:"Mladý Ludvík utonul na útěku; český trůn převzal Ferdinand I. Habsburský."},
+ {cat:"Panovníci", cz:true, period:"habsburkove", q:"Který Habsburk usedl roku 1526 na český trůn a založil tak habsburskou vládu na téměř čtyři století?",
+  a:["Ferdinand I.","Ferdinand II.","Maxmilián II.","Rudolf II."],
+  e:"Ferdinand I. nastoupil po smrti Ludvíka Jagellonského padlého u Moháče."},
+ {cat:"Umění a věda", cz:true, period:"habsburkove", q:"Podle kterého krále se jmenuje reprezentační Vladislavský sál na Pražském hradě?",
+  a:["Vladislav Jagellonský","Ludvík Jagellonský","Ferdinand I.","Rudolf II."],
+  e:"Vladislav Jagellonský nechal vybudovat pozdně gotický Vladislavský sál."},
+ {cat:"Panovníci", cz:true, period:"habsburkove", q:"Který habsburský císař přenesl své sídlo do Prahy a proslul jako mecenáš umění a vědy?",
   a:["Rudolf II.","Ferdinand I.","Maxmilián II.","Matyáš"],
   e:"Za Rudolfa II. působili v Praze astronomové Tycho Brahe i Johannes Kepler."},
- {cat:"Panovníci", cz:true, q:"Která habsburská panovnice vládla v letech 1740–1780 a provedla rozsáhlé reformy?",
+ {cat:"Umění a věda", cz:true, period:"habsburkove", q:"Který astronom na dvoře Rudolfa II. v Praze formuloval zákony pohybu planet?",
+  a:["Johannes Kepler","Tycho Brahe","Galileo Galilei","Mikuláš Koperník"],
+  e:"Kepler využil přesná pozorování Tychona Brahe, který v Praze rovněž pobýval."},
+ {cat:"Umění a věda", cz:true, period:"habsburkove", q:"Který dánský astronom se stříbrným nosem zemřel roku 1601 v Praze?",
+  a:["Tycho Brahe","Johannes Kepler","Mikuláš Koperník","Galileo Galilei"],
+  e:"Tycho Brahe proslul mimořádně přesným pozorováním hvězd; jeho data využil Kepler."},
+ {cat:"Umění a věda", cz:true, period:"habsburkove", q:"Čím byl mimo jiné pověstný dvůr Rudolfa II. v Praze?",
+  a:["Alchymisty hledajícími kámen mudrců","Námořními objevy","Rytířskými turnaji v Kolíně","Stavbou katedrály"],
+  e:"K Rudolfově Praze se pojí pověsti o alchymistech i o Golemovi rabína Löwa."},
+ {cat:"Spisovatelé", cz:true, period:"habsburkove", q:"Který slavný český překlad Bible pořídila Jednota bratrská na sklonku 16. století?",
+  a:["Bible kralická","Bible svatováclavská","Bible olomoucká","Bible pražská"],
+  e:"Bible kralická je vrcholem starší české literatury a ovlivnila spisovný jazyk."},
+ {cat:"Panovníci", cz:true, period:"habsburkove", q:"Co roku 1609 zaručil „Rudolfův majestát“?",
+  a:["Náboženskou svobodu v českých zemích","Zrušení nevolnictví","Založení univerzity","Právo razit vlastní minci"],
+  e:"Majestát Rudolfa II. potvrdil svobodu vyznání; jeho porušování vedlo ke stavovskému povstání."},
+
+ /* ---- BAROKO A OSVÍCENSTVÍ (1620–1800) ---- */
+ {cat:"Vraždy a intriky", cz:true, period:"baroko", q:"Co odstartovala „druhá pražská defenestrace“ roku 1618?",
+  a:["České stavovské povstání a třicetiletou válku","Husitské války","Válku o dědictví rakouské","Sedmiletou válku"],
+  e:"Vyhození místodržících z okna Pražského hradu bylo počátkem velké války v Evropě."},
+ {cat:"Bitvy a války", cz:true, period:"baroko", q:"Za vlády kterého Habsburka došlo roku 1620 k bitvě na Bílé hoře?",
+  a:["Ferdinand II.","Rudolf II.","Matyáš","Ferdinand I."],
+  e:"Porážka českých stavů vedla k rekatolizaci a popravám na Staroměstském náměstí."},
+ {cat:"Vraždy a intriky", cz:true, period:"baroko", q:"Kolik českých pánů bylo roku 1621 popraveno na Staroměstském náměstí po porážce stavovského povstání?",
+  a:["27","12","15","40"],
+  e:"Staroměstskou exekuci 27 vůdců povstání připomíná 27 křížů v dlažbě náměstí."},
+ {cat:"Vraždy a intriky", cz:true, period:"baroko", q:"Který císařský vojevůdce byl roku 1634 zavražděn v Chebu pro podezření ze zrady?",
+  a:["Albrecht z Valdštejna","Jan Žižka","Petr Vok","Karel Škréta"],
+  e:"Valdštejna dal odstranit císař Ferdinand II. za třicetileté války."},
+ {cat:"Bitvy a války", cz:true, period:"baroko", q:"Kterým mírem roku 1648 skončila třicetiletá válka?",
+  a:["Vestfálským mírem","Pražským mírem","Vídeňským mírem","Cášským mírem"],
+  e:"Vestfálský mír roku 1648 ukončil ničivou válku, která zpustošila i české země."},
+ {cat:"Spisovatelé", cz:true, period:"baroko", q:"Který „učitel národů“ napsal „Labyrint světa a ráj srdce“?",
+  a:["Jan Amos Komenský","Bohuslav Balbín","Kryštof Harant","Daniel Adam z Veleslavína"],
+  e:"Jan Amos Komenský byl posledním biskupem Jednoty bratrské a zakladatelem moderní pedagogiky."},
+ {cat:"Umění a věda", cz:true, period:"baroko", q:"Který malíř patří k nejvýznamnějším představitelům českého baroka 17. století?",
+  a:["Karel Škréta","Mikoláš Aleš","Josef Mánes","Alfons Mucha"],
+  e:"Karel Škréta byl předním malířem českého baroka."},
+ {cat:"Panovníci", cz:true, period:"baroko", q:"Která habsburská panovnice vládla v letech 1740–1780 a provedla rozsáhlé reformy?",
   a:["Marie Terezie","Kateřina Veliká","Alžběta I.","Marie Antoinetta"],
-  e:"Marie Terezie zavedla mj. povinnou školní docházku; vládla i českým zemím."},
- {cat:"Panovníci", cz:true, q:"Který osvícenský panovník zrušil roku 1781 v českých zemích nevolnictví?",
+  e:"Marie Terezie zavedla mj. roku 1774 povinnou školní docházku; vládla i českým zemím."},
+ {cat:"Panovníci", cz:true, period:"baroko", q:"Který osvícenský panovník zrušil roku 1781 v českých zemích nevolnictví?",
   a:["Josef II.","Leopold II.","Karel VI.","František I."],
   e:"Josef II. vydal roku 1781 patent o zrušení nevolnictví i toleranční patent."},
+
+ /* ===================== SVĚTOVÁ HISTORIE (jen v režimu „Celý svět“) ===================== */
  {cat:"Panovníci", q:"Který francouzský král byl zvaný „Král Slunce“ a nechal vystavět Versailles?",
   a:["Ludvík XIV.","Ludvík XIII.","Ludvík XV.","František I."],
   e:"Ludvík XIV. vládl 72 let a stal se symbolem absolutismu."},
@@ -334,37 +474,6 @@ const QUESTIONS = [
  {cat:"Panovníci", q:"Který ruský vládce přijal roku 1547 jako první titul cara?",
   a:["Ivan IV. Hrozný","Petr Veliký","Ivan III.","Boris Godunov"],
   e:"Ivan IV. Hrozný se nechal korunovat prvním ruským carem."},
-
- /* ---- BITVY A VÁLKY ---- */
- {cat:"Bitvy a války", cz:true, q:"Který český král, zvaný „král železný a zlatý“, padl roku 1278 v bitvě na Moravském poli?",
-  a:["Přemysl Otakar II.","Václav II.","Václav I.","Jan Lucemburský"],
-  e:"Přemysl Otakar II. podlehl Rudolfu Habsburskému v boji o rakouské země."},
- {cat:"Bitvy a války", cz:true, q:"Který český král, ačkoli byl slepý, hrdinně padl roku 1346 v bitvě u Kresčaku?",
-  a:["Jan Lucemburský","Karel IV.","Václav IV.","Zikmund Lucemburský"],
-  e:"Jan Lucemburský, otec Karla IV., bojoval na straně Francie proti Anglii."},
- {cat:"Bitvy a války", cz:true, q:"Který husitský vojevůdce nikdy neprohrál bitvu a zvítězil roku 1420 na vrchu Vítkově?",
-  a:["Jan Žižka","Prokop Holý","Jan Roháč z Dubé","Zikmund Lucemburský"],
-  e:"Slepý Jan Žižka patří k nejlepším vojevůdcům své doby."},
- {cat:"Bitvy a války", cz:true, q:"Kterou bitvou roku 1434 fakticky skončily husitské války?",
-  a:["Bitvou u Lipan","Bitvou u Domažlic","Bitvou na Vítkově","Bitvou u Sudoměře"],
-  e:"U Lipan porazila umírněná strana radikální husity."},
- {cat:"Bitvy a války", cz:true, q:"Který český a uherský král zahynul roku 1526 v bitvě u Moháče, po níž nastoupili Habsburkové?",
-  a:["Ludvík Jagellonský","Vladislav Jagellonský","Matyáš Korvín","Jiří z Poděbrad"],
-  e:"Mladý Ludvík utonul na útěku; český trůn převzal Ferdinand I. Habsburský."},
- {cat:"Bitvy a války", cz:true, q:"Za vlády kterého Habsburka došlo roku 1620 k bitvě na Bílé hoře?",
-  a:["Ferdinand II.","Rudolf II.","Matyáš","Ferdinand I."],
-  e:"Porážka českých stavů vedla k rekatolizaci a popravám na Staroměstském náměstí."},
-
- /* ---- SŇATKY ---- */
- {cat:"Sňatky", cz:true, q:"Koho si vzal Karel IV. za svou první manželku?",
-  a:["Blanku z Valois","Annu Svídnickou","Alžbětu Pomořanskou","Annu Falckou"],
-  e:"Karel IV. měl postupně čtyři manželky; první byla Francouzka Blanka z Valois."},
- {cat:"Sňatky", cz:true, q:"Kdo byla matka Karla IV., pocházející z rodu Přemyslovců?",
-  a:["Eliška Přemyslovna","Blanka z Valois","Anežka Česká","Kunhuta Uherská"],
-  e:"Eliška Přemyslovna se provdala za Jana Lucemburského; jejich synem byl Karel IV."},
- {cat:"Sňatky", cz:true, q:"Za koho se provdala Marie Terezie, s nímž měla šestnáct dětí?",
-  a:["František Štěpán Lotrinský","Karel VI.","Bedřich II.","Ludvík XV."],
-  e:"František Štěpán se stal císařem; jejich dcerou byla i Marie Antoinetta."},
  {cat:"Sňatky", q:"Kdo byla první manželka anglického krále Jindřicha VIII., s níž se dal rozvést?",
   a:["Kateřina Aragonská","Anna Boleynová","Jana Seymourová","Anna Klevská"],
   e:"Rozvod s Kateřinou vedl k roztržce s Římem a vzniku anglikánské církve."},
@@ -374,23 +483,6 @@ const QUESTIONS = [
  {cat:"Sňatky", q:"Čí sňatek roku 1469 položil základ sjednoceného Španělska?",
   a:["Isabely Kastilské a Ferdinanda Aragonského","Marie Burgundské a Maxmiliána I.","Jany Šílené a Filipa I.","Kateřiny a Artura Tudora"],
   e:"„Katoličtí králové“ dokončili reconquistu a podpořili výpravu Kryštofa Kolumba."},
-
- /* ---- VRAŽDY A INTRIKY ---- */
- {cat:"Vraždy a intriky", cz:true, q:"Kde byl roku 1306 zavražděn poslední Přemyslovec Václav III.?",
-  a:["V Olomouci","V Praze","V Brně","Ve Znojmě"],
-  e:"Václav III. byl ubodán v Olomouci při tažení do Polska."},
- {cat:"Vraždy a intriky", cz:true, q:"Který český kazatel a reformátor byl roku 1415 upálen v Kostnici?",
-  a:["Jan Hus","Jeroným Pražský","Jan Milíč z Kroměříže","Konrád Waldhauser"],
-  e:"Husova smrt rozpoutala husitské války; jeho stoupenci se nazývali husité."},
- {cat:"Vraždy a intriky", cz:true, q:"Který císařský vojevůdce byl roku 1634 zavražděn v Chebu pro podezření ze zrady?",
-  a:["Albrecht z Valdštejna","Jan Žižka","Petr Vok","Karel Škréta"],
-  e:"Valdštejna dal odstranit císař Ferdinand II. za třicetileté války."},
- {cat:"Vraždy a intriky", cz:true, q:"Co odstartovala „druhá pražská defenestrace“ roku 1618?",
-  a:["České stavovské povstání a třicetiletou válku","Husitské války","Válku o dědictví rakouské","Sedmiletou válku"],
-  e:"Vyhození místodržících z okna Pražského hradu bylo počátkem velké války v Evropě."},
- {cat:"Vraždy a intriky", cz:true, q:"Kolik českých pánů bylo roku 1621 popraveno na Staroměstském náměstí po porážce stavovského povstání?",
-  a:["27","12","15","40"],
-  e:"Staroměstskou exekuci 27 vůdců povstání připomíná 27 křížů v dlažbě náměstí."},
  {cat:"Vraždy a intriky", q:"Který arcibiskup byl roku 1170 zavražděn rytíři přímo v katedrále v Canterbury?",
   a:["Tomáš Becket","Thomas More","Tomáš Akvinský","Anselm z Canterbury"],
   e:"Becket zahynul po sporu s králem Jindřichem II. a brzy byl prohlášen za svatého."},
@@ -409,11 +501,6 @@ const QUESTIONS = [
  {cat:"Vraždy a intriky", q:"Která uherská šlechtična, „čachtická paní“, byla počátkem 17. století obviněna z krutostí?",
   a:["Alžběta Báthoryová","Marie Stuartovna","Kateřina Medicejská","Lucrezia Borgia"],
   e:"Alžběta Báthoryová byla obviněna z mučení mladých žen a zemřela roku 1614 ve vězení."},
-
- /* ---- SPISOVATELÉ ---- */
- {cat:"Spisovatelé", cz:true, q:"Který „učitel národů“ napsal „Labyrint světa a ráj srdce“?",
-  a:["Jan Amos Komenský","Bohuslav Balbín","Kryštof Harant","Daniel Adam z Veleslavína"],
-  e:"Jan Amos Komenský byl posledním biskupem Jednoty bratrské a zakladatelem moderní pedagogiky."},
  {cat:"Spisovatelé", q:"Kdo je autorem „Božské komedie“ z počátku 14. století?",
   a:["Dante Alighieri","Francesco Petrarca","Giovanni Boccaccio","Torquato Tasso"],
   e:"Dante napsal svou pouť peklem, očistcem a rájem lidovou italštinou."},
@@ -438,11 +525,6 @@ const QUESTIONS = [
  {cat:"Spisovatelé", q:"Kdo je autorem komedií „Lakomec“ a „Tartuffe“ na dvoře Ludvíka XIV.?",
   a:["Molière","Jean Racine","Pierre Corneille","Voltaire"],
   e:"Molière psal a hrál komedie pro dvůr Krále Slunce."},
-
- /* ---- UMĚNÍ A VĚDA ---- */
- {cat:"Umění a věda", cz:true, q:"Který astronom na dvoře Rudolfa II. v Praze formuloval zákony pohybu planet?",
-  a:["Johannes Kepler","Tycho Brahe","Galileo Galilei","Mikuláš Koperník"],
-  e:"Kepler využil přesná pozorování Tychona Brahe, který v Praze rovněž pobýval."},
  {cat:"Umění a věda", q:"Který mnich zahájil roku 1517 reformaci vyvěšením 95 tezí?",
   a:["Martin Luther","Jan Kalvín","Erasmus Rotterdamský","Ulrich Zwingli"],
   e:"Luther přeložil Bibli do němčiny a rozdělil západní křesťanství."},
@@ -461,6 +543,7 @@ const QUESTIONS = [
 const $ = id => document.getElementById(id);
 let deck = [], idx = 0, score = 0, answered = false;
 let focus = 'cz';        // 'cz' = jen česká historie, 'all' = celý svět
+let period = 'all';      // vybrané období (level) v české historii
 let lastN = 8;           // naposledy zvolená délka (pro „Hrát znovu")
 
 /* Pestré pochvaly za správnou odpověď */
@@ -482,7 +565,12 @@ function shuffle(arr){
 
 function startGame(n){
   lastN = n;
-  const pool = (focus === 'cz') ? QUESTIONS.filter(q => q.cz) : QUESTIONS;
+  let pool;
+  if(focus === 'cz'){
+    pool = QUESTIONS.filter(q => q.cz && (period === 'all' || q.period === period));
+  } else {
+    pool = QUESTIONS;   // celý svět = všechny otázky
+  }
   deck = shuffle(pool);
   if(n && n>0) deck = deck.slice(0, Math.min(n, deck.length));
   idx = 0; score = 0;
@@ -598,6 +686,15 @@ document.querySelectorAll('#intro [data-focus]').forEach(b=>{
   b.addEventListener('click', ()=>{
     focus = b.dataset.focus;
     document.querySelectorAll('#intro [data-focus]').forEach(x=> x.classList.toggle('sel', x===b));
+    // výběr období dává smysl jen u české historie
+    $('periodWrap').classList.toggle('hide', focus !== 'cz');
+  });
+});
+// výběr období (level)
+document.querySelectorAll('#intro [data-period]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    period = b.dataset.period;
+    document.querySelectorAll('#intro [data-period]').forEach(x=> x.classList.toggle('sel', x===b));
   });
 });
 // spuštění hry podle délky
