@@ -461,5 +461,11 @@ body{
   });
   // keyboard: space/enter to start
   document.addEventListener('keydown',function(e){ if((e.key===' '||e.key==='Enter')&&!started){ e.preventDefault(); start(); }});
+  // auto mode (for video capture): clean title card, no button, self-start
+  if(/[?&]auto=1/.test(location.search)){
+    var pb=document.querySelector('.cover .play'); if(pb) pb.style.display='none';
+    var mt=document.querySelector('.cover .meta'); if(mt) mt.style.display='none';
+    setTimeout(start,1600);
+  }
 })();
 </script>

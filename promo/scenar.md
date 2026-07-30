@@ -51,7 +51,17 @@ podložit licencovanou stopou v podobném duchu:
 
 ---
 
-## Jak z promo udělat opravdové video (MP4)
+## Hotové video (MP4)
+
+V repu je **hotové video** [`florian-promo.mp4`](florian-promo.mp4) —
+1280×720, ~59 s, H.264 + AAC, se zvukem (generovaný podkres). Je připravené
+k rozeslání starostům. Zvuk je zatím jen podkres; pro finále lze přidat
+namluvené slovo (viz tabulka výše) a licencovanou hudbu.
+
+Vzniklo z `florian-promo.html` (režim `?auto=1` = čistá úvodní karta bez
+tlačítka, samospuštění) nahráním obrazovky + složením s podkresem.
+
+## Jak si video vyrobit znovu / upravit
 
 Promo je připravené tak, aby se dalo **nahrát obrazovkou**:
 
