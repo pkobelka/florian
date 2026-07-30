@@ -84,10 +84,17 @@ Promo je připravené tak, aby se dalo **nahrát obrazovkou**:
 
 ## Použité materiály
 
-- Reálné obrazovky živé appky (režim **„Náhled pro obec"**, svazek Poličsko):
-  přehled, vrstva pokrytí 200 m, karta hydrantu.
-- Foto hydrantu: `podklady/foto-nadzemni.png`.
-- Logo/ikona: `icon-512.png`.
+- **Reálné screeny z mobilu** (s mapovým podkladem OpenStreetMap):
+  - Přehled: clustery nad celým regionem (Svitavsko / Moravskotřebovsko).
+  - Pokrytí: Staré Město **bez pokrytí → s pokrytím 200 m** (before/after,
+    ve scéně se obrázky střídají – ukazuje, co přepínač „🎯 Pokrytí" udělá).
+  - Detail: karta hydrantu Linhartice se **skutečnou fotkou z terénu**.
+  (Mapové dlaždice OSM jsou z tohoto prostředí blokované proxy, proto se
+  reálné mapy braly ze screenů z telefonu.)
+- Úvodní foto hydrantu: `podklady/foto-nadzemni.png`. Logo: `icon-512.png`.
+- K dispozici (zatím nepoužité, na požádání doplním): protokol o revizi
+  (Radišov, ČSN tabulka), pokrytí Radišov s poznámkami, foto-miniatury
+  u bodů na mapě (Moravská Třebová).
 - Data: 774 hydrantů, 19 vlastníků (dle `hydranty.json`).
 
 > Poznámka: číselné údaje ve scéně „Detail" a v ukázkovém protokolu jsou
