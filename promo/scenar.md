@@ -54,20 +54,18 @@ podložit licencovanou stopou v podobném duchu:
 ## Hotové video (MP4)
 
 V repu je **hotové video** [`florian-promo.mp4`](florian-promo.mp4) —
-1280×720, ~59 s, H.264 + AAC. Obsahuje **české mluvené slovo** (viz tabulka
-výše) i **hudební podkres** (svižnější, optimistický) s automatickým
-ztišením hudby pod hlasem (ducking).
+1280×720, ~59 s, H.264 + AAC. Zvuk je **jen hudební podkres** (svižnější,
+optimistický) — **bez mluveného slova**.
 
-- **Mluvené slovo** je zatím **syntetický hlas** (offline TTS, mužský český
-  hlas MBROLA cz2). Je srozumitelný, ale robotičtější — pro veřejnou,
-  reprezentativní verzi doporučuji nahradit **lidským hlasem** (dabér) nebo
-  prémiovým cloud TTS. Text je připravený v tabulce výše.
+- Mluvené slovo (VO) bylo z videa vyřazeno (syntetický hlas zněl roboticky).
+  **Text komentáře k namluvení zůstává v tabulce výše** — pro finální verzi
+  stačí nahrát lidským hlasem (dabér) nebo prémiovým cloud TTS a podložit ho
+  pod titulky/scény.
 - **Podkres** je vlastní generovaná stopa; lze nahradit licencovanou hudbou.
 
 Vzniklo z `florian-promo.html` (režim `?auto=1` = čistá úvodní karta bez
-tlačítka, samospuštění) nahráním obrazovky + složením s namluveným slovem
-a podkresem (ffmpeg). Stejná zvuková stopa je vložená i do HTML verze, takže
-sdílený odkaz zní stejně jako video.
+tlačítka, samospuštění) nahráním obrazovky + složením s podkresem (ffmpeg).
+Stejná hudba je vložená i do HTML verze, takže sdílený odkaz zní stejně.
 
 ## Jak si video vyrobit znovu / upravit
 
