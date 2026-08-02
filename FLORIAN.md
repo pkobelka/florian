@@ -6,7 +6,22 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Aktuální verze
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
-- Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
+- Nyní: **v1.169**, cache `florian-v176`. (Nasazuje se přes merge dev větve do `main`.)
+
+## Hotovo v1.169 (tato session) — Protokol dle kontroly VHOS (L. Vykydal) + ovládací šoupě
+- **Soulad tlaku dle ČSN se posuzuje z HYDROSTATICKÉHO tlaku (≥ 0,2 MPa), ne hydrodynamického**
+  (připomínka kontroly VHOS). Nová konstanta `TLAK_STAT_MIN=0.2` + `tlakStatStav()`; přepnuty
+  `csnStatus` (barvy mapy), karta (chip ČSN, `_tss`/`_tlakFail`), editace („Splňuje tlak dle ČSN"
+  hodnotí pole hydrostatický) i protokol (sloupec Hodnocení).
+- **Hydrodynamický tlak = jen informativní** (neurčuje soulad). V kartě se dlaždice ukáže jen když
+  je hodnota naměřená (`tlakDynTile` vrací '' pro prázdné/0). V editaci pole zůstává (nepovinné).
+- **Protokol o revizi**: v tabulce A odebrán sloupec „Hydrodyn. [MPa]" (chybné vzorové hodnoty,
+  hydrodynamický tlak bývá ~0,0x MPa), „Stat." přejmenováno na „Hydrostat.". Požadavky v hlavičce:
+  „hydrostatický přetlak ≥ 0,2 MPa".
+- **Nový údaj „Ovládací šoupě před hydrantem" (Ano/Ne/neuvedeno)** – pole `soupe` v `domereni`:
+  select v editaci (`edSoupe`), řádek v kartě i v kartě kandidáta, sloupec v protokolu (tab. A),
+  řádek v tiskové kartě (`doPrint`) a sloupec v CSV exportu do GISu (`FL_EXPORT_FIELDS`). `soupeText()`.
+- Podklady: `Protokol_revize_Radisov_VZOR_2_kontrola_Vykydal.docx` (připomínky) + norma ČSN 73 0873.
 
 ## Hotovo v1.152 (tato session) — Protokol: výběr více obcí + Word ke stažení
 - Klik na **📄 Protokol o revizi** → panel `protokolPanel` se **seznamem obcí (zaškrtávátka)**
