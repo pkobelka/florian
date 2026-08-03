@@ -1228,6 +1228,9 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
     <button class="btn-toggle" id="infoBtn" title="Zobrazit info (upřesnění + poznámka) u všech hydrantů na mapě">ℹ️ Info</button>
     <button class="btn-toggle" id="satToggle" title="Přepnout podklad na satelitní (leteckou) mapu">🛰️ Satelit</button>
   </div>
+  <div class="ctrl-row">
+    <button class="btn-toggle" id="vodToggle" title="Zobrazit schéma vodovodních řadů (trasy potrubí). Zatím dostupné pro oblast Staré Město / Radišov / Dětřichov.">🚰 Vodovod</button>
+  </div>
   <div class="ctrl-row op-only">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
@@ -1314,7 +1317,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.176';
+const APP_VERSION = '1.177';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1986,6 +1989,39 @@ if(cisloToggle){
     cisloToggle.classList.toggle('on', numOn);
     flNumZoom(); // přepočítá třídu nums-on (číslo se ukáže po přiblížení)
     if(numOn && map.getZoom()<NUM_ZOOM) alert('Přibliž mapu na obec a čísla hydrantů se ukážou u značek.');
+  };
+}
+// ===== 🚰 Vodovod – přepínač schématu vodovodních řadů (trasy z GISu, přepočet S-JTSK→WGS84) =====
+var vodLayer=null, vodOn=false, vodLoaded=false, vodData=null;
+var VOD_MAT_COLOR={'PolyVinylChlorid (PVC)':'#e8820c','PolyEthylen (PE)':'#2e7d32','PE':'#2e7d32','Litina (Li)':'#5c6bc0','Ocel (OC)':'#546e7a'};
+function vodColor(mat){ return VOD_MAT_COLOR[mat] || '#8a8f98'; }
+function vodWeight(dn){ var n=parseInt(dn,10); return isFinite(n) ? Math.max(1.5, Math.min(6, n/35)) : 2; }
+function ensureVod(cb){
+  if(vodLoaded){ cb&&cb(); return; }
+  fetch('vodovod.geojson').then(function(r){return r.json();}).then(function(d){ vodData=d; vodLoaded=true; cb&&cb(); })
+  .catch(function(){ vodOn=false; var b=document.getElementById('vodToggle'); if(b)b.classList.remove('on'); alert('Nepodařilo se načíst schéma vodovodu (vodovod.geojson).'); });
+}
+function renderVod(){
+  if(vodLayer){ map.removeLayer(vodLayer); vodLayer=null; }
+  if(!vodOn || !vodData) return;
+  vodLayer=L.featureGroup();
+  vodData.features.forEach(function(f){
+    var p=f.properties||{};
+    var latlngs=f.geometry.coordinates.map(function(c){ return [c[1],c[0]]; });
+    var dnTxt=(p.dn && p.dn!=='neznámé') ? ('DN '+p.dn) : 'DN —';
+    L.polyline(latlngs,{color:vodColor(p.mat),weight:vodWeight(p.dn),opacity:.85})
+      .bindPopup('<b>'+esc(p.popis||'Vodovodní řad')+'</b><br>'+esc((p.mat||'—')+' · '+dnTxt+(p.rok?(' · '+p.rok):'')+(p.delka?(' · '+p.delka+' m'):'')))
+      .addTo(vodLayer);
+  });
+  vodLayer.addTo(map);
+}
+var vodToggle=document.getElementById('vodToggle');
+if(vodToggle){
+  vodToggle.onclick=function(){
+    vodOn=!vodOn; vodToggle.classList.toggle('on',vodOn);
+    if(vodOn){ ensureVod(function(){ renderVod();
+      try{ var b=vodLayer&&vodLayer.getBounds(); if(b&&b.isValid()&&!map.getBounds().intersects(b)) map.fitBounds(b.pad(0.1)); }catch(e){} }); }
+    else renderVod();
   };
 }
 // 🛰️ Satelit – přepínač podkladové mapy (klasická ↔ letecká); volba se pamatuje
