@@ -1308,9 +1308,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.172';
+const APP_VERSION = '1.173';
 const APP_YEAR = 2026;
-const APP_UPDATED = '29. 7. 2026';
+const APP_UPDATED = '3. 8. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -3727,10 +3727,11 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       +'<button id="flLoginSend" style="margin-top:12px;width:100%;padding:12px;border:0;background:#1565c0;color:#fff;border-radius:9px;font-weight:700;font-size:16px;cursor:pointer">Poslat přihlašovací odkaz</button>'
       +'<div id="flLoginMsg" style="margin-top:10px;font-size:14.5px;color:#6b7a8d;line-height:1.4"></div>'
       +'<div style="margin-top:14px;border-top:1px solid #eef2f6;padding-top:12px">'
-      +'<a id="flIosTog" style="font-size:13px;color:#1565c0;font-weight:700;cursor:pointer;text-decoration:underline">📱 iPhone – appka na ploše? Odkaz se nepřihlásí sám →</a>'
+      +'<a id="flIosTog" style="font-size:13px;color:#1565c0;font-weight:700;cursor:pointer;text-decoration:underline">📱 Tablet / iPhone bez e-mailu? Přihlaš se vloženým odkazem →</a>'
       +'<div id="flIosBox" style="display:none;margin-top:8px">'
-      +'<div style="font-size:13px;color:#6b7a8d;margin-bottom:6px">Na iPhonu se odkaz otevře v Safari, ne v appce. Proto v e-mailu <b>podrž prst na odkazu → Kopírovat</b> (neotvírej ho) a vlož sem. Nahoře musí být vyplněný stejný e-mail.</div>'
+      +'<div style="font-size:13px;color:#6b7a8d;margin-bottom:6px">Když na tomhle zařízení nemáš e-mail (tablet bez schránky, iPhone s appkou na ploše): odkaz si otevři <b>jinde</b> (webmail na mobilu/PC), tam ho <b>zkopíruj</b> (neotvírej ho) a vlož sem. Nahoře musí být vyplněný stejný e-mail. Přihlášení pak zůstane uložené, děláš to jen jednou.</div>'
       +'<input id="flLoginLink" type="text" placeholder="Vlož zkopírovaný odkaz z e-mailu" style="width:100%;padding:9px;font-size:14px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box">'
+      +'<button id="flLoginClip" style="margin-top:8px;width:100%;padding:10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-weight:700;cursor:pointer">📋 Vložit ze schránky</button>'
       +'<button id="flLoginPaste" style="margin-top:8px;width:100%;padding:10px;border:1px solid #1565c0;background:#fff;color:#1565c0;border-radius:8px;font-weight:700;cursor:pointer">Přihlásit vloženým odkazem</button>'
       +'</div></div></div>';
     document.body.appendChild(ov);
@@ -3741,10 +3742,19 @@ function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toB
       out.textContent='Odesílám…';
       firebase.auth().sendSignInLinkToEmail(email,{url:FL_LOGIN_URL,handleCodeInApp:true}).then(function(){
         localStorage.setItem('fl_emailForSignIn',email);
-        out.textContent='✅ Odkaz poslán na '+email+'. Zkontroluj schránku (i spam) a otevři odkaz na tomhle zařízení. (iPhone s appkou na ploše: viz „📱 iPhone" níže.)';
+        out.textContent='✅ Odkaz poslán na '+email+'. Zkontroluj schránku (i spam) a otevři odkaz na tomhle zařízení. (Tablet/telefon bez e-mailu: otevři odkaz jinde a použij „📱 …vloženým odkazem" níže.)';
       }).catch(function(err){ out.textContent='⚠️ Chyba: '+(err&&err.message?err.message:err); });
     };
     ov.querySelector('#flIosTog').onclick=function(){ var b=ov.querySelector('#flIosBox'); b.style.display=(b.style.display==='none')?'block':'none'; };
+    ov.querySelector('#flLoginClip').onclick=function(){
+      var out=ov.querySelector('#flLoginMsg'); var inp=ov.querySelector('#flLoginLink');
+      if(!(navigator.clipboard&&navigator.clipboard.readText)){ out.textContent='Tenhle prohlížeč neumí číst schránku – vlož odkaz ručně (podrž prst v poli → Vložit).'; inp.focus(); return; }
+      navigator.clipboard.readText().then(function(t){
+        t=(t||'').trim();
+        if(!t){ out.textContent='Ve schránce nic není – nejdřív odkaz zkopíruj z e-mailu.'; return; }
+        inp.value=t; out.textContent='✅ Vloženo ze schránky. Klikni „Přihlásit vloženým odkazem".';
+      }).catch(function(){ out.textContent='Nepodařilo se přečíst schránku (povolení) – vlož odkaz ručně (podrž prst v poli → Vložit).'; inp.focus(); });
+    };
     ov.querySelector('#flLoginPaste').onclick=function(){
       var link=(ov.querySelector('#flLoginLink').value||'').trim();
       var email=(ov.querySelector('#flLoginEmail').value||'').trim()||localStorage.getItem('fl_emailForSignIn')||'';
