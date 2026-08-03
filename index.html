@@ -1265,6 +1265,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <button class="btn-toggle op-only" id="nahledBtn" title="Odkazy na náhledy pro obce (svazky) – pro odkliknutí při prezentaci">👁️ Náhledy pro obce</button>
   <div class="town-panel" id="nahledPanel"></div>
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
+  <button class="btn-toggle btn-share op-only" id="promoBtn" style="display:none" title="Otevřít promo video Florián 2.0">🎬 Promo video</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
 </div>
 
@@ -1307,7 +1308,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.171';
+const APP_VERSION = '1.172';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 7. 2026';
 
@@ -1827,6 +1828,11 @@ document.getElementById('shareBtn').onclick=async()=>{
     else { prompt('Zkopíruj odkaz na appku:', url); }
   }catch(e){ /* uživatel sdílení zrušil – nic nedělat */ }
 };
+
+// ---- promo video (otevře přehrávač promo v novém okně) ----
+(function(){ var b=document.getElementById('promoBtn'); if(b) b.onclick=function(){
+  window.open('https://pkobelka.github.io/florian/promo/florian-promo.html','_blank','noopener');
+}; })();
 
 // coverage toggle
 /* hamburger (mobil): sbalí/rozbalí ovládací panel */
@@ -3408,7 +3414,7 @@ function flApplyMyPracDefault(){
   applyFilter();
 }
 // ---- Tým + Sdílet appku: jen pro admina ----
-function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','revUploadBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
+function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','promoBtn','revUploadBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
 // ---- Export úprav požárních hydrantů do CSV (pro zpětný import do GISu) ----
 // Sloupce s novými hodnotami odpovídají editovaným polím; k párování v GISu jsou
 // v souboru VŠECHNY identifikátory (IČME, interní ID, kód obce/katastru, adresa, GPS).
