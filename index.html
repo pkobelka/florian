@@ -1150,8 +1150,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .ed-auto.bad{background:#fdecea;color:#b71c1c;border-color:#f3b6b0}
 .cand-prev{background:#e0f7fa;color:#075985;border:1px solid #7dd3fc;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;font-size:15px}
 .ctrl-burger{display:none}
-@media (max-width:640px), (max-height:480px){
-  #printMapBtn{display:none}  /* tisk mapy je desktopová věc – na mobilu/landscape skryj */
+@media (max-width:1024px), (max-height:480px){
+  #printMapBtn{display:none}  /* tisk mapy je desktopová věc – na mobilu/tabletu/landscape skryj */
   .ctrl-burger{display:grid;place-items:center;position:absolute;z-index:902;right:10px;top:calc(env(safe-area-inset-top) + 62px);width:34px;height:34px;border-radius:9px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);font-size:16px;cursor:pointer}
   .ctrl-burger.on{background:var(--blue);color:#fff;border-color:var(--blue)}
   .ctrl{display:none;top:calc(env(safe-area-inset-top) + 102px);max-height:calc(100dvh - 166px);overflow:auto;padding:2px;width:232px}
@@ -1323,7 +1323,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.179';
+const APP_VERSION = '1.180';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1855,13 +1855,13 @@ var ctrlBurger=document.getElementById('ctrlBurger');
 var ctrlEl=document.querySelector('.ctrl');
 if(ctrlBurger){
   ctrlBurger.onclick=function(e){ e.stopPropagation(); var op=ctrlEl.classList.toggle('open'); ctrlBurger.classList.toggle('on',op); };
-  map.on('click',function(){ if(window.matchMedia('(max-width:640px)').matches){ ctrlEl.classList.remove('open'); ctrlBurger.classList.remove('on');
+  map.on('click',function(){ if(window.matchMedia('(max-width:1024px)').matches){ ctrlEl.classList.remove('open'); ctrlBurger.classList.remove('on');
     document.getElementById('stredPanel').classList.remove('open'); document.getElementById('ownPanel').classList.remove('open'); document.getElementById('townPanel').classList.remove('open'); var mp=document.getElementById('menuPanel'); if(mp)mp.classList.remove('open'); } });
   // po přepínači, kde není potřeba další krok (Nepokryto/Poznámky/Foto/Čísla/Info/Satelit/Vše), zavři hamburger na mobilu
   if(ctrlEl) ctrlEl.addEventListener('click', function(e){
     var b=e.target.closest('button'); if(!b) return;
     if(['gapToggle','poznToggle','fotoToggle','cisloToggle','infoBtn','satToggle','allBtn'].indexOf(b.id)>=0
-       && window.matchMedia('(max-width:640px)').matches){
+       && window.matchMedia('(max-width:1024px)').matches){
       ctrlEl.classList.remove('open'); ctrlBurger.classList.remove('on');
     }
   });
