@@ -1127,6 +1127,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 #fotoToggle.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 #cisloToggle.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 #satToggle.on{background:#37474f;color:#fff;border-color:#37474f}
+#vodToggle.on{background:#0288d1;color:#fff;border-color:#0288d1}
+.vodleg{position:absolute;z-index:901;left:10px;bottom:14px;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.18);padding:8px 11px;font-size:12px;color:var(--ink);display:none;max-width:200px;line-height:1.5}
+.vodleg.show{display:block}
+.vodleg .vl-t{font-weight:800;margin-bottom:5px;font-size:12.5px}
+.vodleg .vl-row{display:flex;align-items:center;gap:8px}
+.vodleg .vl-sw{width:22px;height:4px;border-radius:2px;flex:0 0 auto}
+.vodleg .vl-note{margin-top:6px;padding-top:5px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
 #infoBtn.on{background:#2e7d32;color:#fff;border-color:#2e7d32}
 .cand-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--card);padding:10px 16px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);z-index:3}
 .cand-mark{background:#1565c0;color:#fff;border:none;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;font-size:15px}
@@ -1274,6 +1281,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
 </div>
 
 <div class="legend" id="legend"></div>
+<div class="vodleg" id="vodLegend"></div>
 <div id="mapPrintTitle" class="mapprint-hdr"></div>
 
 <button class="locate" id="locBtn" aria-label="Moje poloha" title="Moje poloha">
@@ -1315,7 +1323,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.178';
+const APP_VERSION = '1.179';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1997,7 +2005,7 @@ function vodWeight(dn){ var n=parseInt(dn,10); return isFinite(n) ? Math.max(1.5
 function ensureVod(cb){
   if(vodLoaded){ cb&&cb(); return; }
   fetch('vodovod.geojson').then(function(r){return r.json();}).then(function(d){ vodData=d; vodLoaded=true; cb&&cb(); })
-  .catch(function(){ vodOn=false; var b=document.getElementById('vodToggle'); if(b)b.classList.remove('on'); alert('Nepodařilo se načíst schéma vodovodu (vodovod.geojson).'); });
+  .catch(function(){ vodOn=false; var b=document.getElementById('vodToggle'); if(b)b.classList.remove('on'); showVodLegend(false); alert('Nepodařilo se načíst schéma vodovodu (vodovod.geojson).'); });
 }
 function renderVod(){
   if(vodLayer){ map.removeLayer(vodLayer); vodLayer=null; }
@@ -2013,10 +2021,26 @@ function renderVod(){
   });
   vodLayer.addTo(map);
 }
+function buildVodLegend(){
+  var el=document.getElementById('vodLegend'); if(!el) return;
+  function row(c,l){ return '<div class="vl-row"><span class="vl-sw" style="background:'+c+'"></span>'+l+'</div>'; }
+  el.innerHTML='<div class="vl-t">🚰 Vodovodní řady</div>'+
+    row(VOD_MAT_COLOR['PolyVinylChlorid (PVC)'],'PVC')+
+    row(VOD_MAT_COLOR['PolyEthylen (PE)'],'PE')+
+    row(VOD_MAT_COLOR['Litina (Li)'],'litina / ocel')+
+    row('#8a8f98','neznámý materiál')+
+    '<div class="vl-note">Tloušťka čáry = průměr (DN)</div>';
+}
+function showVodLegend(on){ var el=document.getElementById('vodLegend'); if(!el) return;
+  if(on){ buildVodLegend(); el.classList.add('show');
+    // umísti nad hlavní legendu (vlevo dole), ať se nepřekrývají
+    try{ var lg=document.getElementById('legend'); if(lg){ var r=lg.getBoundingClientRect();
+      if(r.height>0){ el.style.bottom=(window.innerHeight - r.top + 8)+'px'; } } }catch(e){}
+  } else { el.classList.remove('show'); } }
 var vodToggle=document.getElementById('vodToggle');
 if(vodToggle){
   vodToggle.onclick=function(){
-    vodOn=!vodOn; vodToggle.classList.toggle('on',vodOn);
+    vodOn=!vodOn; vodToggle.classList.toggle('on',vodOn); showVodLegend(vodOn);
     if(vodOn){ ensureVod(function(){ renderVod();
       try{ var b=vodLayer&&vodLayer.getBounds(); if(b&&b.isValid()&&!map.getBounds().intersects(b)) map.fitBounds(b.pad(0.1)); }catch(e){} }); }
     else renderVod();
