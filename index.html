@@ -1267,6 +1267,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share op-only" id="promoBtn" style="display:none" title="Otevřít promo video Florián 2.0">🎬 Promo video</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
+  <button class="btn-toggle btn-share op-only" id="qrPairBtn" style="display:none" title="Vyrobí QR s přihlašovacím odkazem pro přihlášení dalšího zařízení (tabletu) – naskenuješ ho fotoaparátem na tabletu">🔳 Přihlásit tablet (QR)</button>
 </div>
 
 <div class="legend" id="legend"></div>
@@ -1312,7 +1313,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const TLAK_DYN_MIN = 0.2;    // MPa – min. hydrodynamický přetlak dle ČSN 73 0873
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
-const APP_VERSION = '1.174';
+const APP_VERSION = '1.175';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -3418,7 +3419,61 @@ function flApplyMyPracDefault(){
   applyFilter();
 }
 // ---- Tým + Sdílet appku: jen pro admina ----
-function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','promoBtn','revUploadBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
+function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','promoBtn','revUploadBtn','qrPairBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
+
+// ---- QR párování: vyrobit QR s přihlašovacím odkazem pro další zařízení (tablet), i když jsi přihlášený ----
+function flQrPairClose(){ var ov=document.getElementById('qpOv'); if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }
+function flQrPairOverlay(){
+  flQrPairClose();
+  var pre=(window._FL_EMAIL||'');
+  var ov=document.createElement('div'); ov.id='qpOv';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(11,40,70,.6);z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:410px;width:100%;padding:22px;box-shadow:0 12px 44px rgba(0,0,0,.35);max-height:90vh;overflow:auto;font-family:inherit">'
+    +'<h3 style="margin:0 0 8px;color:#1565c0;font-size:20px">🔳 Přihlásit tablet přes QR</h3>'
+    +'<p style="margin:0 0 12px;font-size:14px;color:#555;line-height:1.45">QR vyrobíš <b>tady na tomhle zařízení</b> a na tabletu ho naskenuješ fotoaparátem. Odkaz z e-mailu má jen ten, komu přišel – proto to funguje pro <b>tvůj vlastní</b> e-mail (kam se dostaneš).</p>'
+    +'<div style="font-size:13px;font-weight:700;color:#1565c0;margin-bottom:4px">1) Pošli si přihlašovací odkaz</div>'
+    +'<input id="qpEmail" type="email" value="'+esc(pre)+'" placeholder="tvuj@email.cz" autocomplete="email" style="width:100%;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:9px;box-sizing:border-box">'
+    +'<button id="qpSend" style="margin-top:8px;width:100%;padding:11px;border:0;background:#1565c0;color:#fff;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer">Poslat přihlašovací odkaz</button>'
+    +'<div id="qpMsg" style="margin-top:8px;font-size:14px;color:#6b7a8d;line-height:1.4"></div>'
+    +'<div style="font-size:13px;font-weight:700;color:#1565c0;margin:14px 0 4px">2) Otevři e-mail, zkopíruj odkaz a ukaž QR</div>'
+    +'<div style="font-size:12.5px;color:#6b7a8d;margin-bottom:6px">Otevři přijatý e-mail (klidně webmail v prohlížeči), odkaz <b>zkopíruj</b> (neotvírej) a vlož sem.</div>'
+    +'<input id="qpLink" type="text" placeholder="Vlož přihlašovací odkaz z e-mailu" style="width:100%;padding:9px;font-size:14px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box">'
+    +'<button id="qpClip" style="margin-top:8px;width:100%;padding:10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-weight:700;cursor:pointer">📋 Vložit ze schránky</button>'
+    +'<button id="qpMake" style="margin-top:8px;width:100%;padding:10px;border:0;background:#1565c0;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">Ukázat QR</button>'
+    +'<div id="qpOut" style="margin-top:12px;text-align:center"></div>'
+    +'<button id="qpClose" style="margin-top:14px;width:100%;padding:10px;border:1px solid #ccc;background:#fff;color:#555;border-radius:9px;font-weight:700;cursor:pointer">Zavřít</button>'
+    +'</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){ if(e.target===ov) flQrPairClose(); });
+  ov.querySelector('#qpClose').onclick=flQrPairClose;
+  ov.querySelector('#qpSend').onclick=function(){
+    var email=(ov.querySelector('#qpEmail').value||'').trim(); var out=ov.querySelector('#qpMsg');
+    if(!email){ out.textContent='Vyplň e-mail.'; return; }
+    if(!(window.firebase&&firebase.auth)){ out.textContent='Firebase není připojené.'; return; }
+    out.textContent='Odesílám…';
+    firebase.auth().sendSignInLinkToEmail(email,{url:'https://pkobelka.github.io/florian/',handleCodeInApp:true}).then(function(){
+      out.innerHTML='✅ Odkaz poslán na <b>'+esc(email)+'</b>. Otevři schránku (i spam), zkopíruj celý odkaz a vlož ho dole.';
+    }).catch(function(err){ out.textContent='⚠️ Chyba: '+(err&&err.message?err.message:err); });
+  };
+  ov.querySelector('#qpClip').onclick=function(){
+    var inp=ov.querySelector('#qpLink'); var o=ov.querySelector('#qpOut');
+    if(!(navigator.clipboard&&navigator.clipboard.readText)){ o.innerHTML='<div style="color:#b26a00;font-size:13px">Prohlížeč neumí číst schránku – vlož odkaz ručně (podrž prst v poli → Vložit).</div>'; inp.focus(); return; }
+    navigator.clipboard.readText().then(function(t){ t=(t||'').trim(); if(t){ inp.value=t; o.innerHTML=''; } }).catch(function(){ inp.focus(); });
+  };
+  ov.querySelector('#qpMake').onclick=function(){
+    var link=(ov.querySelector('#qpLink').value||'').trim(); var o=ov.querySelector('#qpOut');
+    if(!link){ o.innerHTML='<div style="color:#b26a00;font-size:13px">Vlož odkaz z e-mailu.</div>'; return; }
+    if(!(window.firebase&&firebase.auth&&firebase.auth().isSignInWithEmailLink(link))){ o.innerHTML='<div style="color:#b26a00;font-size:13px">Tohle nevypadá jako přihlašovací odkaz – zkopíruj z e-mailu celý (dlouhý) odkaz.</div>'; return; }
+    if(!window.qrcode){ o.innerHTML='<div style="color:#b26a00;font-size:13px">QR generátor se nenačetl – obnov stránku a zkus to znovu.</div>'; return; }
+    try{
+      var qr=window.qrcode(0,'M'); qr.addData(link); qr.make();
+      var svg=qr.createSvgTag(4,2).replace('<svg ','<svg style="width:100%;height:auto;max-width:280px" ');
+      o.innerHTML='<div style="display:inline-block;background:#fff;padding:10px;border:1px solid #e3eaf2;border-radius:10px;max-width:100%">'+svg+'</div>'
+        +'<div style="font-size:12.5px;color:#6b7a8d;margin-top:8px;line-height:1.4">📷 Naskenuj fotoaparátem na tabletu. Po otevření Floriána tam potvrď svůj e-mail.</div>';
+    }catch(e){ o.innerHTML='<div style="color:#b26a00;font-size:13px">QR se nepodařilo vytvořit: '+esc(String(e&&e.message||e))+'</div>'; }
+  };
+}
+(function(){ var b=document.getElementById('qrPairBtn'); if(b) b.onclick=flQrPairOverlay; })();
 // ---- Export úprav požárních hydrantů do CSV (pro zpětný import do GISu) ----
 // Sloupce s novými hodnotami odpovídají editovaným polím; k párování v GISu jsou
 // v souboru VŠECHNY identifikátory (IČME, interní ID, kód obce/katastru, adresa, GPS).
