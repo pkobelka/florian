@@ -1333,7 +1333,7 @@ const SVG_POD = '<svg viewBox="0 0 28 22" width="26" height="20"><ellipse cx="14
 function iconFor(typ,h){
   const nad = typ === 'nadzemní';
   var nb='';
-  if(h){ var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():''; if(_c) nb='<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>'; } // číslo H i u povýšeného kandidáta
+  if(h){ var _c=cisloOf(h); if(_c) nb='<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>'; } // číslo H i u povýšeného kandidáta
   return L.divIcon({
     className:'', html:'<div class="mk" style="position:relative">'+(nad?SVG_NAD:SVG_POD)+nb+'</div>',
     iconSize: nad?[28,37]:[26,20],
@@ -1400,7 +1400,7 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" data-id="'+esc(String(h.id))+'" title="Má poznámku – najeď myší / klikni">i</span>':'';
-  var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
+  var _c=cisloOf(h);
   var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
   // miniatura fotky (bublinka nad markerem) – jen když H fotku má; klik na ni = velké foto
   var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
@@ -2161,7 +2161,7 @@ function nearestHChip(h){ var n=nearestFireH(h); if(!n) return '';
   var lim=2*COVERAGE_RADIUS; var ok=n.d<=lim; var col=ok?'#e8f5e9;color:#1b5e20':'#fff3e0;color:#b45309';
   return '<span class="chip" style="background:'+col+'" title="Vzdušná vzdálenost k nejbližšímu požárnímu hydrantu (zeleně ≤ 2× poloměr pokrytí = '+lim+' m)">📏 nejbližší H · '+fmtDist(n.d)+'</span>'; }
 // chip s oficiálním číslem H v obci (ze seznamu starostů / VHOS); prázdné = nic
-function cisloHChip(h){ var c=candVal(h,'cislo'); return c?('<span class="chip" style="background:#e3f2fd;color:#0d47a1;font-weight:800" title="Oficiální číslo hydrantu v obci">🏷️ H'+esc(c)+'</span>'):''; }
+function cisloHChip(h){ var c=cisloOf(h); return c?('<span class="chip" style="background:#e3f2fd;color:#0d47a1;font-weight:800" title="Oficiální číslo hydrantu v obci">🏷️ H'+esc(c)+'</span>'):''; }
 function provoz(v){ return txt(v).replace(/vhos/ig,'VHOS'); }
 function csn(v){ return (v||'').trim()==='Ano' ? 'Ano ✓' : 'neuvedeno'; }
 function label(h){ return h.upresneni || h.umisteni || ('Hydrant '+h.id); }
@@ -2251,7 +2251,7 @@ function openCard(h){
   const revSt = revStatusOnly(h);
   cardBody.innerHTML =
     '<div class="head"><div class="sym">'+sym+'</div>'+
-      '<div style="flex:1;min-width:0"><h2>'+(candVal(h,'cislo')?'<span class="h2num">H'+esc(candVal(h,'cislo'))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
+      '<div style="flex:1;min-width:0"><h2>'+(cisloOf(h)?'<span class="h2num">H'+esc(cisloOf(h))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
       '<div class="head-gps" id="cardGps" title="GPS – klikni pro zkopírování">📍 '+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</div>'+
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="chips">'+
@@ -2394,7 +2394,7 @@ backdrop.onclick = closeCard;
 function doPrint(h){
   const nad = h.typ==='nadzemní';
   const rows = [
-    ['Číslo H v obci', txt(candVal(h,'cislo'))],
+    ['Číslo H v obci', txt(cisloOf(h))],
     ['Typ hydrantu', (nad?'nadzemní':'podzemní')],
     ['Funkce', txt(h.funkce)],
     ['Obec / město', town(h)],
@@ -2420,7 +2420,7 @@ function doPrint(h){
     '<div class="pcard">'+
       '<div class="phead"><div style="font-size:14pt;font-weight:700">Karta hydrantu</div>'+
         '<div class="brand">Florián 2.0</div></div>'+
-      '<h1>'+(candVal(h,'cislo')?'H'+esc(candVal(h,'cislo'))+' · ':'')+esc(label(h))+'</h1>'+
+      '<h1>'+(cisloOf(h)?'H'+esc(cisloOf(h))+' · ':'')+esc(label(h))+'</h1>'+
       '<div class="pmeta">'+(nad?'Nadzemní':'Podzemní')+' požární hydrant · pokrytí r = '+COVERAGE_RADIUS+' m</div>'+
       '<div class="pcols">'+tbl(rows.slice(0,half))+tbl(rows.slice(half))+'</div>'+
       '<div class="pmedia">'+
@@ -2470,7 +2470,7 @@ function protokolItemsForTown(t){
 }
 // HTML jednoho protokolu (jedna obec)
 function protokolSectionHtml(items, oblast){
-  items=items.slice().sort(function(a,b){ var ca=parseInt(candVal(a,'cislo'),10), cb=parseInt(candVal(b,'cislo'),10);
+  items=items.slice().sort(function(a,b){ var ca=parseInt(cisloOf(a),10), cb=parseInt(cisloOf(b),10);
     if(isFinite(ca)&&isFinite(cb)&&ca!==cb) return ca-cb; if(isFinite(ca)&&!isFinite(cb)) return -1; if(!isFinite(ca)&&isFinite(cb)) return 1;
     return String(label(a)).localeCompare(String(label(b)),'cs',{numeric:true}); });
   var h0=items[0]||{};
@@ -2482,7 +2482,7 @@ function protokolSectionHtml(items, oblast){
     var verd,cls; if(ps==='bad'){ verd='Nevyhovuje'; cls='bad'; badC++; }
     else if(ps==='ok'){ verd='Vyhovuje'; cls='ok'; okC++; } else { verd='Nezměřeno'; cls='na'; naC++; }
     var m3=prutokM3h(candVal(h,'prutok')), ls=meas(candVal(h,'prutok'));
-    return '<tr><td>'+esc(txt(candVal(h,'cislo')))+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
+    return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td><td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
       '<td>'+meas(candVal(h,'tlakStat'))+'</td><td>'+(m3?m3+' m³/h':'—')+'<br>'+(ls==='—'?'':ls+' l/s')+'</td>'+
       '<td class="'+cls+'">'+verd+'</td></tr>';
@@ -2490,9 +2490,9 @@ function protokolSectionHtml(items, oblast){
   var lim=2*COVERAGE_RADIUS, maxD=0, allOk=true;
   var rowsB=items.map(function(h){
     var best=null,bestH=null; items.forEach(function(o){ if(o===h) return; var d=haversineM(h.lat,h.lon,o.lat,o.lon); if(best===null||d<best){ best=d; bestH=o; } });
-    if(best===null) return '<tr><td>'+esc(txt(candVal(h,'cislo')))+'</td><td class="l">—</td><td>—</td><td>—</td></tr>';
+    if(best===null) return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">—</td><td>—</td><td>—</td></tr>';
     if(best>maxD) maxD=best; var ok=best<=lim; if(!ok) allOk=false;
-    return '<tr><td>'+esc(txt(candVal(h,'cislo')))+'</td><td class="l">H'+esc(txt(candVal(bestH,'cislo')))+' · '+esc(bestH.upresneni||'')+'</td>'+
+    return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">H'+esc(txt(cisloOf(bestH)))+' · '+esc(bestH.upresneni||'')+'</td>'+
       '<td>'+Math.round(best)+'</td><td class="'+(ok?'ok':'bad')+'">'+(ok?'Vyhovuje':'Nevyhovuje')+'</td></tr>';
   }).join('');
   return '<div class="protokol">'+
@@ -2602,7 +2602,7 @@ function aktualItemsForTown(t){
   return arr;
 }
 function aktualSectionHtml(items, oblast){
-  items=items.slice().sort(function(a,b){ var ca=parseInt(candVal(a,'cislo'),10), cb=parseInt(candVal(b,'cislo'),10);
+  items=items.slice().sort(function(a,b){ var ca=parseInt(cisloOf(a),10), cb=parseInt(cisloOf(b),10);
     if(isFinite(ca)&&isFinite(cb)&&ca!==cb) return ca-cb; if(isFinite(ca)&&!isFinite(cb)) return -1; if(!isFinite(ca)&&isFinite(cb)) return 1;
     return String(label(a)).localeCompare(String(label(b)),'cs',{numeric:true}); });
   var h0=items[0]||{};
@@ -2612,7 +2612,7 @@ function aktualSectionHtml(items, oblast){
   var rows=items.map(function(h){
     var d=domereni[h.id]; var ch=_aktChanges(h,d); if(ch) updN++;
     var gps=(h.lat!=null&&h.lon!=null)?(h.lat.toFixed(5)+', '+h.lon.toFixed(5)):'';
-    return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(candVal(h,'cislo')))+'</td><td>'+esc(String(h.id))+'</td>'+
+    return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(cisloOf(h)))+'</td><td>'+esc(String(h.id))+'</td>'+
       '<td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td>'+
       '<td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
@@ -2797,7 +2797,7 @@ function openEditForm(h){
   function selc(id,lbl,val){ var vv=(val==='Ne')?'Ne':'Ano'; function o(v,t){return '<option'+(vv===v?' selected':'')+' value="'+v+'">'+t+'</option>';} return '<label class="ed-row"><span>'+lbl+'</span><select id="'+id+'">'+o('Ano','Ano ✓')+o('Ne','Ne ✗')+'</select></label>'; }
   cardBody.innerHTML=
     '<div class="head"><div class="sym">'+(h.typ==='nadzemní'?SVG_NAD:SVG_POD)+'</div>'+
-      '<div><h2>Doměření / úprava údajů</h2><div class="sub">'+(candVal(h,'cislo')?'H'+esc(candVal(h,'cislo'))+' · ':'')+esc(h.upresneni||candTown(h))+'</div></div>'+
+      '<div><h2>Doměření / úprava údajů</h2><div class="sub">'+(cisloOf(h)?'H'+esc(cisloOf(h))+' · ':'')+esc(h.upresneni||candTown(h))+'</div></div>'+
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="sect"><h3>Naměřené hodnoty (ČSN 73 0873)</h3>'+
       inp('edCislo','Číslo H v obci',suggestedCislo(h))+
@@ -2864,11 +2864,14 @@ function nextCisloForObec(h){ var key=_obecKey(h), mx=0;
   scan(typeof HYDRANTY!=='undefined'?HYDRANTY:null);
   scan(typeof KAND!=='undefined'?KAND:null);
   return mx+1; }
-// navržené číslo do formuláře: už vyplněné → ponech; číslo skryté v poznámce → použij; jinak nabídni další v obci
-function suggestedCislo(h){
-  var c=candVal(h,'cislo'); if(String(c).trim()!=='') return String(c);
-  var p=String(candVal(h,'poznamka')||'').trim(); var m=p.match(/^H?\s*(\d{1,3})$/i); if(m) return m[1];
-  return String(nextCisloForObec(h)); }
+// efektivní oficiální číslo H: 1) ručně vyplněné (domereni/cislo), 2) číslo skryté v poli Poznámka ("H4"/"12").
+// Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
+function cisloOf(h){ if(!h) return '';
+  var cv=(typeof candVal==='function');
+  var c=cv?candVal(h,'cislo'):(h.cislo||''); if(String(c||'').trim()!=='') return String(c).trim();
+  var p=String((cv?candVal(h,'poznamka'):h.poznamka)||'').trim(); var m=p.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:''; }
+// navržené číslo do formuláře: existující (vyplněné / z Poznámky) → ponech; jinak nabídni další v obci (od 1)
+function suggestedCislo(h){ var c=cisloOf(h); return c!==''?c:String(nextCisloForObec(h)); }
 function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   var dla=(c-a)*r,dlo=(d-b)*r,la1=a*r,la2=c*r;
   var x=Math.sin(dla/2)*Math.sin(dla/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)*Math.sin(dlo/2);
@@ -2882,7 +2885,7 @@ const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZ
 function candIcon(h,state){ var col=state==='marked'?'#16a34a':(state==='gap'?'#f59e0b':'#8e24aa');
   var nad=h.typ==='nadzemní'; var inner=nad?'<div class="ci-nad"></div>':'<div class="ci-pod"></div>';
   var mk=kandMarked[h.id]?'<span class="ci-badge">✓</span>':'';
-  var _c=(typeof candVal==='function')?String(candVal(h,'cislo')||'').trim():'';
+  var _c=cisloOf(h);
   var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // číslo H i na kandidátské/vybrané ikoně (řízeno stejným přepínačem 🔢)
   var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)){ var t=filterTown(it.h); if(t)s.add(t); } }); return s; }
@@ -3561,13 +3564,23 @@ var FL_EXPORT_FIELDS=[
 ];
 function _flCsvCell(v){ v=(v==null?'':String(v)); return /[";\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function _flTsFmt(ts){ if(!ts) return ''; try{ var d=new Date(ts); return d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
+// hodnota pole do exportu pro GIS. Pole „Poznámka" nese číslo H (GIS ho čte i zapisuje odtud);
+// když číslo není, spadne zpět na běžnou poznámku. Ostatní pole = doměřená hodnota, jinak původní z GISu.
+function flFieldVal(h,d,k){
+  if(k==='poznamka'){
+    var c=(d&&d.cislo!=null&&String(d.cislo).trim()!=='')?String(d.cislo).trim():(h&&h.cislo!=null?String(h.cislo).trim():'');
+    if(c!=='') return c;
+    return String((d&&d.poznamka)||(h&&h.poznamka)||'').trim();
+  }
+  return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k]).trim()!=='')?String(d[k]).trim():(h&&h[k]!=null?String(h[k]).trim():'');
+}
 function flCollectExportRows(){
   var byId={}; HYDRANTY.forEach(function(h){ byId[h.id]=h; });
   var kandById={}; if(typeof KAND!=='undefined'&&KAND){ KAND.forEach(function(h){ kandById[h.id]=h; }); }
   function fieldChanges(h,d){ var changes=[];
     FL_EXPORT_FIELDS.forEach(function(f){
       var k=f[0];
-      var neu=(d[k]!==undefined&&d[k]!==null&&String(d[k]).trim()!=='')?String(d[k]).trim():'';
+      var neu=flFieldVal(h,d,k);
       var orig=(h[k]!==undefined&&h[k]!==null)?String(h[k]).trim():'';
       if(neu!=='' && neu!==orig){ changes.push(f[1]+': '+(orig||'—')+' → '+neu); }
     });
@@ -3602,7 +3615,7 @@ function flExportZmenyCSV(){
     var h=r.h, d=r.d;
     var cols=[ h.id, h.icme||'', town(h), h.obec||'', h.katastr||'', h.upresneni||'', h.provozniStredisko||'',
                (h.lat!=null?h.lat:''), (h.lon!=null?h.lon:'') ];
-    FL_EXPORT_FIELDS.forEach(function(f){ cols.push(candVal(h,f[0])); });
+    FL_EXPORT_FIELDS.forEach(function(f){ cols.push(flFieldVal(h,r.d,f[0])); });
     cols.push(r.changes.join(' | '));
     cols.push(d.by||'');
     cols.push(_flTsFmt(d.ts));
