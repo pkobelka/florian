@@ -2854,9 +2854,9 @@ function _obecKey(o){ return (typeof filterTown==='function' && filterTown(o)) |
 // číslo H konkrétního hydrantu: 1) ručně zadané (domereni/cislo), 2) idx kandidáta, 3) číslo skryté v poznámce ("H4"/"12")
 function _cisloNum(o){
   var d=(typeof domereni!=='undefined'&&domereni)?domereni[o.id]:null;
-  var c=(d&&d.cislo)||o.cislo||''; if(String(c).trim()!=='') return _idxNum(c);
+  var c=(d&&d.cislo)||''; if(String(c).trim()!=='') return _idxNum(c);
   var mk=(typeof kandMarked!=='undefined')?kandMarked[o.id]:null; if(mk&&mk.idx) return _idxNum(mk.idx);
-  var p=String((d&&d.poznamka)||o.poznamka||'').trim(); var m=p.match(/^H?\s*(\d{1,3})$/i); return m?parseInt(m[1],10):0;
+  var nz=String((d&&d.nazev)||o.nazev||'').trim(); var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?parseInt(m[1],10):0;
 }
 // nejvyšší číslo H v obci daného hydrantu + 1 (přeskočí samotný hydrant); tj. při 15 H v obci vrátí 16
 function nextCisloForObec(h){ var key=_obecKey(h), mx=0;
@@ -2864,13 +2864,14 @@ function nextCisloForObec(h){ var key=_obecKey(h), mx=0;
   scan(typeof HYDRANTY!=='undefined'?HYDRANTY:null);
   scan(typeof KAND!=='undefined'?KAND:null);
   return mx+1; }
-// efektivní oficiální číslo H: 1) ručně vyplněné (domereni/cislo), 2) číslo skryté v poli Poznámka ("H4"/"12").
+// efektivní oficiální číslo H: 1) ručně vyplněné v aplikaci (domereni/cislo), 2) číslo z GIS pole „Název".
 // Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
 function cisloOf(h){ if(!h) return '';
   var cv=(typeof candVal==='function');
-  var c=cv?candVal(h,'cislo'):(h.cislo||''); if(String(c||'').trim()!=='') return String(c).trim();
-  var p=String((cv?candVal(h,'poznamka'):h.poznamka)||'').trim(); var m=p.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:''; }
-// navržené číslo do formuláře: existující (vyplněné / z Poznámky) → ponech; jinak nabídni další v obci (od 1)
+  var c=cv?candVal(h,'cislo'):''; if(String(c||'').trim()!=='') return String(c).trim();
+  var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); if(nz==='') return '';
+  var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:nz; }
+// navržené číslo do formuláře: existující (vyplněné / z pole Název) → ponech; jinak nabídni další v obci (od 1)
 function suggestedCislo(h){ var c=cisloOf(h); return c!==''?c:String(nextCisloForObec(h)); }
 function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   var dla=(c-a)*r,dlo=(d-b)*r,la1=a*r,la2=c*r;
@@ -3549,31 +3550,71 @@ function flQrPairOverlay(){
   };
 }
 (function(){ var b=document.getElementById('qrPairBtn'); if(b) b.onclick=flQrPairOverlay; })();
-// ---- Export úprav požárních hydrantů do CSV (pro zpětný import do GISu) ----
-// Sloupce s novými hodnotami odpovídají editovaným polím; k párování v GISu jsou
-// v souboru VŠECHNY identifikátory (IČME, interní ID, kód obce/katastru, adresa, GPS).
+// ---- Export úprav požárních hydrantů do CSV pro zpětný import do GISu ----
+// Pole, jejichž změna se považuje za „úpravu k exportu" (výběr řádků + počítadlo v panelu).
 var FL_EXPORT_FIELDS=[
-  ['cislo','Číslo H v obci'],
+  ['cislo','Číslo H (Název)'],
   ['prutok','Průtok [l/s]'],
   ['tlakStat','Hydrostatický tlak [MPa]'],
-  ['dn','DN [mm]'],
-  ['dnPotrubi','Osazen na potrubí DN [mm]'],
+  ['dn','DN hydrantu [mm]'],
+  ['dnPotrubi','DN řadu (Poznámka)'],
   ['datumRevize','Datum revize'],
-  ['splnujeProtok','Splňuje průtok ČSN'],
-  ['poznamka','Poznámka']
+  ['splnujeProtok','Splňuje průtok ČSN']
 ];
 function _flCsvCell(v){ v=(v==null?'':String(v)); return /[";\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function _flTsFmt(ts){ if(!ts) return ''; try{ var d=new Date(ts); return d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
-// hodnota pole do exportu pro GIS. Pole „Poznámka" nese číslo H (GIS ho čte i zapisuje odtud);
-// když číslo není, spadne zpět na běžnou poznámku. Ostatní pole = doměřená hodnota, jinak původní z GISu.
-function flFieldVal(h,d,k){
-  if(k==='poznamka'){
-    var c=(d&&d.cislo!=null&&String(d.cislo).trim()!=='')?String(d.cislo).trim():(h&&h.cislo!=null?String(h.cislo).trim():'');
-    if(c!=='') return c;
-    return String((d&&d.poznamka)||(h&&h.poznamka)||'').trim();
-  }
-  return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k]).trim()!=='')?String(d[k]).trim():(h&&h[k]!=null?String(h[k]).trim():'');
-}
+function flFieldVal(h,d,k){ return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k]).trim()!=='')?String(d[k]).trim():(h&&h[k]!=null?String(h[k]).trim():''); }
+// Přesné pořadí a názvy sloupců z GIS CSV (Hydrant_vod_info) – nesmí se měnit ani doplňovat.
+// Do „volných" polí zapisujeme: Název = číslo H, Poznámka = DN vodovodního řadu (osazení H),
+// Upřesnění polohy hydrantu = upřesnění. Naměřené hodnoty jdou do svých GIS sloupců; ostatní zůstávají
+// původní z GISu (candVal). Sloupce, které aplikace nemá (OBJECTID/GLOBALID, výšky, TBFID…), jdou prázdné
+// – při importu je nemapujte, ať se nepřepíšou. Párování řádků řeší GIS (primárně přes IČME).
+var GIS_EXPORT_COLS=[
+  ['OBJECTID', function(h){ return ''; }],
+  ['Název', function(h){ return cisloOf(h); }],
+  ['Typ hydrantu', function(h){ return candVal(h,'typ'); }],
+  ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
+  ['Umístění', function(h){ return candVal(h,'umisteni'); }],
+  ['DN hydrantu', function(h){ return candVal(h,'dn'); }],
+  ['Výška povrchu [m.n.m.]', function(h){ return ''; }],
+  ['Výška podzemní [m.n.m.]', function(h){ return ''; }],
+  ['Druh vody', function(h){ return candVal(h,'druhVody'); }],
+  ['Datum instalace', function(h){ return candVal(h,'datumInstalace'); }],
+  ['Stav ke dni', function(h){ return candVal(h,'stav'); }],
+  ['Etapa života', function(h){ return candVal(h,'etapa'); }],
+  ['Zdroj informace', function(h){ return candVal(h,'zdroj'); }],
+  ['Přesnost zákresu', function(h){ return candVal(h,'presnost'); }],
+  ['Poznámka', function(h){ var dp=String(candVal(h,'dnPotrubi')||'').trim(); return dp!==''?dp:String((h&&h.poznamka)||'').trim(); }],
+  ['IČME', function(h){ return candVal(h,'icme'); }],
+  ['Vlastník', function(h){ return candVal(h,'vlastnik'); }],
+  ['Evid. č. majetku', function(h){ return ''; }],
+  ['Provozovatel', function(h){ return candVal(h,'provozovatel'); }],
+  ['Typ smluvního vztahu', function(h){ return candVal(h,'typSmlouvy'); }],
+  ['Druh objektu', function(h){ return ''; }],
+  ['Provozní objekt', function(h){ return ''; }],
+  ['Číslo stavby', function(h){ return ''; }],
+  ['Číslo složky', function(h){ return ''; }],
+  ['Výrobce', function(h){ return candVal(h,'vyrobce'); }],
+  ['Průtok vody [l/s]', function(h){ return candVal(h,'prutok'); }],
+  ['Datum revize', function(h){ return candVal(h,'datumRevize'); }],
+  ['Hydrodynamický tlak [MPa]', function(h){ return candVal(h,'tlakDyn'); }],
+  ['Hydrostatický tlak [MPa]', function(h){ return candVal(h,'tlakStat'); }],
+  ['Splňuje tlak dle ČSN 73 0873', function(h){ return candVal(h,'splnujeTlak'); }],
+  ['Splňuje průtok dle ČSN 73 0873', function(h){ return candVal(h,'splnujeProtok'); }],
+  ['Upřesnění polohy hydrantu', function(h){ return candVal(h,'umisteniText')||candVal(h,'upresneni'); }],
+  ['Číslo protokolu', function(h){ return candVal(h,'cisloProtokolu'); }],
+  ['Provozní středisko', function(h){ return candVal(h,'provozniStredisko'); }],
+  ['TBFID', function(h){ return ''; }],
+  ['Základní sídelní jednotka', function(h){ return ''; }],
+  ['Obec', function(h){ return candVal(h,'obec'); }],
+  ['Okres', function(h){ return candVal(h,'okres'); }],
+  ['Katastrální území', function(h){ return candVal(h,'katastr'); }],
+  ['Vytvořeno', function(h){ return ''; }],
+  ['Vytvořil', function(h){ return ''; }],
+  ['Poslední editace', function(h){ return ''; }],
+  ['Naposledy editoval', function(h){ return ''; }],
+  ['GLOBALID', function(h){ return ''; }]
+];
 function flCollectExportRows(){
   var byId={}; HYDRANTY.forEach(function(h){ byId[h.id]=h; });
   var kandById={}; if(typeof KAND!=='undefined'&&KAND){ KAND.forEach(function(h){ kandById[h.id]=h; }); }
@@ -3607,25 +3648,18 @@ function flExportZmenyCSV(){
   if(typeof kandLoaded!=='undefined' && !kandLoaded){ ensureKand(function(){ flExportZmenyCSV(); }); return; } // ať se do reportu dostanou i povýšení kandidáti
   var rows=flCollectExportRows();
   if(!rows.length){ alert('Zatím nejsou žádné úpravy požárních hydrantů k exportu.\n\nUprav u hydrantu tlak, revizi nebo poznámku (✏️ Upravit údaje), nebo povyš kandidáta na požární, a zkus to znovu.'); return; }
-  var head=['ID','IČME','Obec','Kód obce','Katastr','Adresa / upřesnění','Provozní středisko','GPS lat','GPS lon']
-    .concat(FL_EXPORT_FIELDS.map(function(f){ return f[1]; }))
-    .concat(['Změny (staré → nové)','Upravil','Datum úpravy']);
-  var lines=[head.map(_flCsvCell).join(';')];
+  // Přesná hlavička i pořadí sloupců dle GIS CSV; jeden řádek = jeden změněný hydrant.
+  var lines=[ GIS_EXPORT_COLS.map(function(c){ return c[0]; }).map(_flCsvCell).join(';') ];
   rows.forEach(function(r){
-    var h=r.h, d=r.d;
-    var cols=[ h.id, h.icme||'', town(h), h.obec||'', h.katastr||'', h.upresneni||'', h.provozniStredisko||'',
-               (h.lat!=null?h.lat:''), (h.lon!=null?h.lon:'') ];
-    FL_EXPORT_FIELDS.forEach(function(f){ cols.push(flFieldVal(h,r.d,f[0])); });
-    cols.push(r.changes.join(' | '));
-    cols.push(d.by||'');
-    cols.push(_flTsFmt(d.ts));
+    var h=r.h;
+    var cols=GIS_EXPORT_COLS.map(function(c){ return c[1](h); });
     lines.push(cols.map(_flCsvCell).join(';'));
   });
   var csv='﻿'+lines.join('\r\n'); // BOM → diakritika sedí v Excelu
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var dt=new Date(); var stamp=dt.getFullYear()+('0'+(dt.getMonth()+1)).slice(-2)+('0'+dt.getDate()).slice(-2);
-  var a=document.createElement('a'); a.href=url; a.download='florian_zmeny_'+stamp+'.csv';
+  var a=document.createElement('a'); a.href=url; a.download='Hydrant_vod_info_zmeny_'+stamp+'.csv';
   document.body.appendChild(a); a.click();
   setTimeout(function(){ try{ document.body.removeChild(a); }catch(_){ } URL.revokeObjectURL(url); },600);
   try{ localStorage.setItem('florian_last_export', String(Date.now())); }catch(_){}  // od teď se počítají jen novější změny
