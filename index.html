@@ -1328,7 +1328,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.189';
+const APP_VERSION = '1.190';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2250,7 +2250,7 @@ function openCard(h){
     ['Obec / město', town(h)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
-    ['Osazen na potrubí DN', txt(candVal(h,'dnPotrubi'))],
+    ['Osazen na potrubí DN', txt(dnRaduOf(h))],
     ['Provozovatel', provoz(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['Vlastník', txt(h.vlastnik)],
@@ -2420,7 +2420,7 @@ function doPrint(h){
     ['Stav', txt(h.etapa)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
-    ['Osazen na potrubí DN', txt(candVal(h,'dnPotrubi'))],
+    ['Osazen na potrubí DN', txt(dnRaduOf(h))],
     ['Průtok [l/s]', meas(candVal(h,'prutok'))],
     ['Hydrostatický tlak [MPa]', meas(candVal(h,'tlakStat'))],
     ['Poslední revize', txt(candVal(h,'datumRevize'))],
@@ -2634,7 +2634,7 @@ function aktualSectionHtml(items, oblast){
     return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(cisloOf(h)))+'</td><td>'+esc(String(h.id))+'</td>'+
       '<td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td>'+
-      '<td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
+      '<td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(dnRaduOf(h)))+'</td>'+
       '<td>'+esc(gps)+'</td>'+
       '<td>'+esc(txt(candVal(h,'datumRevize')))+'</td>'+
       '<td class="l">'+esc(txt(candVal(h,'poznamka')))+'</td>'+
@@ -2828,7 +2828,7 @@ function openEditForm(h){
       inp('edProtok','Průtok [m³/h]',prutokM3h(candVal(h,'prutok')))+
       inp('edTlakS','Hydrostatický tlak [MPa]',candVal(h,'tlakStat'))+
       inp('edDN','DN hydrantu [mm]',candVal(h,'dn'))+
-      '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150'].map(function(v){ return '<option'+(candVal(h,'dnPotrubi')===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
+      '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150'].map(function(v){ return '<option'+(dnRaduOf(h)===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
       '<label class="ed-row"><span>Datum revize</span><input id="edRev" type="date" value="'+revIso+'"></label>'+
       '<div class="ed-row"><span>Průtok v l/s (dopočet)</span><div id="edLsAuto" class="ed-auto">—</div></div>'+
       '<div class="ed-row"><span>Splňuje průtok dle ČSN</span><div id="edCsnPauto" class="ed-auto">—</div></div>'+
@@ -2939,6 +2939,12 @@ function cisloOf(h){ if(!h) return '';
   var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:nz; }
 // navržené číslo do formuláře: existující (vyplněné / z pole Název) → ponech; jinak nabídni další v obci (od 1)
 function suggestedCislo(h){ var c=cisloOf(h); return c!==''?c:String(nextCisloForObec(h)); }
+// efektivní DN vodovodního řadu (osazení H): 1) zadané v aplikaci (dnPotrubi), 2) z GIS pole „Poznámka" (číslo).
+// Reklasifikační věty a jiný text v poznámce ignoruje (bere jen číslo). Používá se v zobrazení i v exportu.
+function dnRaduOf(h){ if(!h) return '';
+  var cv=(typeof candVal==='function');
+  var d=cv?candVal(h,'dnPotrubi'):(h.dnPotrubi||''); if(String(d||'').trim()!=='') return String(d).trim();
+  var p=String((h&&h.poznamka)||'').trim(); var m=p.match(/^(DN\s*)?(\d{2,4})$/i); return m?m[2]:''; }
 function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   var dla=(c-a)*r,dlo=(d-b)*r,la1=a*r,la2=c*r;
   var x=Math.sin(dla/2)*Math.sin(dla/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dlo/2)*Math.sin(dlo/2);
@@ -3653,8 +3659,7 @@ var GIS_EXPORT_COLS=[
   ['Etapa života', function(h){ return candVal(h,'etapa'); }],
   ['Zdroj informace', function(h){ return candVal(h,'zdroj'); }],
   ['Přesnost zákresu', function(h){ return candVal(h,'presnost'); }],
-  ['Poznámka', function(h){ var dp=String(candVal(h,'dnPotrubi')||'').trim(); if(dp!=='') return dp;
-    var p=String((h&&h.poznamka)||'').trim(); return /^(DN\s*)?\d{2,4}$/i.test(p)?p:''; }], // jen DN řadu; reklasifikační věty apod. ignoruj
+  ['Poznámka', function(h){ return dnRaduOf(h); }], // GIS Poznámka = DN řadu (jen číslo; text/věty ignoruje)
   ['IČME', function(h){ return candVal(h,'icme'); }],
   ['Vlastník', function(h){ return candVal(h,'vlastnik'); }],
   ['Evid. č. majetku', function(h){ return ''; }],
