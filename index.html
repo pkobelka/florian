@@ -1323,7 +1323,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.184';
+const APP_VERSION = '1.185';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2814,6 +2814,7 @@ function openEditForm(h){
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="sect"><h3>Naměřené hodnoty (ČSN 73 0873)</h3>'+
       inp('edCislo','Číslo H v obci',suggestedCislo(h))+
+      '<div id="edCisloWarn" style="display:none;color:#b71c1c;font-size:12px;font-weight:600;padding:0 0 4px 0;line-height:1.3"></div>'+
       inp('edProtok','Průtok [m³/h]',prutokM3h(candVal(h,'prutok')))+
       inp('edTlakS','Hydrostatický tlak [MPa]',candVal(h,'tlakStat'))+
       inp('edDN','DN hydrantu [mm]',candVal(h,'dn'))+
@@ -2827,6 +2828,13 @@ function openEditForm(h){
     '<div class="cand-actions"><button class="cand-mark" id="edSave">💾 Uložit</button><button class="cand-unmark" id="edBack">↩︎ Zpět</button></div>';
   document.getElementById('cardX').onclick=closeCard;
   document.getElementById('edBack').onclick=function(){ reopenCard(h); };
+  // živé hlídání duplicity čísla H v obci (varuje, když stejné číslo už má jiný hydrant)
+  var _edCis=document.getElementById('edCislo'), _edCisW=document.getElementById('edCisloWarn');
+  function edUpdCislo(){ var v=_edCis.value.trim(); var n=_idxNum(v); var used=usedCislaInObec(h); var o=(n>0)?used[n]:null;
+    if(v!=='' && o){ _edCisW.textContent='⚠ Číslo '+n+' už má v obci hydrant '+((o.upresneni||('#'+o.id))); _edCisW.style.display='block'; _edCis.classList.add('ed-bad'); }
+    else { _edCisW.style.display='none'; _edCis.classList.remove('ed-bad'); }
+  }
+  _edCis.oninput=edUpdCislo; edUpdCislo();
   // živé vyhodnocení průtoku: zadává se v m³/h, l/s se dopočítá a podle něj se hodnotí ČSN
   var _edPR=document.getElementById('edProtok'), _edAutoP=document.getElementById('edCsnPauto'), _edLs=document.getElementById('edLsAuto');
   function edUpdCsnP(){ var ls=prutokLs(_edPR.value); var st=prutokStav(ls);
@@ -2857,6 +2865,8 @@ function openEditForm(h){
     d2.poznamka=document.getElementById('edPozn').value.trim();
     d2.ts=Date.now();
     var _edC=document.getElementById('edCislo'); var _cv=_edC?_edC.value.trim():'';
+    var _cvN=_idxNum(_cv), _used=usedCislaInObec(h), _coll=(_cvN>0)?_used[_cvN]:null;
+    if(_cv!=='' && _coll && !confirm('Číslo '+_cvN+' už v obci používá hydrant '+((_coll.upresneni||('#'+_coll.id)))+'.\n\nPřesto uložit se stejným číslem?')){ return; }
     d2.cislo=(_cv!=='')?_cv:((kandMarked[h.id]&&kandMarked[h.id].idx)||d2.cislo||'');
     d2.by=(typeof flMeName==='function'&&flMeName())||flMe()||d2.by||'';
     domereni[h.id]=d2; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); reopenCard(h);
@@ -2882,12 +2892,14 @@ function _cisloNum(o){
   var mk=(typeof kandMarked!=='undefined')?kandMarked[o.id]:null; if(mk&&mk.idx) return _idxNum(mk.idx);
   var nz=String((d&&d.nazev)||o.nazev||'').trim(); var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?parseInt(m[1],10):0;
 }
-// nejvyšší číslo H v obci daného hydrantu + 1 (přeskočí samotný hydrant); tj. při 15 H v obci vrátí 16
-function nextCisloForObec(h){ var key=_obecKey(h), mx=0;
-  function scan(arr){ if(!arr)return; for(var i=0;i<arr.length;i++){ var o=arr[i]; if(!o||o.id===h.id) continue; if(_obecKey(o)!==key) continue; var n=_cisloNum(o); if(n>mx) mx=n; } }
+// všechna obsazená čísla H v obci daného hydrantu (kromě něj) → mapa {číslo: hydrant}
+function usedCislaInObec(h){ var key=_obecKey(h), used={};
+  function scan(arr){ if(!arr)return; for(var i=0;i<arr.length;i++){ var o=arr[i]; if(!o||o.id===h.id) continue; if(_obecKey(o)!==key) continue; var n=_cisloNum(o); if(n>0 && !used[n]) used[n]=o; } }
   scan(typeof HYDRANTY!=='undefined'?HYDRANTY:null);
   scan(typeof KAND!=='undefined'?KAND:null);
-  return mx+1; }
+  return used; }
+// nejmenší volné číslo H v obci (1,2,3… přeskočí obsazená); čisté pořadí od 1 bez duplicit
+function nextCisloForObec(h){ var used=usedCislaInObec(h); var n=1; while(used[n]) n++; return n; }
 // efektivní oficiální číslo H: 1) ručně vyplněné v aplikaci (domereni/cislo), 2) číslo z GIS pole „Název".
 // Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
 function cisloOf(h){ if(!h) return '';
