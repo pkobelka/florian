@@ -1334,7 +1334,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.201';
+const APP_VERSION = '1.202';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2205,7 +2205,7 @@ function nearestHChip(h){ var n=nearestFireH(h); if(!n) return '';
 function cisloHChip(h){ var c=cisloLabel(h); return c?('<span class="chip" style="background:#e3f2fd;color:#0d47a1;font-weight:800" title="Oficiální číslo hydrantu v obci">🏷️ '+esc(c)+'</span>'):''; }
 function provoz(v){ return txt(v).replace(/vhos/ig,'VHOS'); }
 function csn(v){ return (v||'').trim()==='Ano' ? 'Ano ✓' : 'neuvedeno'; }
-function label(h){ return h.upresneni || h.umisteni || ('Hydrant '+h.id); }
+function label(h){ return (typeof candVal==='function'?candVal(h,'upresneni'):'') || h.upresneni || h.umisteni || ('Hydrant '+h.id); }
 // odvození názvu obce z adresy hydrantu
 function rawTown(h){
   let u=(h.upresneni||'').trim();
@@ -2443,7 +2443,7 @@ function doPrint(h){
     ['Funkce', txt(h.funkce)],
     ['Obec / město', town(h)],
     ['Umístění', txt(h.umisteni)],
-    ['Upřesnění polohy', txt(h.upresneni)],
+    ['Upřesnění polohy', txt(candVal(h,'upresneni'))],
     ['Stav', txt(h.etapa)],
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
