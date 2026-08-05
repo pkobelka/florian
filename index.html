@@ -1177,6 +1177,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .pozn-badge{position:absolute;top:-9px;right:-10px;background:#2e7d32;color:#fff;border-radius:50%;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:13px;line-height:18px;width:20px;height:20px;text-align:center;border:1.8px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);cursor:pointer;pointer-events:auto}
 .num-badge{display:none;position:absolute;left:100%;top:50%;transform:translate(3px,-50%);white-space:nowrap;background:#fff;color:#000;border:1.5px solid #444;border-radius:3px;padding:1px 5px;font-size:14px;line-height:16px;font-weight:600;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.45);z-index:550}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
+.num-badge.dup{background:#ffebee;color:#b71c1c;border-color:#b71c1c}  /* duplicitní číslo v obci */
 .h2num{display:inline-block;background:#111;color:#fff;border-radius:4px;font-size:.72em;font-weight:700;padding:1px 6px;vertical-align:middle;letter-spacing:.3px}
 /* miniatura fotky u markeru – ať je hned vidět, který H má foto (a kde chybí) */
 .foto-badge{display:none;position:absolute;left:50%;bottom:100%;transform:translate(-50%,-3px);
@@ -1323,7 +1324,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.185';
+const APP_VERSION = '1.186';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1334,7 +1335,7 @@ const SVG_POD = '<svg viewBox="0 0 28 22" width="26" height="20"><ellipse cx="14
 function iconFor(typ,h){
   const nad = typ === 'nadzemní';
   var nb='';
-  if(h){ var _c=cisloOf(h); if(_c) nb='<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>'; } // číslo H i u povýšeného kandidáta
+  if(h) nb=numBadgeHtml(h); // číslo H i u povýšeného kandidáta (červeně při duplicitě v obci)
   return L.divIcon({
     className:'', html:'<div class="mk" style="position:relative">'+(nad?SVG_NAD:SVG_POD)+nb+'</div>',
     iconSize: nad?[28,37]:[26,20],
@@ -1401,8 +1402,7 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" data-id="'+esc(String(h.id))+'" title="Má poznámku – najeď myší / klikni">i</span>':'';
-  var _c=cisloOf(h);
-  var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // jen číslo (oficiální číslo H v obci)
+  var nb=numBadgeHtml(h); // číslo H (červeně při duplicitě v obci)
   // miniatura fotky (bublinka nad markerem) – jen když H fotku má; klik na ni = velké foto
   var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
   if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10],tooltipAnchor:[0,-13]}); }
@@ -1410,7 +1410,7 @@ function iconForItem(h){
   // tooltipAnchor nad vršek ikony, ať Info (poznámka/upřesnění) nepřekrývá číslo H vpravo (hlavně u nadzemních, ukotvených dole)
   return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10],tooltipAnchor:nad?[0,-39]:[0,-13]});
 }
-function rebuildMarkersBadges(){ try{ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
+function rebuildMarkersBadges(){ try{ _flDupCis=null; /* přepočítej duplicity čísel při každém překreslení */ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
 
 // ---- mapa ----
 const map = L.map('map', {zoomControl:true, attributionControl:true, maxBoundsViscosity:1.0});
@@ -2490,12 +2490,14 @@ function protokolSectionHtml(items, oblast){
   var dnes=(function(){ var d=new Date(); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); })();
   var kdo=(typeof flMeName==='function'&&flMeName())||'';
   var okC=0,badC=0,naC=0;
+  var _cCount={}; items.forEach(function(x){ var n=_cisloNum(x); if(n>0) _cCount[n]=(_cCount[n]||0)+1; }); // detekce duplicitních čísel v obci
   var rowsA=items.map(function(h){
     var ts=tlakStatStav(candVal(h,'tlakStat')), ps=prutokStav(candVal(h,'prutok'));
     var verd,cls; if(ts==='bad'||ps==='bad'){ verd='Nevyhovuje'; cls='bad'; badC++; }
     else if(ts==='ok'&&ps==='ok'){ verd='Vyhovuje'; cls='ok'; okC++; } else { verd='Nezměřeno'; cls='na'; naC++; }
     var m3=prutokM3h(candVal(h,'prutok')), ls=meas(candVal(h,'prutok'));
-    return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
+    var _cn=_cisloNum(h), _cdup=(_cn>0&&_cCount[_cn]>1);
+    return '<tr><td'+(_cdup?' style="color:#b71c1c;font-weight:800" title="Duplicitní číslo v obci"':'')+'>'+esc(txt(cisloOf(h)))+(_cdup?' ⚠':'')+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td><td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
       '<td>'+meas(candVal(h,'tlakStat'))+'</td><td>'+(m3||'—')+'</td><td>'+ls+'</td>'+
       '<td class="'+cls+'">'+verd+'</td></tr>';
@@ -2900,6 +2902,18 @@ function usedCislaInObec(h){ var key=_obecKey(h), used={};
   return used; }
 // nejmenší volné číslo H v obci (1,2,3… přeskočí obsazená); čisté pořadí od 1 bez duplicit
 function nextCisloForObec(h){ var used=usedCislaInObec(h); var n=1; while(used[n]) n++; return n; }
+// duplicitní čísla H: množina klíčů "obec|číslo", které v obci používá víc než jeden hydrant
+var _flDupCis=null;
+function flComputeDupCisla(){ var cnt={};
+  function add(o){ if(!o)return; var k=_obecKey(o); if(!k)return; var n=_cisloNum(o); if(n<=0)return; var kk=k+'|'+n; cnt[kk]=(cnt[kk]||0)+1; }
+  if(typeof HYDRANTY!=='undefined') HYDRANTY.forEach(add);
+  if(typeof KAND!=='undefined'&&KAND) KAND.forEach(add);
+  var s={}; Object.keys(cnt).forEach(function(k){ if(cnt[k]>1) s[k]=1; }); _flDupCis=s; return s; }
+// je číslo hydrantu v jeho obci duplicitní (používá ho i jiný H)?
+function isDupCislo(h){ if(!h) return false; if(!_flDupCis) flComputeDupCisla(); var n=_cisloNum(h); if(n<=0) return false; return !!_flDupCis[_obecKey(h)+'|'+n]; }
+// HTML odznaku čísla H do ikony (červeně, když je číslo v obci duplicitní)
+function numBadgeHtml(h){ var _c=cisloOf(h); if(!_c) return ''; var dup=isDupCislo(h);
+  return '<span class="num-badge'+(dup?' dup':'')+'" title="'+(dup?'⚠ Duplicitní číslo v obci – přečíslovat':'Číslo hydrantu v obci')+'">'+esc(_c)+'</span>'; }
 // efektivní oficiální číslo H: 1) ručně vyplněné v aplikaci (domereni/cislo), 2) číslo z GIS pole „Název".
 // Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
 function cisloOf(h){ if(!h) return '';
@@ -2922,8 +2936,7 @@ const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZ
 function candIcon(h,state){ var col=state==='marked'?'#16a34a':(state==='gap'?'#f59e0b':'#8e24aa');
   var nad=h.typ==='nadzemní'; var inner=nad?'<div class="ci-nad"></div>':'<div class="ci-pod"></div>';
   var mk=kandMarked[h.id]?'<span class="ci-badge">✓</span>':'';
-  var _c=cisloOf(h);
-  var nb=_c?'<span class="num-badge" title="Číslo hydrantu v obci">'+esc(_c)+'</span>':''; // číslo H i na kandidátské/vybrané ikoně (řízeno stejným přepínačem 🔢)
+  var nb=numBadgeHtml(h); // číslo H i na kandidátské/vybrané ikoně (červeně při duplicitě; řízeno přepínačem 🔢)
   var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)){ var t=filterTown(it.h); if(t)s.add(t); } }); return s; }
 /* vrstva označených bodů (k doměření) – viditelná VŽDY, i když je vrstva „Ostatní hydranty" vypnutá,
