@@ -1332,7 +1332,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.198';
+const APP_VERSION = '1.199';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2273,6 +2273,7 @@ function openCard(h){
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['Vlastník', txt(h.vlastnik)],
     ['IČME', txt(h.icme)],
+    ['OBJECTID (GIS)', txt(String(h.id||''))],
     ['Poznámka', txt(candVal(h,'poznamka'))],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
@@ -2446,6 +2447,7 @@ function doPrint(h){
     ['Provozovatel', provoz(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['IČME', txt(h.icme)],
+    ['OBJECTID (GIS)', txt(String(h.id||''))],
     ['GPS', h.lat.toFixed(6)+', '+h.lon.toFixed(6)],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
@@ -3689,7 +3691,7 @@ function flFieldVal(h,d,k){ return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k
 // původní z GISu (candVal). Sloupce, které aplikace nemá (OBJECTID/GLOBALID, výšky, TBFID…), jdou prázdné
 // – při importu je nemapujte, ať se nepřepíšou. Párování řádků řeší GIS (primárně přes IČME).
 var GIS_EXPORT_COLS=[
-  ['OBJECTID', function(h){ return ''; }],
+  ['OBJECTID', function(h){ var id=parseInt(h.id,10); return (isFinite(id)&&id<900000)?String(h.id):''; }], // = naše id; umělé 900000+ (body přidané v appce) nechává prázdné
   ['Název', function(h){ return cisloLabel(h); }],
   ['Typ hydrantu', function(h){ return candVal(h,'typ'); }],
   ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
