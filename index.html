@@ -1332,7 +1332,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.199';
+const APP_VERSION = '1.200';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2177,6 +2177,12 @@ function tlakStatStav(val){ if(!hasVal(val)) return ''; var n=parseNum(val); if(
 /* dlaždice průtoku do karty (l/s + m³/h; zvýrazní, když nesplňuje odběr) */
 function prutokTile(h){ var v=candVal(h,'prutok'); var bad=prutokStav(v)==='bad';
   return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">průtok l/s</div>'+m3hLine(h)+(bad?'<div class="mwarn">min '+PRUTOK_MIN+' l/s ✗</div>':'')+'</div>'; }
+/* dlaždice průtoku v m³/h (samostatná dlaždice do karty) */
+function prutokM3hTile(h){ var v=candVal(h,'prutok'); var bad=prutokStav(v)==='bad'; var m=prutokM3h(v);
+  return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+(m||'—')+'</div><div class="k">průtok m³/h</div></div>'; }
+/* dlaždice průtoku v l/s (bez m³/h řádku – ten má vlastní dlaždici) */
+function prutokLsTile(h){ var v=candVal(h,'prutok'); var bad=prutokStav(v)==='bad';
+  return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">průtok l/s</div>'+(bad?'<div class="mwarn">min '+PRUTOK_MIN+' l/s ✗</div>':'')+'</div>'; }
 /* dlaždice hydrostatického tlaku do karty (zvýrazní, když nesplňuje) */
 function tlakStatTile(h){ var v=candVal(h,'tlakStat'); var bad=tlakStatStav(v)==='bad';
   return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">hydrostatický tlak (MPa)</div>'+(bad?'<div class="mwarn">min '+String(TLAK_STAT_MIN).replace('.',',')+' MPa ✗</div>':'')+'</div>'; }
@@ -2272,8 +2278,7 @@ function openCard(h){
     ['Provozovatel', provoz(h.provozovatel)],
     ['Provozní středisko', txt(h.provozniStredisko)],
     ['Vlastník', txt(h.vlastnik)],
-    ['IČME', txt(h.icme)],
-    ['OBJECTID (GIS)', txt(String(h.id||''))],
+    ['ID (GIS OBJECTID)', txt(String(h.id||''))],
     ['Poznámka', txt(candVal(h,'poznamka'))],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
@@ -2301,7 +2306,8 @@ function openCard(h){
     '<div class="cardgrid">'+
       '<div class="cg-main">'+
         '<div class="metrics">'+
-          prutokTile(h)+
+          prutokM3hTile(h)+
+          prutokLsTile(h)+
           tlakStatTile(h)+
         '</div>'+
         '<div class="facts">'+
@@ -3137,7 +3143,8 @@ function openCandCard(h){
     '<div class="cardgrid">'+
       '<div class="cg-main">'+
         '<div class="metrics">'+
-          prutokTile(h)+
+          prutokM3hTile(h)+
+          prutokLsTile(h)+
           tlakStatTile(h)+
         '</div>'+
         '<div class="facts">'+
