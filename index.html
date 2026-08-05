@@ -1328,7 +1328,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.191';
+const APP_VERSION = '1.192';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2963,7 +2963,7 @@ const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZ
 function candIcon(h,state){ var col=state==='marked'?'#16a34a':(state==='gap'?'#f59e0b':'#8e24aa');
   var nad=h.typ==='nadzemní'; var inner=nad?'<div class="ci-nad"></div>':'<div class="ci-pod"></div>';
   var mk=kandMarked[h.id]?'<span class="ci-badge">✓</span>':'';
-  var nb=numBadgeHtml(h); // číslo H i na kandidátské/vybrané ikoně (červeně při duplicitě; řízeno přepínačem 🔢)
+  var nb=(typeof isPovyseno==='function'&&isPovyseno(h))?numBadgeHtml(h):''; // číslo jen u povýšených na požární, ne u nepovýšených kandidátů „k doměření"
   var ukb=(typeof hasOpenUkol==='function'&&hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':''; return L.divIcon({className:'',html:'<div class="candmk" style="--cc:'+col+'">'+inner+mk+ukb+nb+'</div>',iconSize:[20,20],iconAnchor:[10,10]}); }
 function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)){ var t=filterTown(it.h); if(t)s.add(t); } }); return s; }
 /* vrstva označených bodů (k doměření) – viditelná VŽDY, i když je vrstva „Ostatní hydranty" vypnutá,
