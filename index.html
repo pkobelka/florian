@@ -1279,6 +1279,8 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
     <button class="btn-toggle op-only" id="gisBtn"><span>🔼 Do GISu<span id="gisCount"></span></span></button>
   </div>
   <div class="town-panel" id="gisPanel"></div>
+  <button class="btn-toggle op-only" id="importBtn" title="Hromadný import naměřených hodnot a fotek z připraveného souboru (JSON + obrázky pojmenované podle id)">📥 Import dat</button>
+  <input type="file" id="importFile" accept=".json,application/json,image/*" multiple style="display:none">
   <button class="btn-toggle op-only" id="nahledBtn" title="Odkazy na náhledy pro obce (svazky) – pro odkliknutí při prezentaci">👁️ Náhledy pro obce</button>
   <div class="town-panel" id="nahledPanel"></div>
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
@@ -1330,7 +1332,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.196';
+const APP_VERSION = '1.197';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -3954,6 +3956,40 @@ function fbSaveKand(id){ try{ if(window._FDB) _FDB.ref('florian_kandidati/'+id).
 function fbDelKand(id){ try{ if(window._FDB) _FDB.ref('florian_kandidati/'+id).remove(); }catch(e){} }
 function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toBlob(function(blob){ if(!blob)return; var path='florian/foto/'+h.id+'.jpg'; var ref=_FST.ref(path);
   ref.put(blob,{contentType:'image/jpeg'}).then(function(){return ref.getDownloadURL();}).then(function(url){ cloudPhotos[h.id]=url; _FDB.ref('florian_foto/'+h.id).set({url:url,path:path,ts:Date.now()}); if(current&&current.id===h.id)reopenCard(h); }).catch(function(e){ console.warn('foto upload',e); }); }, 'image/jpeg', 0.85); }catch(e){} }
+// ===== Hromadný import naměřených hodnot + fotek z připraveného souboru =====
+// Soubory: 1 JSON {obec, items:[{id,cislo,prutok,tlakStat,dn,dnPotrubi,poznamka,datumRevize,by}]} + obrázky pojmenované <id>.jpg/png
+function flImport(files){ if(!files||!files.length) return;
+  var byId={}; if(typeof HYDRANTY!=='undefined') HYDRANTY.forEach(function(h){ byId[h.id]=h; });
+  if(typeof KAND!=='undefined'&&KAND) KAND.forEach(function(h){ if(!byId[h.id]) byId[h.id]=h; });
+  var jsonF=[], imgF=[];
+  for(var i=0;i<files.length;i++){ var f=files[i]; if(/\.json$/i.test(f.name)||f.type==='application/json') jsonF.push(f); else if(/^image\//.test(f.type)||/\.(png|jpe?g)$/i.test(f.name)) imgF.push(f); }
+  function applyValues(data){ var items=(data&&data.items)||[], n=0, miss=[];
+    items.forEach(function(it){ var id=String(it.id), h=byId[id]; if(!h){ miss.push(id); return; }
+      var d=domereni[id]||{};
+      ['cislo','prutok','tlakStat','dn','dnPotrubi','poznamka','datumRevize','by'].forEach(function(k){ if(it[k]!==undefined&&it[k]!=='') d[k]=String(it[k]); });
+      var sp=prutokStav(d.prutok); d.splnujeProtok=sp==='ok'?'Ano':(sp==='bad'?'Ne':'');
+      var st=tlakStatStav(d.tlakStat); d.splnujeTlak=st==='ok'?'Ano':(st==='bad'?'Ne':'');
+      d.ts=Date.now(); domereni[id]=d; fbSaveDomereni(id); n++; });
+    saveDomereni(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList();
+    return {n:n, miss:miss}; }
+  function uploadImg(f){ var id=f.name.replace(/\.[^.]+$/,''); var h=byId[id]; if(!h) return false;
+    var rd=new FileReader(); rd.onload=function(){ var img=new Image(); img.onload=function(){
+      var max=1280,w=img.width,ht=img.height; if(w>max||ht>max){var k=Math.min(max/w,max/ht);w=Math.round(w*k);ht=Math.round(ht*k);}
+      var cv=document.createElement('canvas'); cv.width=w; cv.height=ht; cv.getContext('2d').drawImage(img,0,0,w,ht);
+      try{ photoData[h.id]=cv.toDataURL('image/jpeg',0.8); }catch(_){}
+      if(typeof fbUploadFoto==='function') fbUploadFoto(h,cv); }; img.src=rd.result; }; rd.readAsDataURL(f); return true; }
+  function doPhotos(){ var pn=0; imgF.forEach(function(f){ if(uploadImg(f)) pn++; }); return pn; }
+  if(jsonF.length){ var rd=new FileReader();
+    rd.onload=function(){ var data; try{ data=JSON.parse(rd.result); }catch(e){ alert('Soubor JSON se nepodařilo přečíst.'); return; }
+      var cnt=(data.items||[]).length;
+      if(!confirm('Import '+(data.obec?('„'+data.obec+'" '):'')+'– zapsat '+cnt+' hydrantů'+(imgF.length?(' + '+imgF.length+' fotek'):'')+' do cloudu?\n\nU nich přepíše stávající naměřené hodnoty.')) return;
+      var res=applyValues(data), pn=doPhotos();
+      flToast('Naimportováno: '+res.n+' hydrantů'+(pn?(' + '+pn+' fotek'):'')+(res.miss.length?(' · '+res.miss.length+' nenalezeno'):'')); };
+    rd.readAsText(jsonF[0]);
+  } else if(imgF.length){ if(confirm('Nahrát '+imgF.length+' fotek do cloudu (dle názvu = id hydrantu)?')){ var pn=doPhotos(); flToast('Nahráno '+pn+' fotek.'); } }
+}
+(function(){ var b=document.getElementById('importBtn'), fi=document.getElementById('importFile');
+  if(b&&fi){ b.onclick=function(){ fi.value=''; fi.click(); }; fi.onchange=function(){ flImport(fi.files); }; } })();
 (function(){
   if(!window.firebase || !firebase.initializeApp) return;
   var CFG={apiKey:"AIzaSyBEAhZNxq3REoy1vExIrnNEXlyFXHzP4uI",authDomain:"moje-budky.firebaseapp.com",databaseURL:"https://moje-budky-default-rtdb.firebaseio.com",projectId:"moje-budky",storageBucket:"moje-budky.firebasestorage.app",messagingSenderId:"325649258561",appId:"1:325649258561:web:b5571c3278d98405320ec0"};
