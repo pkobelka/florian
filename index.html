@@ -1332,7 +1332,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.197';
+const APP_VERSION = '1.198';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2584,20 +2584,28 @@ function generateProtokolWord(towns){
   var a=document.createElement('a'); a.href=url; a.download='Protokol_revize_'+nm+'_'+stamp+'.doc'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(url); },1500);
 }
+// obce, které mají aspoň jeden hydrant v aktuálním výřezu mapy (pro předvýběr)
+function visibleTownsNow(){ var s={}; try{ var b=map.getBounds(); (typeof allItems!=='undefined'?allItems:[]).forEach(function(it){ var h=it.h; if(h&&h.lat!=null&&b.contains([h.lat,h.lon])){ var t=filterTown(h); if(t)s[t]=1; } }); }catch(e){} return s; }
 function buildProtokolPanel(){
   var wrap=document.getElementById('protokolPanel'); if(!wrap) return;
   var obce=protokolObce();
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📄 Protokol o revizi</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
-  var pre=selectedTowns;
+  var pre=selectedTowns, vis=visibleTownsNow();
+  // předvýběr: vybrané obce z filtru, jinak obce zrovna na ploše (mapě); jinak nic
+  function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
   wrap.innerHTML=
     '<div class="tp-head"><b>📄 Protokol – zaškrtni obce</b><button class="tp-clear" id="prtAll">Vše / nic</button></div>'+
+    '<input id="prtSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="prtList">'+
-      obce.map(function(o){ var ch=(pre.size===0||pre.has(o.t))?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<button class="btn-toggle btn-share" id="prtGen" style="margin-top:6px">⬇️ Stáhnout protokol (Word)</button>';
   wrap.onclick=function(e){ e.stopPropagation(); };
+  var _ps=document.getElementById('prtSearch');
+  if(_ps){ _ps.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#prtList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
+    setTimeout(function(){ try{ _ps.focus(); }catch(e){} }, 60); }
   var allOn=false;
-  document.getElementById('prtAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#prtList input[type=checkbox]').forEach(function(c){ c.checked=allOn; }); };
+  document.getElementById('prtAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#prtList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
   document.getElementById('prtGen').onclick=function(){
     var towns=[]; wrap.querySelectorAll('#prtList input[type=checkbox]:checked').forEach(function(c){ towns.push(c.value); });
     if(!towns.length){ alert('Zaškrtni aspoň jednu obec.'); return; }
@@ -2703,16 +2711,21 @@ function buildAktualPanel(){
   var wrap=document.getElementById('aktualPanel'); if(!wrap) return;
   var obce=protokolObce(); // stejná nabídka obcí jako protokol
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📝 Aktualizace údajů</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
-  var pre=selectedTowns;
+  var pre=selectedTowns, vis=visibleTownsNow();
+  function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
   wrap.innerHTML=
     '<div class="tp-head"><b>📝 Aktualizace – zaškrtni obce</b><button class="tp-clear" id="aktAll">Vše / nic</button></div>'+
+    '<input id="aktSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="aktList">'+
-      obce.map(function(o){ var ch=(pre.size===0||pre.has(o.t))?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<button class="btn-toggle btn-share" id="aktGen" style="margin-top:6px">⬇️ Stáhnout aktualizaci (Word)</button>';
   wrap.onclick=function(e){ e.stopPropagation(); };
+  var _as=document.getElementById('aktSearch');
+  if(_as){ _as.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#aktList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
+    setTimeout(function(){ try{ _as.focus(); }catch(e){} }, 60); }
   var allOn=false;
-  document.getElementById('aktAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#aktList input[type=checkbox]').forEach(function(c){ c.checked=allOn; }); };
+  document.getElementById('aktAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#aktList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
   document.getElementById('aktGen').onclick=function(){
     var towns=[]; wrap.querySelectorAll('#aktList input[type=checkbox]:checked').forEach(function(c){ towns.push(c.value); });
     if(!towns.length){ alert('Zaškrtni aspoň jednu obec.'); return; }
