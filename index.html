@@ -1325,7 +1325,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.187';
+const APP_VERSION = '1.188';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2809,6 +2809,10 @@ function openEditForm(h){
   if(miniMap){ miniMap.remove(); miniMap=null; }
   var d=domereni[h.id]||{};
   var revIso=_todayIso();
+  // volby pro sekci „Údaje pro GIS": vlastník (existující svazky/obce) + druh vody
+  var _vl=candVal(h,'vlastnik'), _vlSet={}; if(typeof HYDRANTY!=='undefined') HYDRANTY.forEach(function(x){ if(x.vlastnik) _vlSet[x.vlastnik]=1; }); if(_vl) _vlSet[_vl]=1;
+  var _vlOpts='<option value="">—</option>'+Object.keys(_vlSet).sort(function(a,b){return a.localeCompare(b,'cs');}).map(function(v){ return '<option'+(_vl===v?' selected':'')+' value="'+esc(v)+'">'+esc(v)+'</option>'; }).join('');
+  var _dv=candVal(h,'druhVody'), _dvOpts=['','pitná','užitková','požární'].map(function(v){ return '<option'+(_dv===v?' selected':'')+' value="'+esc(v)+'">'+(v||'—')+'</option>'; }).join('');
   function inp(id,lbl,val){ return '<label class="ed-row"><span>'+lbl+'</span><input id="'+id+'" value="'+esc(val||'')+'"></label>'; }
   function selc(id,lbl,val){ var vv=(val==='Ne')?'Ne':'Ano'; function o(v,t){return '<option'+(vv===v?' selected':'')+' value="'+v+'">'+t+'</option>';} return '<label class="ed-row"><span>'+lbl+'</span><select id="'+id+'">'+o('Ano','Ano ✓')+o('Ne','Ne ✗')+'</select></label>'; }
   cardBody.innerHTML=
@@ -2827,6 +2831,11 @@ function openEditForm(h){
       '<div class="ed-row"><span>Splňuje průtok dle ČSN</span><div id="edCsnPauto" class="ed-auto">—</div></div>'+
       '<div class="ed-row"><span>Splňuje tlak dle ČSN</span><div id="edCsnTauto" class="ed-auto">—</div></div>'+
       '<label class="ed-row"><span>Poznámka</span><input id="edPozn" value="'+esc(d.poznamka||'')+'"></label>'+
+    '</div>'+
+    '<div class="sect"><h3>Údaje pro GIS <span style="font-weight:400;font-size:12px;color:#6b7a8d">(u nově zařazených H)</span></h3>'+
+      '<label class="ed-row"><span>Vlastník</span><select id="edVlastnik">'+_vlOpts+'</select></label>'+
+      inp('edUpres','Upřesnění polohy',candVal(h,'upresneni'))+
+      '<label class="ed-row"><span>Druh vody</span><select id="edDruh">'+_dvOpts+'</select></label>'+
     '</div>'+
     '<div class="cand-actions"><button class="cand-mark" id="edSave">💾 Uložit</button><button class="cand-unmark" id="edBack">↩︎ Zpět</button></div>';
   document.getElementById('cardX').onclick=closeCard;
@@ -2866,6 +2875,9 @@ function openEditForm(h){
     var _sp=prutokStav(d2.prutok); d2.splnujeProtok = _sp==='ok'?'Ano':(_sp==='bad'?'Ne':''); // auto dle hodnoty
     var _stp=tlakStatStav(d2.tlakStat); d2.splnujeTlak = _stp==='ok'?'Ano':(_stp==='bad'?'Ne':''); // auto dle statického tlaku
     d2.poznamka=document.getElementById('edPozn').value.trim();
+    var _ev=document.getElementById('edVlastnik'); if(_ev) d2.vlastnik=_ev.value;           // GIS: vlastník (svazek/obec)
+    var _eu=document.getElementById('edUpres'); if(_eu) d2.upresneni=_eu.value.trim();       // GIS: upřesnění polohy
+    var _ed=document.getElementById('edDruh'); if(_ed) d2.druhVody=_ed.value;                // GIS: druh vody
     d2.ts=Date.now();
     var _edC=document.getElementById('edCislo'); var _cv=_edC?_edC.value.trim():'';
     var _cvN=_idxNum(_cv), _used=usedCislaInObec(h), _coll=(_cvN>0)?_used[_cvN]:null;
@@ -3610,7 +3622,10 @@ var FL_EXPORT_FIELDS=[
   ['dn','DN hydrantu [mm]'],
   ['dnPotrubi','DN řadu (Poznámka)'],
   ['datumRevize','Datum revize'],
-  ['splnujeProtok','Splňuje průtok ČSN']
+  ['splnujeProtok','Splňuje průtok ČSN'],
+  ['vlastnik','Vlastník'],
+  ['upresneni','Upřesnění polohy'],
+  ['druhVody','Druh vody']
 ];
 function _flCsvCell(v){ v=(v==null?'':String(v)); return /[";\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function _flTsFmt(ts){ if(!ts) return ''; try{ var d=new Date(ts); return d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
@@ -3635,7 +3650,8 @@ var GIS_EXPORT_COLS=[
   ['Etapa života', function(h){ return candVal(h,'etapa'); }],
   ['Zdroj informace', function(h){ return candVal(h,'zdroj'); }],
   ['Přesnost zákresu', function(h){ return candVal(h,'presnost'); }],
-  ['Poznámka', function(h){ var dp=String(candVal(h,'dnPotrubi')||'').trim(); return dp!==''?dp:String((h&&h.poznamka)||'').trim(); }],
+  ['Poznámka', function(h){ var dp=String(candVal(h,'dnPotrubi')||'').trim(); if(dp!=='') return dp;
+    var p=String((h&&h.poznamka)||'').trim(); return /^(DN\s*)?\d{2,4}$/i.test(p)?p:''; }], // jen DN řadu; reklasifikační věty apod. ignoruj
   ['IČME', function(h){ return candVal(h,'icme'); }],
   ['Vlastník', function(h){ return candVal(h,'vlastnik'); }],
   ['Evid. č. majetku', function(h){ return ''; }],
