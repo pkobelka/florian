@@ -1328,7 +1328,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.193';
+const APP_VERSION = '1.194';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1541,7 +1541,11 @@ map.getContainer().addEventListener('click', function(e){
   var id=b.getAttribute('data-id'), it=null;
   for(var i=0;i<allItems.length;i++){ if(String(allItems[i].h.id)===id){ it=allItems[i]; break; } }
   if(it&&it.m){ try{ it.m.openTooltip(); }catch(_){}
-    if(!poznOn) setTimeout(function(){ try{ it.m.closeTooltip(); }catch(_){} }, 4000); }
+    if(!poznOn){
+      var _closeInfo=function(){ try{ it.m.closeTooltip(); }catch(_){} document.removeEventListener('click', _closeInfo, true); };
+      setTimeout(function(){ document.addEventListener('click', _closeInfo, true); }, 0); // zavři při dalším kliknutí kamkoli
+      setTimeout(function(){ _closeInfo(); }, 4000); // fallback: i tak zmizí po 4 s
+    } }
 }, true);
 
 /* Omez mapu na oblast hydrantů (+ kousek okolo), ať se nedá oddálit/odjet na celou Evropu.
@@ -2889,6 +2893,8 @@ function openEditForm(h){
     d2.by=(typeof flMeName==='function'&&flMeName())||flMe()||d2.by||'';
     domereni[h.id]=d2; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); reopenCard(h);
   };
+  // Enter v libovolném poli formuláře = Uložit
+  cardBody.querySelectorAll('.sect input').forEach(function(_i){ _i.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); var b=document.getElementById('edSave'); if(b) b.click(); } }); });
 }
 try{ kandMarked=JSON.parse(localStorage.getItem('florian_kandidati')||'{}')||{}; }catch(e){ kandMarked={}; }
 function saveMarked(){ try{ localStorage.setItem('florian_kandidati', JSON.stringify(kandMarked)); }catch(e){} }
