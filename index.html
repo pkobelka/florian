@@ -1328,7 +1328,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.190';
+const APP_VERSION = '1.191';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1451,7 +1451,7 @@ function reclassIcon(){ return L.divIcon({className:'',html:'<div class="reclmk"
 
 const cluster = L.markerClusterGroup({
   maxClusterRadius: 50,
-  disableClusteringAtZoom: 16, // = NUM_ZOOM: po přiblížení (kde se ukazují čísla H) se značky nesmí slučovat, jinak by čísla u H v hustých obcích nebyla vidět
+  disableClusteringAtZoom: 14, // = NUM_ZOOM: po přiblížení (kde se ukazují čísla H) se značky nesmí slučovat, jinak by čísla u H v hustých obcích nebyla vidět
   showCoverageOnHover:false,
   iconCreateFunction: (c)=>{
     const n = c.getChildCount();
@@ -1523,7 +1523,7 @@ function applyFilter(noFit){
 applyFilter();
 
 // Čísla H na značkách ukázat až při bližším přiblížení (jinak by se pletla na přehledu).
-var NUM_ZOOM = 16;
+var NUM_ZOOM = 14;
 var numOn = false; // čísla H se ukazují jen po zapnutí přepínače „🔢 Čísla" (hlavně pro starosty)
 function flNumZoom(){ try{ var el=map.getContainer(); el.classList.toggle('nums-on', numOn && map.getZoom()>=NUM_ZOOM); if(typeof updFotoBadges==='function') updFotoBadges(); }catch(e){} }
 map.on('zoomend', flNumZoom); flNumZoom();
@@ -2902,7 +2902,8 @@ function flNextNum(){ flSeqRecalc(); flSeq++; flPersistSeq(); return flSeq; }
 // (flSeq/flNextNum ponechány pro kompatibilitu, nevolají se)
 // ---- další volné číslo H v rámci OBCE (číslování po obcích, ne globálně) ----
 // klíč obce pro seskupení (název obce; fallback na kód obce)
-function _obecKey(o){ return (typeof filterTown==='function' && filterTown(o)) || (o&&o.obec) || ''; }
+// klíč obce pro číslování: primárně KÓD obce (stabilní, je na všech i bez adresy), jinak název z adresy
+function _obecKey(o){ return (o&&o.obec) || (typeof filterTown==='function' && filterTown(o)) || ''; }
 // číslo H konkrétního hydrantu: 1) ručně zadané (domereni/cislo), 2) idx kandidáta, 3) číslo skryté v poznámce ("H4"/"12")
 function _cisloNum(o){
   var d=(typeof domereni!=='undefined'&&domereni)?domereni[o.id]:null;
@@ -2934,11 +2935,15 @@ function numBadgeHtml(h){ var _c=cisloOf(h); if(!_c) return ''; var dup=isDupCis
 // Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
 function cisloOf(h){ if(!h) return '';
   var cv=(typeof candVal==='function');
-  var c=cv?candVal(h,'cislo'):''; if(String(c||'').trim()!=='') return String(c).trim();
+  var c=String((cv?candVal(h,'cislo'):'')||'').trim();
+  if(c!==''){ var cm=c.match(/^H?\s*(\d{1,3})$/i); return cm?cm[1]:c; }   // odstraň případné „H" (starý globální idx kandidáta)
   var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); if(nz==='') return '';
   var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:nz; }
-// navržené číslo do formuláře: existující (vyplněné / z pole Název) → ponech; jinak nabídni další v obci (od 1)
-function suggestedCislo(h){ var c=cisloOf(h); return c!==''?c:String(nextCisloForObec(h)); }
+// navržené číslo do formuláře: platné ruční číslo / číslo z Název → ponech; prázdné nebo starý „H7" → nabídni další v obci
+function suggestedCislo(h){ var cv=(typeof candVal==='function');
+  var dc=String((cv?candVal(h,'cislo'):'')||'').trim(); if(/^\d{1,3}$/.test(dc)) return dc;   // platné ruční číslo (bez „H")
+  var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); var m=nz.match(/^H?\s*(\d{1,3})$/i); if(m) return m[1]; // z GIS Název
+  return String(nextCisloForObec(h)); }                                                          // prázdné / „H7" → další v obci
 // efektivní DN vodovodního řadu (osazení H): 1) zadané v aplikaci (dnPotrubi), 2) z GIS pole „Poznámka" (číslo).
 // Reklasifikační věty a jiný text v poznámce ignoruje (bere jen číslo). Používá se v zobrazení i v exportu.
 function dnRaduOf(h){ if(!h) return '';
@@ -2951,7 +2956,7 @@ function haversineM(a,b,c,d){ var R=6371000,r=Math.PI/180;
   return 2*R*Math.asin(Math.sqrt(x)); }
 var candCovLayer=L.layerGroup(); var previewLayer=L.layerGroup(); var previewCirc={};
 function togglePreview(h){ if(previewCirc[h.id]){ previewLayer.removeLayer(previewCirc[h.id]); delete previewCirc[h.id]; } else { var c=L.circle([h.lat,h.lon],{radius:COVERAGE_RADIUS,color:'#ca8a04',weight:2.5,dashArray:'6 4',fillColor:'#facc15',fillOpacity:.22}); previewLayer.addLayer(c); previewCirc[h.id]=c; if(!map.hasLayer(previewLayer)) map.addLayer(previewLayer); } }
-const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZoom:16,showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u „ostatních" */
+const candCluster=L.markerClusterGroup({maxClusterRadius:50,disableClusteringAtZoom:14,showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u „ostatních" */
   iconCreateFunction:function(c){ var n=c.getChildCount(); var s=n<10?34:(n<50?42:50);
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
     return L.divIcon({html:'<div class="cluster candcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }});
@@ -2966,7 +2971,7 @@ function visibleFireTowns(){ var s=new Set(); allItems.forEach(function(it){ if(
 // „k doměření" body se teď shlukují do zeleného kolečka (jako požární do modrého).
 // Cluster nesmí obsahovat kruhy pokrytí (shlukoval by je) → kruhy jdou do markedCovLayer.
 var markedCovLayer=L.layerGroup();
-var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, disableClusteringAtZoom:16, showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u vybraných „k doměření" */
+var markedLayer=L.markerClusterGroup({ maxClusterRadius:50, disableClusteringAtZoom:14, showCoverageOnHover:false, /* = NUM_ZOOM: po přiblížení neshlukovat, ať jde vidět číslo H i u vybraných „k doměření" */
   iconCreateFunction:function(c){ var n=c.getChildCount(); var s=n<10?34:(n<50?42:50);
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
     return L.divIcon({html:'<div class="cluster markcl" style="position:relative;width:'+s+'px;height:'+s+'px;font-size:'+(n<50?14:13)+'px"><div>'+n+'</div>'+uk+'</div>',className:'',iconSize:[s,s]}); }
