@@ -1328,7 +1328,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.192';
+const APP_VERSION = '1.193';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -2176,7 +2176,7 @@ function nearestHChip(h){ var n=nearestFireH(h); if(!n) return '';
   var lim=2*COVERAGE_RADIUS; var ok=n.d<=lim; var col=ok?'#e8f5e9;color:#1b5e20':'#fff3e0;color:#b45309';
   return '<span class="chip" style="background:'+col+'" title="Vzdušná vzdálenost k nejbližšímu požárnímu hydrantu (zeleně ≤ 2× poloměr pokrytí = '+lim+' m)">📏 nejbližší H · '+fmtDist(n.d)+'</span>'; }
 // chip s oficiálním číslem H v obci (ze seznamu starostů / VHOS); prázdné = nic
-function cisloHChip(h){ var c=cisloOf(h); return c?('<span class="chip" style="background:#e3f2fd;color:#0d47a1;font-weight:800" title="Oficiální číslo hydrantu v obci">🏷️ H'+esc(c)+'</span>'):''; }
+function cisloHChip(h){ var c=cisloLabel(h); return c?('<span class="chip" style="background:#e3f2fd;color:#0d47a1;font-weight:800" title="Oficiální číslo hydrantu v obci">🏷️ '+esc(c)+'</span>'):''; }
 function provoz(v){ return txt(v).replace(/vhos/ig,'VHOS'); }
 function csn(v){ return (v||'').trim()==='Ano' ? 'Ano ✓' : 'neuvedeno'; }
 function label(h){ return h.upresneni || h.umisteni || ('Hydrant '+h.id); }
@@ -2268,7 +2268,7 @@ function openCard(h){
   const revSt = revStatusOnly(h);
   cardBody.innerHTML =
     '<div class="head"><div class="sym">'+sym+'</div>'+
-      '<div style="flex:1;min-width:0"><h2>'+(cisloOf(h)?'<span class="h2num">H'+esc(cisloOf(h))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
+      '<div style="flex:1;min-width:0"><h2>'+(cisloLabel(h)?'<span class="h2num">'+esc(cisloLabel(h))+'</span> ':'')+esc(label(h))+'</h2><div class="sub">'+esc(candVal(h,'umisteniText')||txt(h.umisteni))+' · '+(nad?'nadzemní':'podzemní')+' hydrant</div></div>'+
       '<div class="head-gps" id="cardGps" title="GPS – klikni pro zkopírování">📍 '+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</div>'+
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="chips">'+
@@ -2411,7 +2411,7 @@ backdrop.onclick = closeCard;
 function doPrint(h){
   const nad = h.typ==='nadzemní';
   const rows = [
-    ['Číslo H v obci', txt(cisloOf(h))],
+    ['Číslo H v obci', txt(cisloLabel(h))],
     ['Typ hydrantu', (nad?'nadzemní':'podzemní')],
     ['Funkce', txt(h.funkce)],
     ['Obec / město', town(h)],
@@ -2437,7 +2437,7 @@ function doPrint(h){
     '<div class="pcard">'+
       '<div class="phead"><div style="font-size:14pt;font-weight:700">Karta hydrantu</div>'+
         '<div class="brand">Florián 2.0</div></div>'+
-      '<h1>'+(cisloOf(h)?'H'+esc(cisloOf(h))+' · ':'')+esc(label(h))+'</h1>'+
+      '<h1>'+(cisloLabel(h)?esc(cisloLabel(h))+' · ':'')+esc(label(h))+'</h1>'+
       '<div class="pmeta">'+(nad?'Nadzemní':'Podzemní')+' požární hydrant · pokrytí r = '+COVERAGE_RADIUS+' m</div>'+
       '<div class="pcols">'+tbl(rows.slice(0,half))+tbl(rows.slice(half))+'</div>'+
       '<div class="pmedia">'+
@@ -2501,7 +2501,7 @@ function protokolSectionHtml(items, oblast){
     else if(ts==='ok'&&ps==='ok'){ verd='Vyhovuje'; cls='ok'; okC++; } else { verd='Nezměřeno'; cls='na'; naC++; }
     var m3=prutokM3h(candVal(h,'prutok')), ls=meas(candVal(h,'prutok'));
     var _cn=_cisloNum(h), _cdup=(_cn>0&&_cCount[_cn]>1);
-    return '<tr><td'+(_cdup?' style="color:#b71c1c;font-weight:800" title="Duplicitní číslo v obci"':'')+'>'+esc(txt(cisloOf(h)))+(_cdup?' ⚠':'')+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
+    return '<tr><td'+(_cdup?' style="color:#b71c1c;font-weight:800" title="Duplicitní číslo v obci"':'')+'>'+esc(txt(cisloLabel(h)))+(_cdup?' ⚠':'')+'</td><td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td><td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(candVal(h,'dnPotrubi')))+'</td>'+
       '<td>'+meas(candVal(h,'tlakStat'))+'</td><td>'+(m3||'—')+'</td><td>'+ls+'</td>'+
       '<td class="'+cls+'">'+verd+'</td></tr>';
@@ -2509,9 +2509,9 @@ function protokolSectionHtml(items, oblast){
   var lim=2*COVERAGE_RADIUS, maxD=0, allOk=true;
   var rowsB=items.map(function(h){
     var best=null,bestH=null; items.forEach(function(o){ if(o===h) return; var d=haversineM(h.lat,h.lon,o.lat,o.lon); if(best===null||d<best){ best=d; bestH=o; } });
-    if(best===null) return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">—</td><td>—</td><td>—</td></tr>';
+    if(best===null) return '<tr><td>'+esc(txt(cisloLabel(h)))+'</td><td class="l">—</td><td>—</td><td>—</td></tr>';
     if(best>maxD) maxD=best; var ok=best<=lim; if(!ok) allOk=false;
-    return '<tr><td>'+esc(txt(cisloOf(h)))+'</td><td class="l">H'+esc(txt(cisloOf(bestH)))+' · '+esc(bestH.upresneni||'')+'</td>'+
+    return '<tr><td>'+esc(txt(cisloLabel(h)))+'</td><td class="l">'+esc(txt(cisloLabel(bestH)))+' · '+esc(bestH.upresneni||'')+'</td>'+
       '<td>'+Math.round(best)+'</td><td class="'+(ok?'ok':'bad')+'">'+(ok?'Vyhovuje':'Nevyhovuje')+'</td></tr>';
   }).join('');
   return '<div class="protokol">'+
@@ -2631,7 +2631,7 @@ function aktualSectionHtml(items, oblast){
   var rows=items.map(function(h){
     var d=domereni[h.id]; var ch=_aktChanges(h,d); if(ch) updN++;
     var gps=(h.lat!=null&&h.lon!=null)?(h.lat.toFixed(5)+', '+h.lon.toFixed(5)):'';
-    return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(cisloOf(h)))+'</td><td>'+esc(String(h.id))+'</td>'+
+    return '<tr'+(ch?' class="upd"':'')+'><td>'+esc(txt(cisloLabel(h)))+'</td><td>'+esc(String(h.id))+'</td>'+
       '<td class="l">'+esc(candVal(h,'umisteniText')||h.upresneni||txt(h.umisteni))+'</td>'+
       '<td>'+(h.typ==='nadzemní'?'nadz.':'podz.')+'</td>'+
       '<td>'+esc(txt(candVal(h,'dn')))+'</td><td>'+esc(txt(dnRaduOf(h)))+'</td>'+
@@ -2820,7 +2820,7 @@ function openEditForm(h){
   function selc(id,lbl,val){ var vv=(val==='Ne')?'Ne':'Ano'; function o(v,t){return '<option'+(vv===v?' selected':'')+' value="'+v+'">'+t+'</option>';} return '<label class="ed-row"><span>'+lbl+'</span><select id="'+id+'">'+o('Ano','Ano ✓')+o('Ne','Ne ✗')+'</select></label>'; }
   cardBody.innerHTML=
     '<div class="head"><div class="sym">'+(h.typ==='nadzemní'?SVG_NAD:SVG_POD)+'</div>'+
-      '<div><h2>Doměření / úprava údajů</h2><div class="sub">'+(cisloOf(h)?'H'+esc(cisloOf(h))+' · ':'')+esc(h.upresneni||candTown(h))+'</div></div>'+
+      '<div><h2>Doměření / úprava údajů</h2><div class="sub">'+(cisloLabel(h)?esc(cisloLabel(h))+' · ':'')+esc(h.upresneni||candTown(h))+'</div></div>'+
       '<button class="x" id="cardX">✕</button></div>'+
     '<div class="sect"><h3>Naměřené hodnoty (ČSN 73 0873)</h3>'+
       inp('edCislo','Číslo H v obci',suggestedCislo(h))+
@@ -2909,7 +2909,7 @@ function _cisloNum(o){
   var d=(typeof domereni!=='undefined'&&domereni)?domereni[o.id]:null;
   var c=(d&&d.cislo)||''; if(String(c).trim()!=='') return _idxNum(c);
   var mk=(typeof kandMarked!=='undefined')?kandMarked[o.id]:null; if(mk&&mk.idx) return _idxNum(mk.idx);
-  var nz=String((d&&d.nazev)||o.nazev||'').trim(); var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?parseInt(m[1],10):0;
+  var nz=String((d&&d.nazev)||o.nazev||'').trim(); var m=nz.match(/^H?[NP]?\s*(\d{1,3})$/i); return m?parseInt(m[1],10):0;
 }
 // všechna obsazená čísla H v obci daného hydrantu (kromě něj) → mapa {číslo: hydrant}
 function usedCislaInObec(h){ var key=_obecKey(h), used={};
@@ -2929,20 +2929,24 @@ function flComputeDupCisla(){ var cnt={};
 // je číslo hydrantu v jeho obci duplicitní (používá ho i jiný H)?
 function isDupCislo(h){ if(!h) return false; if(!_flDupCis) flComputeDupCisla(); var n=_cisloNum(h); if(n<=0) return false; return !!_flDupCis[_obecKey(h)+'|'+n]; }
 // HTML odznaku čísla H do ikony (červeně, když je číslo v obci duplicitní)
-function numBadgeHtml(h){ var _c=cisloOf(h); if(!_c) return ''; var dup=isDupCislo(h);
+function numBadgeHtml(h){ var _c=cisloLabel(h); if(!_c) return ''; var dup=isDupCislo(h);
   return '<span class="num-badge'+(dup?' dup':'')+'" title="'+(dup?'⚠ Duplicitní číslo v obci – přečíslovat':'Číslo hydrantu v obci')+'">'+esc(_c)+'</span>'; }
 // efektivní oficiální číslo H: 1) ručně vyplněné v aplikaci (domereni/cislo), 2) číslo z GIS pole „Název".
 // Prázdné = hydrant zatím číslo nemá. Používá se všude, kde se číslo zobrazuje (i po importu z GISu).
 function cisloOf(h){ if(!h) return '';
   var cv=(typeof candVal==='function');
   var c=String((cv?candVal(h,'cislo'):'')||'').trim();
-  if(c!==''){ var cm=c.match(/^H?\s*(\d{1,3})$/i); return cm?cm[1]:c; }   // odstraň případné „H" (starý globální idx kandidáta)
+  if(c!==''){ var cm=c.match(/^H?[NP]?\s*(\d{1,3})$/i); return cm?cm[1]:c; }   // odstraň případný prefix „H"/„HN"/„HP"
   var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); if(nz==='') return '';
-  var m=nz.match(/^H?\s*(\d{1,3})$/i); return m?m[1]:nz; }
+  var m=nz.match(/^H?[NP]?\s*(\d{1,3})$/i); return m?m[1]:nz; }
+// zobrazované/exportované číslo s prefixem dle typu: nadzemní → „HN", podzemní → „HP" (např. HN4/HP2). Prázdné = bez čísla.
+function cisloLabel(h){ var c=cisloOf(h); if(c==='') return '';
+  var cv=(typeof candVal==='function'); var t=(cv?candVal(h,'typ'):(h&&h.typ))||(h&&h.typ)||'';
+  return (t==='nadzemní'?'HN':'HP')+c; }
 // navržené číslo do formuláře: platné ruční číslo / číslo z Název → ponech; prázdné nebo starý „H7" → nabídni další v obci
 function suggestedCislo(h){ var cv=(typeof candVal==='function');
   var dc=String((cv?candVal(h,'cislo'):'')||'').trim(); if(/^\d{1,3}$/.test(dc)) return dc;   // platné ruční číslo (bez „H")
-  var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); var m=nz.match(/^H?\s*(\d{1,3})$/i); if(m) return m[1]; // z GIS Název
+  var nz=String((cv?candVal(h,'nazev'):h.nazev)||'').trim(); var m=nz.match(/^H?[NP]?\s*(\d{1,3})$/i); if(m) return m[1]; // z GIS Název
   return String(nextCisloForObec(h)); }                                                          // prázdné / „H7" → další v obci
 // efektivní DN vodovodního řadu (osazení H): 1) zadané v aplikaci (dnPotrubi), 2) z GIS pole „Poznámka" (číslo).
 // Reklasifikační věty a jiný text v poznámce ignoruje (bere jen číslo). Používá se v zobrazení i v exportu.
@@ -3651,7 +3655,7 @@ function flFieldVal(h,d,k){ return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k
 // – při importu je nemapujte, ať se nepřepíšou. Párování řádků řeší GIS (primárně přes IČME).
 var GIS_EXPORT_COLS=[
   ['OBJECTID', function(h){ return ''; }],
-  ['Název', function(h){ return cisloOf(h); }],
+  ['Název', function(h){ return cisloLabel(h); }],
   ['Typ hydrantu', function(h){ return candVal(h,'typ'); }],
   ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
   ['Umístění', function(h){ return candVal(h,'umisteni'); }],
