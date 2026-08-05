@@ -1181,6 +1181,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .num-badge{display:none;position:absolute;left:100%;top:50%;transform:translate(3px,-50%);white-space:nowrap;background:#fff;color:#000;border:1.5px solid #444;border-radius:3px;padding:1px 5px;font-size:14px;line-height:16px;font-weight:600;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.45);z-index:550}
 .nums-on .num-badge{display:block}  /* čísla H se ukážou až po přiblížení (flNumZoom) */
 .num-badge.dup{background:#ffebee;color:#b71c1c;border-color:#b71c1c}  /* duplicitní číslo v obci */
+.fl-toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 70px);transform:translateX(-50%) translateY(-8px);background:rgba(11,58,99,.95);color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:999px;box-shadow:0 3px 12px rgba(0,0,0,.35);z-index:2000;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;max-width:88vw;text-align:center}
+.fl-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .h2num{display:inline-block;background:#111;color:#fff;border-radius:4px;font-size:.72em;font-weight:700;padding:1px 6px;vertical-align:middle;letter-spacing:.3px}
 /* miniatura fotky u markeru – ať je hned vidět, který H má foto (a kde chybí) */
 .foto-badge{display:none;position:absolute;left:50%;bottom:100%;transform:translate(-50%,-3px);
@@ -1328,7 +1330,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.195';
+const APP_VERSION = '1.196';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1993,12 +1995,21 @@ function updFotoBadges(){ try{
   var el=document.getElementById('fotoCnt'); if(el) el.textContent = fotoBadgeOn ? (' ('+fotoOnMapCount()+')') : '';
 }catch(e){} }
 var fotoToggle = document.getElementById('fotoToggle');
+// měkká plovoucí hláška (místo blokujícího alertu) – sama zmizí a zavře se dalším kliknutím/dotykem
+function flToast(msg){ try{
+  var t=document.createElement('div'); t.className='fl-toast'; t.textContent=msg; document.body.appendChild(t);
+  requestAnimationFrame(function(){ t.classList.add('show'); });
+  var _tm; var kill=function(){ if(!t)return; var x=t; t=null; x.classList.remove('show'); setTimeout(function(){ try{x.remove();}catch(_){} }, 250);
+    document.removeEventListener('click',kill,true); document.removeEventListener('touchstart',kill,true); if(_tm)clearTimeout(_tm); };
+  setTimeout(function(){ document.addEventListener('click',kill,true); document.addEventListener('touchstart',kill,true); }, 30);
+  _tm=setTimeout(kill, 3500);
+}catch(_){ } }
 if(fotoToggle){
   fotoToggle.onclick = function(){
     fotoBadgeOn = !fotoBadgeOn;
     fotoToggle.classList.toggle('on', fotoBadgeOn);
     updFotoBadges();
-    if(fotoBadgeOn && map.getZoom()<FOTO_ZOOM) alert('Přibliž mapu na obec a fotky se u hydrantů ukážou.');
+    if(fotoBadgeOn && map.getZoom()<FOTO_ZOOM) flToast('Přibliž mapu na obec – fotky se ukážou u značek.');
   };
 }
 // přepínač čísel H (default vyplý – ukazuje se hlavně starostům)
@@ -2008,7 +2019,7 @@ if(cisloToggle){
     numOn = !numOn;
     cisloToggle.classList.toggle('on', numOn);
     flNumZoom(); // přepočítá třídu nums-on (číslo se ukáže po přiblížení)
-    if(numOn && map.getZoom()<NUM_ZOOM) alert('Přibliž mapu na obec a čísla hydrantů se ukážou u značek.');
+    if(numOn && map.getZoom()<NUM_ZOOM) flToast('Přibliž mapu na obec – čísla se ukážou u značek.');
   };
 }
 // ===== 🚰 Vodovod – přepínač schématu vodovodních řadů (trasy z GISu, přepočet S-JTSK→WGS84) =====
