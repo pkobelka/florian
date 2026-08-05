@@ -1323,7 +1323,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"","typ":"podzemní","funk
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.183';
+const APP_VERSION = '1.184';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 8. 2026';
 
@@ -1687,9 +1687,12 @@ function buildStrediskoFilter(){
 }
 function buildOwnerFilter(){
   const counts={}, obce={};
+  // „je svazek" = vlastník s více než jednou obcí (přes VŠECHNY hydranty, nezávisle na filtru pracoviště)
+  const globObce={}; HYDRANTY.forEach(h=>{ const o0=h.vlastnik; if(!o0) return; const t0=townKey(h); if(t0){ (globObce[o0]||(globObce[o0]=new Set())).add(t0); } });
   HYDRANTY.forEach(h=>{ if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return; const o=h.vlastnik; if(!o) return; counts[o]=(counts[o]||0)+1; const t=townKey(h); if(t){ (obce[o]||(obce[o]=new Set())).add(t); } });
   selectedOwners.forEach(o=>{ if(!counts[o]) selectedOwners.delete(o); });
-  const owners=Object.keys(counts).sort((a,b)=>a.localeCompare(b,'cs'));
+  // v nabídce „Svazek" ukaž jen skutečné svazky (více než jedna obec); jednotlivé obce (Březinky, Jedlová…) sem nepatří
+  const owners=Object.keys(counts).filter(o=>(globObce[o]?globObce[o].size:0)>1).sort((a,b)=>a.localeCompare(b,'cs'));
   const panel=document.getElementById('ownPanel');
   panel.innerHTML =
     '<div class="tp-head"><b>Vybrat svazek</b><button class="tp-clear" id="ownClr">Vše</button></div>'+
@@ -1770,6 +1773,8 @@ document.addEventListener('click', ()=>{
   var pp=document.getElementById('pushPanel'); if(pp) pp.classList.remove('open');
   var gp=document.getElementById('gisPanel'); if(gp) gp.classList.remove('open');
   var cvp=document.getElementById('covPanel'); if(cvp) cvp.classList.remove('open');
+  var prp=document.getElementById('protokolPanel'); if(prp) prp.classList.remove('open');
+  var akp=document.getElementById('aktualPanel'); if(akp) akp.classList.remove('open');
 });
 document.getElementById('allBtn').onclick=()=>{
   var _star=document.body.classList.contains('starosta');
