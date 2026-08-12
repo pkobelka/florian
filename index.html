@@ -953,10 +953,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .chip.ok{background:#e7f4e8;color:var(--ok)}
 
 /* highlighted metrics */
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 4px}
-.metric{background:#f5f8fc;border:1px solid #e3ecf7;border-radius:12px;padding:9px 10px;text-align:center}
-.metric .v{font-size:18px;font-weight:800;color:var(--blue-dark)}
-.metric .k{font-size:11px;color:var(--muted);margin-top:1px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 16px 4px}
+.metric{background:#f5f8fc;border:1px solid #e3ecf7;border-radius:12px;padding:8px 6px;text-align:center}
+.metric .v{font-size:17px;font-weight:800;color:var(--blue-dark)}
+.metric .k{font-size:10px;color:var(--muted);margin-top:1px;line-height:1.15}
 .metric .m3h{font-size:12.5px;font-weight:800;color:var(--blue);margin-top:3px;border-top:1px dashed #d5e2f2;padding-top:3px}
 .metric.bad{background:#fdecea;border-color:#f3b6b0}
 .metric.bad .v{color:#b71c1c}
@@ -991,9 +991,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .card .head h2{font-size:17px}
 .card .chips{padding:4px 16px 2px}
 .card .metrics{padding:6px 16px 2px}
-.card .metric{padding:6px 8px}
-.card .metric .v{font-size:16px}
-.card .metric .k{font-size:10px}
+.card .metric{padding:6px 5px}
+.card .metric .v{font-size:15px}
+.card .metric .k{font-size:9.5px}
 /* výrazný pruh s datem revize (nejdůležitější údaj) */
 .revbig{display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px;margin:6px 16px 2px;padding:7px 13px;border-radius:12px;border:1.5px solid}
 .revbig .rl{font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:800;opacity:.85;white-space:nowrap}
@@ -2188,6 +2188,9 @@ function prutokLsTile(h){ var v=candVal(h,'prutok'); var bad=prutokStav(v)==='ba
 /* dlaždice hydrostatického tlaku do karty (zvýrazní, když nesplňuje) */
 function tlakStatTile(h){ var v=candVal(h,'tlakStat'); var bad=tlakStatStav(v)==='bad';
   return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">hydrostatický tlak (MPa)</div>'+(bad?'<div class="mwarn">min '+String(TLAK_STAT_MIN).replace('.',',')+' MPa ✗</div>':'')+'</div>'; }
+/* dlaždice hydrodynamického tlaku do karty (informativní – měří se při odběru) */
+function tlakDynTile(h){ var v=candVal(h,'tlakDyn');
+  return '<div class="metric"><div class="v">'+meas(v)+'</div><div class="k">hydrodynamický tlak (MPa)</div></div>'; }
 /* vzdušná vzdálenost k nejbližšímu požárnímu hydrantu (přes Leaflet L.latLng.distanceTo) */
 function fmtDist(m){ return m>=1000 ? (Math.round(m/100)/10).toFixed(1).replace('.',',')+' km' : Math.round(m)+' m'; }
 function nearestFireH(h){ if(h.lat==null||h.lon==null||typeof HYDRANTY==='undefined') return null;
@@ -2311,6 +2314,7 @@ function openCard(h){
           prutokM3hTile(h)+
           prutokLsTile(h)+
           tlakStatTile(h)+
+          tlakDynTile(h)+
         '</div>'+
         '<div class="facts">'+
           rowsDetail.map(r=>'<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>').join('')+
@@ -2450,6 +2454,7 @@ function doPrint(h){
     ['Osazen na potrubí DN', txt(dnRaduOf(h))],
     ['Průtok [l/s]', meas(candVal(h,'prutok'))],
     ['Hydrostatický tlak [MPa]', meas(candVal(h,'tlakStat'))],
+    ['Hydrodynamický tlak [MPa]', meas(candVal(h,'tlakDyn'))],
     ['Poslední revize', txt(candVal(h,'datumRevize'))],
     ['Vlastník', txt(h.vlastnik)],
     ['Provozovatel', provoz(h.provozovatel)],
@@ -2957,6 +2962,7 @@ function openEditForm(h){
       '<div id="edCisloWarn" style="display:none;color:#b71c1c;font-size:12px;font-weight:600;padding:0 0 4px 0;line-height:1.3"></div>'+
       inp('edProtok','Průtok [m³/h]',prutokM3h(candVal(h,'prutok')))+
       inp('edTlakS','Hydrostatický tlak [MPa]',candVal(h,'tlakStat'))+
+      inp('edTlakD','Hydrodynamický tlak [MPa]',candVal(h,'tlakDyn'))+
       inp('edDN','DN hydrantu [mm]',candVal(h,'dn'))+
       '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150'].map(function(v){ return '<option'+(dnRaduOf(h)===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
       '<label class="ed-row"><span>Datum revize</span><input id="edRev" type="date" value="'+revIso+'"></label>'+
@@ -3002,6 +3008,7 @@ function openEditForm(h){
     var d2=domereni[h.id]||{};
     d2.prutok=prutokLs(document.getElementById('edProtok').value); // zadáno v m³/h, ukládá se l/s
     d2.tlakStat=document.getElementById('edTlakS').value.trim();
+    d2.tlakDyn=document.getElementById('edTlakD').value.trim();
     d2.dn=document.getElementById('edDN').value.trim();
     d2.dnPotrubi=document.getElementById('edDnPot').value;
     d2.datumRevize=_iso2cz(document.getElementById('edRev').value);
@@ -3237,6 +3244,7 @@ function openCandCard(h){
           prutokM3hTile(h)+
           prutokLsTile(h)+
           tlakStatTile(h)+
+          tlakDynTile(h)+
         '</div>'+
         '<div class="facts">'+
           rowsDetail.map(function(r){return '<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>';}).join('')+
@@ -3772,6 +3780,7 @@ var FL_EXPORT_FIELDS=[
   ['cislo','Číslo H (Název)'],
   ['prutok','Průtok [l/s]'],
   ['tlakStat','Hydrostatický tlak [MPa]'],
+  ['tlakDyn','Hydrodynamický tlak [MPa]'],
   ['dn','DN hydrantu [mm]'],
   ['dnPotrubi','DN řadu (Poznámka)'],
   ['datumRevize','Datum revize'],
@@ -4070,7 +4079,7 @@ function fbDelKand(id){ try{ if(window._FDB) _FDB.ref('florian_kandidati/'+id).r
 function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toBlob(function(blob){ if(!blob)return; var path='florian/foto/'+h.id+'.jpg'; var ref=_FST.ref(path);
   ref.put(blob,{contentType:'image/jpeg'}).then(function(){return ref.getDownloadURL();}).then(function(url){ cloudPhotos[h.id]=url; _FDB.ref('florian_foto/'+h.id).set({url:url,path:path,ts:Date.now()}); if(current&&current.id===h.id)reopenCard(h); }).catch(function(e){ console.warn('foto upload',e); }); }, 'image/jpeg', 0.85); }catch(e){} }
 // ===== Hromadný import naměřených hodnot + fotek z připraveného souboru =====
-// Soubory: 1 JSON {obec, items:[{id,cislo,prutok,tlakStat,dn,dnPotrubi,poznamka,datumRevize,by}]} + obrázky pojmenované <id>.jpg/png
+// Soubory: 1 JSON {obec, items:[{id,cislo,prutok,tlakStat,tlakDyn,dn,dnPotrubi,poznamka,datumRevize,by}]} + obrázky pojmenované <id>.jpg/png
 function flImport(files){ if(!files||!files.length) return;
   var byId={}; if(typeof HYDRANTY!=='undefined') HYDRANTY.forEach(function(h){ byId[h.id]=h; });
   if(typeof KAND!=='undefined'&&KAND) KAND.forEach(function(h){ if(!byId[h.id]) byId[h.id]=h; });
@@ -4079,7 +4088,7 @@ function flImport(files){ if(!files||!files.length) return;
   function applyValues(data){ var items=(data&&data.items)||[], n=0, miss=[];
     items.forEach(function(it){ var id=String(it.id), h=byId[id]; if(!h){ miss.push(id); return; }
       var d=domereni[id]||{};
-      ['cislo','prutok','tlakStat','dn','dnPotrubi','poznamka','datumRevize','by'].forEach(function(k){ if(it[k]!==undefined&&it[k]!=='') d[k]=String(it[k]); });
+      ['cislo','prutok','tlakStat','tlakDyn','dn','dnPotrubi','poznamka','datumRevize','by'].forEach(function(k){ if(it[k]!==undefined&&it[k]!=='') d[k]=String(it[k]); });
       var sp=prutokStav(d.prutok); d.splnujeProtok=sp==='ok'?'Ano':(sp==='bad'?'Ne':'');
       var st=tlakStatStav(d.tlakStat); d.splnujeTlak=st==='ok'?'Ano':(st==='bad'?'Ne':'');
       d.ts=Date.now(); domereni[id]=d; fbSaveDomereni(id); n++; });
