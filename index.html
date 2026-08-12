@@ -1272,7 +1272,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <div class="town-panel" id="townPanel"></div>
   <button class="btn-toggle btn-print op-only" id="protokolBtn" title="Protokol o revizi (dle ČSN 73 0873) – zaškrtni obce a stáhni Word k doplnění">📄 Protokol o revizi</button>
   <div class="town-panel" id="protokolPanel"></div>
-  <button class="btn-toggle btn-print" id="seznamBtn" title="Barevný úřední seznam hydrantů pro obec (příloha k požárnímu řádu) – k tisku / uložení do PDF">📋 Seznam pro obec</button>
+  <button class="btn-toggle btn-print" id="seznamBtn" title="Tisk pro obec: barevný seznam hydrantů (📋) nebo mapa – klad listů A4 s ulicemi a čísly (🗺️)">🖨️ Tisk pro obec</button>
   <div class="town-panel" id="seznamPanel"></div>
   <button class="btn-toggle btn-print op-only" id="aktualBtn" title="Aktualizace údajů a čísel hydrantů – zaškrtni obce a stáhni Word (data + čísla H + co se změnilo)">📝 Aktualizace údajů</button>
   <div class="town-panel" id="aktualPanel"></div>
@@ -1334,7 +1334,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.204';
+const APP_VERSION = '1.205';
 const APP_YEAR = 2026;
 const APP_UPDATED = '12. 8. 2026';
 
@@ -2691,6 +2691,115 @@ function generateSeznam(towns){
   if(!w){ flToast('Povol vyskakovací okna a zkus to znovu.'); return; }
   w.document.open(); w.document.write(doc); w.document.close();
 }
+// ===== Klad listů: mapové A4 listy pro JEDNU obec (statické OSM dlaždice, tisk v novém okně) =====
+// Web-mercator „world pixel" na daném zoomu (256px dlaždice)
+function _kladWorldPx(lat,lon,z){ var n=Math.pow(2,z)*256; var x=(lon+180)/360*n;
+  var lr=lat*Math.PI/180; var y=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n; return {x:x,y:y}; }
+// dlaždice OSM v rámci obdélníku [bx,by,bx+bw,by+bh] (v world-px), umístěné v % kontejneru
+function _kladTiles(bx,by,bw,bh,z){ var out='', n=Math.pow(2,z);
+  var tx0=Math.floor(bx/256), tx1=Math.floor((bx+bw)/256), ty0=Math.floor(by/256), ty1=Math.floor((by+bh)/256);
+  for(var ty=Math.max(0,ty0);ty<=Math.min(n-1,ty1);ty++){ for(var tx=tx0;tx<=tx1;tx++){
+    var xx=((tx%n)+n)%n;
+    var L=(tx*256-bx)/bw*100, T=(ty*256-by)/bh*100, W=256/bw*100, H=256/bh*100;
+    out+='<img class="kt" src="https://tile.openstreetmap.org/'+z+'/'+xx+'/'+ty+'.png" style="left:'+L.toFixed(3)+'%;top:'+T.toFixed(3)+'%;width:'+(W+0.2).toFixed(3)+'%;height:'+(H+0.2).toFixed(3)+'%">';
+  } } return out; }
+// hydrantové špendlíky s číslem (barva dle typu), v % kontejneru
+function _kladPins(pts,bx,by,bw,bh,z,big){ var out='';
+  for(var i=0;i<pts.length;i++){ var p=pts[i]; var wp=_kladWorldPx(p.lat,p.lon,z);
+    var l=(wp.x-bx)/bw*100, t=(wp.y-by)/bh*100; if(l<-1||l>101||t<-1||t>101) continue;
+    var cls='kpin'+(p.typ==='nadzemní'?'':' pod')+(big?' big':'');
+    out+='<div class="'+cls+'" style="left:'+l.toFixed(2)+'%;top:'+t.toFixed(2)+'%">'+esc(String(p.no))+'</div>';
+  } return out; }
+// jednoduchá grafická měrka
+function _kladScale(z,lat,boxW){ var mpp=156543.03392*Math.cos(lat*Math.PI/180)/Math.pow(2,z);
+  var opts=[25,50,100,200,300,500,1000], target=boxW*0.22*mpp, m=opts[0];
+  for(var i=0;i<opts.length;i++){ if(opts[i]<=target) m=opts[i]; }
+  var pct=(m/mpp)/boxW*100; return '<div class="kscale" style="width:'+pct.toFixed(2)+'%">'+m+' m</div>'; }
+function generateKladMapa(town){
+  var items=protokolItemsForTown(town);
+  if(!items.length){ flToast('Obec nemá žádné hydranty.'); return; }
+  var pts=items.filter(function(h){return h.lat!=null&&h.lon!=null;}).map(function(h){
+    return {lat:+h.lat, lon:+h.lon, typ:h.typ, no:(cisloOf(h)||'?')}; });
+  if(!pts.length){ flToast('Hydranty obce nemají souřadnice.'); return; }
+  var lats=pts.map(function(p){return p.lat;}), lons=pts.map(function(p){return p.lon;});
+  var minLat=Math.min.apply(null,lats)-0.0006, maxLat=Math.max.apply(null,lats)+0.0006;
+  var minLon=Math.min.apply(null,lons)-0.0009, maxLon=Math.max.apply(null,lons)+0.0009;
+  var cLat=(minLat+maxLat)/2;
+  var PAGE_W=1024, PAGE_H=656, OV=0.12, MAXP=12;   // A4 landscape poměr ~1.56, mírný překryv
+  function grid(z){
+    var lx=_kladWorldPx(minLat,minLon,z).x, rx=_kladWorldPx(minLat,maxLon,z).x;
+    var ty=_kladWorldPx(maxLat,minLon,z).y, by=_kladWorldPx(minLat,minLon,z).y;
+    var spanX=rx-lx, spanY=by-ty;
+    function cnt(S,P){ return S<=P?1:Math.ceil((S-P)/(P*(1-OV)))+1; }
+    return {z:z,cols:cnt(spanX,PAGE_W),rows:cnt(spanY,PAGE_H),pages:cnt(spanX,PAGE_W)*cnt(spanY,PAGE_H),lx:lx,ty:ty,spanX:spanX,spanY:spanY}; }
+  // rozdělení obce na listy při daném zoomu; prázdné dlaždice (bez H) se vynechají
+  var stepX=PAGE_W*(1-OV), stepY=PAGE_H*(1-OV);
+  function _sheetsAt(z){ var g=grid(z);
+    var gw=PAGE_W+(g.cols-1)*stepX, gh=PAGE_H+(g.rows-1)*stepY;
+    var ox=g.lx-(gw-g.spanX)/2, oy=g.ty-(gh-g.spanY)/2, out=[];
+    for(var r=0;r<g.rows;r++){ for(var c=0;c<g.cols;c++){ var x0=ox+c*stepX, y0=oy+r*stepY;
+      var inside=pts.filter(function(p){ var wp=_kladWorldPx(p.lat,p.lon,z); return wp.x>=x0&&wp.x<=x0+PAGE_W&&wp.y>=y0&&wp.y<=y0+PAGE_H; });
+      if(inside.length) out.push({x0:x0,y0:y0,pts:inside}); } } return out; }
+  // volba zoomu: nejmenší zoom (= nejmíň listů), dokud se čísla na papíře nepřekrývají (min. rozestup ~6 mm),
+  // strop na MAXP *neprázdných* listů (radši mírně natěsno než moc stránek)
+  var mmPerPx=265/PAGE_W;
+  function _minGapMM(z){ var mn=1e9; for(var i=0;i<pts.length;i++){ var a=_kladWorldPx(pts[i].lat,pts[i].lon,z);
+    for(var j=i+1;j<pts.length;j++){ var b=_kladWorldPx(pts[j].lat,pts[j].lon,z); var d=Math.hypot(a.x-b.x,a.y-b.y); if(d<mn)mn=d; } } return mn*mmPerPx; }
+  var Z=15; for(var zz=15;zz<=18;zz++){ Z=zz; if(pts.length<2 || _minGapMM(zz)>=6) break; }
+  var sheets=_sheetsAt(Z); while(Z>15 && sheets.length>MAXP){ Z--; sheets=_sheetsAt(Z); }
+  sheets.forEach(function(s,i){ s.no=i+1; });
+  // overview zoom: nejvyšší, kde se obec vejde na jednu stránku
+  var zo=Z; for(var z2=Z;z2>=9;z2--){ var g2=grid(z2); if(g2.spanX<=PAGE_W*0.94 && g2.spanY<=PAGE_H*0.94){ zo=z2; break; } zo=z2; }
+  var ovLx=_kladWorldPx(minLat,minLon,zo).x, ovRx=_kladWorldPx(minLat,maxLon,zo).x;
+  var ovTy=_kladWorldPx(maxLat,minLon,zo).y, ovBy=_kladWorldPx(minLat,minLon,zo).y;
+  var sX=ovRx-ovLx, sY=ovBy-ovTy, A=PAGE_W/PAGE_H;
+  var ovW=sX, ovH=sY; if(sX/sY < A) ovW=sY*A; else ovH=sX/A;
+  var ovBx=(ovLx+ovRx)/2-ovW/2, ovBy2=(ovTy+ovBy)/2-ovH/2;
+  var f=Math.pow(2,zo-Z);
+  var rects='';
+  sheets.forEach(function(s){
+    var l=(s.x0*f-ovBx)/ovW*100, t=(s.y0*f-ovBy2)/ovH*100, w=(PAGE_W*f)/ovW*100, hh=(PAGE_H*f)/ovH*100;
+    rects+='<div class="krect" style="left:'+l.toFixed(2)+'%;top:'+t.toFixed(2)+'%;width:'+w.toFixed(2)+'%;height:'+hh.toFixed(2)+'%"></div>';
+    rects+='<div class="klabel" style="left:'+l.toFixed(2)+'%;top:'+t.toFixed(2)+'%">list '+s.no+'</div>';
+  });
+  var pages='';
+  // 1) přehledka (jen když je víc listů – u jediného listu je zbytečná)
+  if(sheets.length>1){
+    pages+='<div class="page"><div class="khdr"><b>Klad listů – '+esc(town)+'</b>'+
+      '<span class="r">Přehledka · '+sheets.length+' '+(sheets.length<5?'listy':'listů')+
+      ' · <i class="d nad"></i> nadzemní &nbsp;<i class="d pod"></i> podzemní</span></div>'+
+      '<div class="kmap">'+_kladTiles(ovBx,ovBy2,ovW,ovH,zo)+rects+_kladPins(pts,ovBx,ovBy2,ovW,ovH,zo,false)+_kladScale(zo,cLat,ovW)+'</div>'+
+      '<div class="kfoot">Podklad © OpenStreetMap · Florián 2.0 v'+APP_VERSION+'</div></div>';
+  }
+  // 2) jednotlivé listy
+  sheets.forEach(function(s){
+    pages+='<div class="page"><div class="khdr"><b>'+esc(town)+' – list '+s.no+' / '+sheets.length+'</b>'+
+      '<span class="r"><i class="d nad"></i> nadzemní &nbsp;<i class="d pod"></i> podzemní</span></div>'+
+      '<div class="kmap">'+_kladTiles(s.x0,s.y0,PAGE_W,PAGE_H,Z)+_kladPins(pts,s.x0,s.y0,PAGE_W,PAGE_H,Z,true)+_kladScale(Z,cLat,PAGE_W)+'</div>'+
+      '<div class="kfoot">Podklad © OpenStreetMap · Florián 2.0 v'+APP_VERSION+'</div></div>';
+  });
+  var css='@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}'+
+    'body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:#12202e}'+
+    '.page{page-break-after:always;height:196mm;display:flex;flex-direction:column}.page:last-child{page-break-after:auto}'+
+    '.khdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #0b3a63;padding-bottom:4px;margin-bottom:4px}'+
+    '.khdr b{font-size:13pt;color:#0b3a63}.khdr .r{font-size:9pt;color:#5a6672}'+
+    '.d{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1565c0;vertical-align:middle}.d.pod{background:#00897b;border-radius:2px}'+
+    '.kmap{position:relative;flex:1;overflow:hidden;border:1px solid #7a8aa0;background:#e9eef2}'+
+    '.kt{position:absolute}'+
+    '.kpin{position:absolute;transform:translate(-50%,-50%);min-width:15px;height:15px;padding:0 3px;border-radius:9px;background:#1565c0;color:#fff;font-size:9px;font-weight:800;line-height:15px;text-align:center;border:1.5px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6);white-space:nowrap}'+
+    '.kpin.pod{background:#00897b}'+
+    '.kpin.big{min-width:21px;height:21px;border-radius:11px;font-size:11px;line-height:21px;border-width:2px}'+
+    '.krect{position:absolute;border:2px solid #1565c0;background:rgba(21,101,192,.05)}'+
+    '.klabel{position:absolute;background:#1565c0;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:0 0 4px 0}'+
+    '.kscale{position:absolute;left:8px;bottom:8px;height:7px;border:2px solid #12202e;border-top:none;background:rgba(255,255,255,.7);font-size:8px;font-weight:700;color:#12202e;text-align:center;line-height:9px;padding-top:1px}'+
+    '.kfoot{font-size:7.5pt;color:#8a94a0;margin-top:2px;text-align:right}'+
+    '@media screen{body{background:#5a6672;padding:10px}.page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4);margin:0 auto 12px;width:277mm;padding:6mm}}';
+  var wait='(function(){var g=document.images,n=g.length,d=0;function fin(){setTimeout(function(){try{window.print();}catch(e){}},500);}if(!n)return fin();var to=setTimeout(fin,8000);function c(){if(++d>=n){clearTimeout(to);fin();}}for(var i=0;i<n;i++){if(g[i].complete)c();else{g[i].onload=c;g[i].onerror=c;}}})();';
+  var doc='<!doctype html><html><head><meta charset="utf-8"><title>Klad listů – '+esc(town)+'</title><style>'+css+'</style></head><body>'+pages+'<scr'+'ipt>'+wait+'</scr'+'ipt></body></html>';
+  var w=window.open('','_blank');
+  if(!w){ flToast('Povol vyskakovací okna a zkus to znovu.'); return; }
+  w.document.open(); w.document.write(doc); w.document.close();
+}
 function buildSeznamPanel(){
   var wrap=document.getElementById('seznamPanel'); if(!wrap) return;
   var obce=protokolObce();
@@ -2698,22 +2807,32 @@ function buildSeznamPanel(){
   var pre=selectedTowns, vis=visibleTownsNow();
   function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
   wrap.innerHTML=
-    '<div class="tp-head"><b>📋 Seznam – zaškrtni obce</b><button class="tp-clear" id="szAll">Vše / nic</button></div>'+
+    '<div class="tp-head"><b>🖨️ Tisk pro obec</b><button class="tp-clear" id="szAll">Vše / nic</button></div>'+
     '<input id="szSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="szList">'+
       obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
-    '<button class="btn-toggle btn-share" id="szGen" style="margin-top:6px">🖨️ Vytisknout / uložit PDF</button>';
+    '<div style="display:flex;gap:6px;margin-top:6px">'+
+      '<button class="btn-toggle btn-share" id="szGen" style="flex:1">📋 Seznam H</button>'+
+      '<button class="btn-toggle btn-share" id="szMap" style="flex:1">🗺️ Mapa</button>'+
+    '</div>'+
+    '<div style="font-size:10.5px;color:#7a8590;margin-top:4px;line-height:1.35">📋 Seznam H = tabulka k tisku · 🗺️ Mapa = klad listů A4 (jen 1 obec)</div>';
   wrap.onclick=function(e){ e.stopPropagation(); };
   var _ss=document.getElementById('szSearch');
   if(_ss){ _ss.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _ss.focus(); }catch(e){} }, 60); }
   var allOn=false;
   document.getElementById('szAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
+  function _szTowns(){ var t=[]; wrap.querySelectorAll('#szList input[type=checkbox]:checked').forEach(function(c){ t.push(c.value); }); return t; }
   document.getElementById('szGen').onclick=function(){
-    var towns=[]; wrap.querySelectorAll('#szList input[type=checkbox]:checked').forEach(function(c){ towns.push(c.value); });
+    var towns=_szTowns();
     if(!towns.length){ flToast('Zaškrtni aspoň jednu obec.'); return; }
     generateSeznam(towns);
+  };
+  document.getElementById('szMap').onclick=function(){
+    var towns=_szTowns();
+    if(towns.length!==1){ flToast('Pro mapu (klad listů) zaškrtni právě jednu obec.'); return; }
+    generateKladMapa(towns[0]);
   };
 }
 var _szb=document.getElementById('seznamBtn');
