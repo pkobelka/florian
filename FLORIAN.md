@@ -907,7 +907,10 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   - RTDB: `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly`, `florian_lide`.
   - Storage: `florian/foto/…`, `florian/ukol/…`, `florian/koment/…`.
   - **Pravidla musí povolovat tyto cesty** (RTDB i Storage), jinak `PERMISSION_DENIED`.
-    Teď otevřená (`if true`) — jen interní fáze.
+    RTDB pravidla už **nejsou otevřená**: root je `.read/.write:false`, `florian_*` uzly
+    čte jen přihlášený (`auth != null`), zapisovat do `florian_lide` / `florian_revize` /
+    `florian_config` / `florian_login_email` smí **jen admin claim**. Viz „Bezpečnostní
+    audit (v1.206)" níže.
 
 ## Push notifikace — ✅ HOTOVO a NASAZENO (klient + server)
 Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v repu
@@ -930,6 +933,51 @@ Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v re
 - Přihlášení + role: provozovatel vidí semafor a úkoly; majitel/starosta vidí jen svoje
   hydranty (skutečný stav, ne falešné OK).
 - Zamknout Firebase pravidla na přihlášené uživatele.
+
+## Bezpečnostní audit (koncern, 8/2026) — nález a oprava (v1.206)
+
+**Nález:** *„Kolekce `florian_lide` je zapisovatelná běžným uživatelem bez admin claimu.
+Útočník úpravou `window._FL_ADMIN` zobrazí administrátorské funkce a edituje osoby v Týmu."*
+
+**Platný.** Příčina byla v `pkobelka/mojebudky` → `database.rules.json`: uzel `florian_lide`
+měl `".write": "auth != null"`. `window._FL_ADMIN` je jen **UI přepínač** (skrývá tlačítka),
+nikdy to nebyla bezpečnostní hranice — tou jsou výhradně pravidla na serveru. Dopad byl vážný
+i proto, že `florian_lide` nese **role** (Admin/TŘ/PŘ/GIS/Technik) a pracoviště, tedy z pohledu
+appky autorizační tabulku, a je zdrojem cílení push notifikací.
+
+**Oprava:** `florian_lide` → `".write": "auth.token.admin === true"` (čtení zůstává
+`auth != null`, appka seznam potřebuje pro cílení úkolů a výběr „kdo jsem"). Klient (v1.206)
+navíc pouští jednorázový seed týmu jen adminovi, ať ostatním nepadá `PERMISSION_DENIED`.
+Zápis do týmu tak zvládne admin v appce nebo servisní skript `seed_florian_lide.py`
+(Admin SDK jde mimo pravidla).
+
+**Při té příležitosti zkontrolovány všechny uzly** (doporučení auditu):
+
+| Uzel | read | write | poznámka |
+|---|---|---|---|
+| `florian_lide` | auth | **admin** | opraveno tímto nálezem |
+| `florian_revize`, `florian_config`, `florian_login_email` | auth | admin | už bylo správně |
+| `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly` | auth | auth | záměrně — společná data týmu |
+| `florian_push_tokens`, `florian_outbox`, `florian_gis_requests`, `florian_zarizeni` | auth | auth | záměrně |
+| `florian_pairing/$uid` | vlastní uid | vlastní uid + admin | už bylo správně |
+| `florian_presence`, `florian_seq` | auth | auth | **v pravidlech chyběly úplně** → root `false` je tiše blokoval (panel „kdo je online" a sdílené číslování úkolů nefungovaly). Doplněno. |
+
+**Zbývá / vědomě neřešeno:**
+- **Role v appce (`flMyRole`) si uživatel volí sám** (`localStorage.florian_me`) — je to jen
+  pohodlí pro filtry a předvyplnění, ne oprávnění. Skutečné oprávnění = admin claim + pravidla.
+  Kdyby role měly něco doopravdy chránit, musí se navázat na `auth.uid`/`auth.token.person`,
+  jak to má AquaCtrl (`aquactrl_ukoly`).
+- **`florian_outbox`** může zapsat kterýkoli přihlášený → teoreticky rozešle push celému týmu.
+  Uvnitř týmu přijatelné; utahovat by šlo přes `auth.token.person`.
+- **Storage `florian/…`** — stále otevřené, pravidla se needitují z repa (Firebase konzole),
+  viz TODO níže.
+- **Starší uzly `moje-budky`** (`hesla`, `spravci`, `push_tokens`, `prihlaseni`, `budky_edit`,
+  `admin_requests`, `navstevnost_*`, `zpravy_spravci`) mají `.read: true` / `.write: true`,
+  tedy **veřejné čtení i zápis bez přihlášení**. Floriána se to netýká, ale sdílí stejný projekt
+  — pro appku Budky je to samostatný nález k řešení (změna by ji rozbila, nedělal jsem ji).
+
+**Nasazení:** pravidla jedou auto-deployem (`firebase-deploy.yml`) po merge do `main`
+v `pkobelka/mojebudky`. Než se to mergne, díra trvá.
 
 ## Zabezpečení (rozpracováno, v1.41) — přihlášení jako AquaCtrl
 - **Přihlašovací brána** v `index.html`: Firebase Auth e-mailovým odkazem (passwordless),
