@@ -1011,6 +1011,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .fact{min-width:0}
 .fact .fk{font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);line-height:1.15}
 .fact .fv{font-size:12.5px;font-weight:600;overflow-wrap:anywhere;line-height:1.2}
+.fact .fv .vy-dem{font-weight:400;color:var(--muted)}
 /* malá fotka + mini-mapa vedle sebe + tlačítka */
 .media2{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 16px 2px}
 .media2 .pimg{width:100%;height:86px;object-fit:cover;border-radius:10px;cursor:zoom-in;display:block;border:1px solid var(--line)}
@@ -1334,7 +1335,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.206';
+const APP_VERSION = '1.207';
 const APP_YEAR = 2026;
 const APP_UPDATED = '31. 8. 2026';
 
@@ -2317,7 +2318,7 @@ function openCard(h){
           tlakDynTile(h)+
         '</div>'+
         '<div class="facts">'+
-          rowsDetail.map(r=>'<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>').join('')+
+          rowsDetail.map((r,i)=>'<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>'+(i===0?vyskaFactHtml(h):'')).join('')+
         '</div>'+
       '</div>'+
       '<div class="cg-side">'+
@@ -2350,6 +2351,7 @@ function openCard(h){
   document.getElementById('btnEdit').onclick = ()=> openEditForm(h);
   var _brc=document.getElementById('btnReclass'); if(_brc) _brc.onclick = ()=> toggleNeniPozarni(h);
   wireUkoly(h);
+  wireVyska(h);
   document.getElementById('btnPrint').onclick = ()=> doPrint(h);
   document.getElementById('btnPdf').onclick = ()=>{ alert('V dialogu tisku zvol „Uložit jako PDF".'); doPrint(h); };
   document.getElementById('fCam').onchange = (e)=> loadPhoto(e,h);
@@ -2462,6 +2464,7 @@ function doPrint(h){
     ['IČME', txt(h.icme)],
     ['OBJECTID (GIS)', txt(String(h.id||''))],
     ['GPS', h.lat.toFixed(6)+', '+h.lon.toFixed(6)],
+    ['Nadmořská výška', vyskaText(h)],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
   const tbl = arr => '<table>'+arr.map(r=>'<tr><td class="k">'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</table>';
@@ -3036,6 +3039,40 @@ var domereni={}; try{ domereni=JSON.parse(localStorage.getItem('florian_domereni
 try{ if(typeof applyFilter==='function') applyFilter(true); }catch(e){} // po načtení domereni z localStorage projev i „nepožární" reklasifikaci (i offline)
 function saveDomereni(){ try{ localStorage.setItem('florian_domereni', JSON.stringify(domereni)); }catch(e){} }
 function candVal(h,f){ var d=(typeof domereni!=='undefined'&&domereni)?domereni[h.id]:null; return (d&&d[f]!==undefined&&d[f]!=='')?d[f]:(h[f]||''); }
+// ---- Nadmořská výška hydrantu (GIS „Výška povrchu [m.n.m.]“) ----
+// Zdroj pravdy je GIS: hodnota z dat / doměření (pole `vyskaPovrchu`) má vždy přednost a jen ta jde
+// zpátky do exportu pro GIS. Když chybí, dopočítá se orientačně z veřejného výškopisu podle GPS
+// (Copernicus DEM, přesnost jednotky metrů) – v kartě je označená „(výškopis)“ a do GISu NEJDE.
+var FL_DEM_API='https://api.open-meteo.com/v1/elevation';   // odpověď {"elevation":[412.0]}
+var flVyskaCache={}; try{ flVyskaCache=JSON.parse(localStorage.getItem('florian_vyska')||'{}')||{}; }catch(e){ flVyskaCache={}; }
+function _flVyskaKey(h){ return h.lat.toFixed(4)+','+h.lon.toFixed(4); }   // ~10 m mřížka – blízké H sdílí jeden dotaz
+// výška z GISu / doměření; '' = nevyplněno (0 bereme jako nezměřeno, stejně jako u tlaků)
+function vyskaGis(h){ var v=String(candVal(h,'vyskaPovrchu')||'').trim(); return (v===''||v==='0')?'':v; }
+// orientační výška z výškopisu – jen z cache (číslo v metrech, jinak null)
+function vyskaDem(h){ if(!h||!isFinite(h.lat)) return null; var v=flVyskaCache[_flVyskaKey(h)]; return (typeof v==='number')?v:null; }
+// doptej se výškopisu (jen když v GISu nic není a ještě to nemáme v cache); cb() až po doplnění
+function flFetchVyska(h,cb){
+  if(!h||!isFinite(h.lat)||vyskaGis(h)!=='') return;
+  var k=_flVyskaKey(h); if(flVyskaCache[k]!==undefined) return;   // už zjištěno; neúspěch se neukládá, zkusí se znovu
+  if(navigator.onLine===false||typeof fetch!=='function') return;
+  fetch(FL_DEM_API+'?latitude='+h.lat.toFixed(5)+'&longitude='+h.lon.toFixed(5))
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ var e=(j&&j.elevation&&j.elevation.length)?j.elevation[0]:null;
+      if(e==null||!isFinite(e)) return;
+      flVyskaCache[k]=Math.round(e); try{ localStorage.setItem('florian_vyska', JSON.stringify(flVyskaCache)); }catch(_){}
+      if(typeof cb==='function') cb(); })
+    .catch(function(){});   // offline / služba nedostupná → v kartě zůstane „—“
+}
+// hodnota do karty (HTML): z GISu natvrdo, z výškopisu s „≈“ a šedou poznámkou
+function vyskaHtml(h){ var g=vyskaGis(h); if(g!=='') return esc(g)+' m n. m.';
+  var d=vyskaDem(h); if(d==null) return '—';
+  return '≈ '+d+' m n. m. <span class="vy-dem" title="Orientačně z výškopisu podle GPS, ne z GISu">(výškopis)</span>'; }
+// hodnota do tisku / textového výpisu (bez HTML)
+function vyskaText(h){ var g=vyskaGis(h); if(g!=='') return g+' m n. m.';
+  var d=vyskaDem(h); return (d==null)?'—':('≈ '+d+' m n. m. (výškopis)'); }
+// řádek do bloku „facts“ v kartě (async doplnění přes #factVyska)
+function vyskaFactHtml(h){ return '<div class="fact"><div class="fk">Nadmořská výška</div><div class="fv" id="factVyska">'+vyskaHtml(h)+'</div></div>'; }
+function wireVyska(h){ flFetchVyska(h,function(){ var el=document.getElementById('factVyska'); if(el&&current&&current.id===h.id) el.innerHTML=vyskaHtml(h); }); }
 function csnLbl(v){ return ((v||'').trim()==='Ne')?'Ne ✗':'Ano ✓'; }
 function _cz2iso(v){ v=(v||'').trim(); var m=v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/); return m?(m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2)):''; }
 function _iso2cz(v){ v=(v||'').trim(); var m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?(parseInt(m[3],10)+'.'+parseInt(m[2],10)+'.'+m[1]):''; }
@@ -3093,6 +3130,7 @@ function openEditForm(h){
     '<div class="sect"><h3>Údaje pro GIS <span style="font-weight:400;font-size:12px;color:#6b7a8d">(u nově zařazených H)</span></h3>'+
       '<label class="ed-row"><span>Vlastník</span><select id="edVlastnik">'+_vlOpts+'</select></label>'+
       inp('edUpres','Upřesnění polohy',candVal(h,'upresneni'))+
+      '<label class="ed-row"><span>Nadmořská výška [m n. m.]</span><input id="edVyska" value="'+esc(vyskaGis(h))+'" placeholder="'+(vyskaDem(h)!=null?('výškopis ≈ '+vyskaDem(h)):'—')+'"></label>'+
       '<label class="ed-row"><span>Druh vody</span><select id="edDruh">'+_dvOpts+'</select></label>'+
     '</div>'+
     '<div class="cand-actions"><button class="cand-mark" id="edSave">💾 Uložit</button><button class="cand-unmark" id="edBack">↩︎ Zpět</button></div>';
@@ -3137,6 +3175,7 @@ function openEditForm(h){
     var _ev=document.getElementById('edVlastnik'); if(_ev) d2.vlastnik=_ev.value;           // GIS: vlastník (svazek/obec)
     var _eu=document.getElementById('edUpres'); if(_eu) d2.upresneni=_eu.value.trim();       // GIS: upřesnění polohy
     var _ed=document.getElementById('edDruh'); if(_ed) d2.druhVody=_ed.value;                // GIS: druh vody
+    var _evy=document.getElementById('edVyska'); if(_evy) d2.vyskaPovrchu=_evy.value.trim(); // GIS: výška povrchu [m n. m.]
     d2.ts=Date.now();
     var _edC=document.getElementById('edCislo'); var _cv=_edC?_edC.value.trim():'';
     var _cvN=_idxNum(_cv), _used=usedCislaInObec(h), _coll=(_cvN>0)?_used[_cvN]:null;
@@ -3366,7 +3405,7 @@ function openCandCard(h){
           tlakDynTile(h)+
         '</div>'+
         '<div class="facts">'+
-          rowsDetail.map(function(r){return '<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>';}).join('')+
+          rowsDetail.map(function(r,i){return '<div class="fact"><div class="fk">'+esc(r[0])+'</div><div class="fv">'+esc(r[1])+'</div></div>'+(i===0?vyskaFactHtml(h):'');}).join('')+
           '<div class="fact"><div class="fk">GPS</div><div class="fv">'+h.lat.toFixed(5)+', '+h.lon.toFixed(5)+'</div></div>'+
         '</div>'+
         '<div class="note">'+esc(noteTxt)+'</div>'+
@@ -3406,6 +3445,7 @@ function openCandCard(h){
   var fr=document.getElementById('fRot'); if(fr) fr.onclick=function(){ rotatePhoto(h); };
   var pt=document.getElementById('photoThumb'); if(pt) pt.onclick=function(){ flZoomPhoto(pt.src, rotOf(h.id)); };
   wireUkoly(h);
+  wireVyska(h);
   setTimeout(function(){ buildCandMini(h); },60);
 }
 function buildCandMini(h){
@@ -3906,6 +3946,7 @@ var FL_EXPORT_FIELDS=[
   ['splnujeProtok','Splňuje průtok ČSN'],
   ['vlastnik','Vlastník'],
   ['upresneni','Upřesnění polohy'],
+  ['vyskaPovrchu','Nadmořská výška [m n. m.]'],
   ['druhVody','Druh vody']
 ];
 function _flCsvCell(v){ v=(v==null?'':String(v)); return /[";\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
@@ -3923,7 +3964,7 @@ var GIS_EXPORT_COLS=[
   ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
   ['Umístění', function(h){ return candVal(h,'umisteni'); }],
   ['DN hydrantu', function(h){ return candVal(h,'dn'); }],
-  ['Výška povrchu [m.n.m.]', function(h){ return ''; }],
+  ['Výška povrchu [m.n.m.]', function(h){ return vyskaGis(h); }],   // jen hodnota z GISu/doměření – orientační výškopis se sem NEPÍŠE
   ['Výška podzemní [m.n.m.]', function(h){ return ''; }],
   ['Druh vody', function(h){ return candVal(h,'druhVody'); }],
   ['Datum instalace', function(h){ return candVal(h,'datumInstalace'); }],
@@ -4203,7 +4244,7 @@ function fbDelKand(id){ try{ if(window._FDB) _FDB.ref('florian_kandidati/'+id).r
 function fbUploadFoto(h, cv){ if(!(window._FST&&window._FDB))return; try{ cv.toBlob(function(blob){ if(!blob)return; var path='florian/foto/'+h.id+'.jpg'; var ref=_FST.ref(path);
   ref.put(blob,{contentType:'image/jpeg'}).then(function(){return ref.getDownloadURL();}).then(function(url){ cloudPhotos[h.id]=url; _FDB.ref('florian_foto/'+h.id).set({url:url,path:path,ts:Date.now()}); if(current&&current.id===h.id)reopenCard(h); }).catch(function(e){ console.warn('foto upload',e); }); }, 'image/jpeg', 0.85); }catch(e){} }
 // ===== Hromadný import naměřených hodnot + fotek z připraveného souboru =====
-// Soubory: 1 JSON {obec, items:[{id,cislo,prutok,tlakStat,tlakDyn,dn,dnPotrubi,poznamka,datumRevize,by}]} + obrázky pojmenované <id>.jpg/png
+// Soubory: 1 JSON {obec, items:[{id,cislo,prutok,tlakStat,tlakDyn,dn,dnPotrubi,vyskaPovrchu,poznamka,datumRevize,by}]} + obrázky pojmenované <id>.jpg/png
 function flImport(files){ if(!files||!files.length) return;
   var byId={}; if(typeof HYDRANTY!=='undefined') HYDRANTY.forEach(function(h){ byId[h.id]=h; });
   if(typeof KAND!=='undefined'&&KAND) KAND.forEach(function(h){ if(!byId[h.id]) byId[h.id]=h; });
@@ -4212,7 +4253,7 @@ function flImport(files){ if(!files||!files.length) return;
   function applyValues(data){ var items=(data&&data.items)||[], n=0, miss=[];
     items.forEach(function(it){ var id=String(it.id), h=byId[id]; if(!h){ miss.push(id); return; }
       var d=domereni[id]||{};
-      ['cislo','prutok','tlakStat','tlakDyn','dn','dnPotrubi','poznamka','datumRevize','by'].forEach(function(k){ if(it[k]!==undefined&&it[k]!=='') d[k]=String(it[k]); });
+      ['cislo','prutok','tlakStat','tlakDyn','dn','dnPotrubi','vyskaPovrchu','poznamka','datumRevize','by'].forEach(function(k){ if(it[k]!==undefined&&it[k]!=='') d[k]=String(it[k]); });
       var sp=prutokStav(d.prutok); d.splnujeProtok=sp==='ok'?'Ano':(sp==='bad'?'Ne':'');
       var st=tlakStatStav(d.tlakStat); d.splnujeTlak=st==='ok'?'Ano':(st==='bad'?'Ne':'');
       d.ts=Date.now(); domereni[id]=d; fbSaveDomereni(id); n++; });

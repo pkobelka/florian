@@ -1,9 +1,28 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 12. 8. 2026 · verze aplikace **1.205** (na `main`)._
-_Pracovní větev: `claude/hy-card-dynamic-pressure-ogptzw` (celá sloučena do `main`)._
+_Poslední aktualizace: 31. 8. 2026 · verze aplikace **1.207**._
+_Pracovní větev: `claude/floriana-reseni-gln63p`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
+
+## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Nadmořská výška v kartě H** (v1.207)
+   - GIS má sloupce `Výška povrchu [m.n.m.]` a `Výška podzemní [m.n.m.]`, ale **v exportu, který máme
+     (`hydranty.json`, `kandidati.json`), hodnoty úplně chybí** – proto nové pole `vyskaPovrchu`.
+   - Karta H (požární i kandidát): řádek **„Nadmořská výška"** hned za obcí. Hodnota z GISu/doměření
+     má přednost; když chybí, dopočítá se orientačně z výškopisu podle GPS a ukáže se jako
+     `≈ 411 m n. m. (výškopis)` (šedě). Cache v `localStorage` pod `florian_vyska`.
+   - Editace: pole „Nadmořská výška [m n. m.]" v sekci *Údaje pro GIS*; výškopisná hodnota je jen
+     v placeholderu, **nikdy se nepředvyplní** (ať se odhad nedostane omylem do GISu).
+   - Export do GISu: sloupec `Výška povrchu [m.n.m.]` už není prázdný – plní se z `vyskaPovrchu`
+     (jen skutečná hodnota, orientační výškopis se **neexportuje**). Pole je i ve `FL_EXPORT_FIELDS`
+     (změna se počítá jako úprava k exportu) a v hromadném importu.
+   - ⚠️ **Neověřeno naživo:** volání výškopisu jde na `api.open-meteo.com/v1/elevation` (Copernicus DEM,
+     přesnost jednotky metrů); v sandboxu ho proxy nepustila. Vyzkoušet na GitHub Pages. Kdyby služba
+     nevyhovovala, stačí přepsat konstantu `FL_DEM_API` (a tvar odpovědi `{"elevation":[…]}`).
+   - 📌 **Až přijde nový export z GISu:** do generátoru `hydranty.json` doplnit mapování sloupce
+     `Výška povrchu [m.n.m.]` → `vyskaPovrchu`, pak se hodnoty ukážou samy.
 
 ## ✅ Hotovo (nasazeno v main)
 
@@ -44,7 +63,9 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
 - Klad listů: `generateKladMapa`, pomocné `_kladWorldPx` / `_kladTiles` / `_kladPins` / `_kladScale`. Panel: `buildSeznamPanel` (tlačítka `szGen` = Seznam H, `szMap` = Mapa).
 - Tisk seznamu/protokolu: `generateSeznam`, `seznamPageHtml`, `protokolSectionHtml`.
 - Karta H + dlaždice tlaků: `tlakStatTile`, `tlakDynTile`; editace `openEditForm` (pole `edTlakD`).
-- Verze: `APP_VERSION` (nahoře, ~ř. 1337). Nasazení: GitHub Pages z `main`.
+- Nadmořská výška: `vyskaGis` / `vyskaDem` / `vyskaHtml` / `vyskaText` / `vyskaFactHtml` / `wireVyska`,
+  fetch `flFetchVyska` + konstanta `FL_DEM_API`. Editace: pole `edVyska`.
+- Verze: `APP_VERSION` (nahoře, ~ř. 1338). Nasazení: GitHub Pages z `main`.
 
 ## Postup vydání
-Vyvíjí se na `claude/hy-card-dynamic-pressure-ogptzw`, po odsouhlasení merge do `main` (příloha se nasadí). Při každé změně zvednout `APP_VERSION` a datum.
+Vyvíjí se na `claude/floriana-reseni-gln63p`, po odsouhlasení merge do `main` (appka se nasadí). Při každé změně zvednout `APP_VERSION` a datum.
