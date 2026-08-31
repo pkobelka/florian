@@ -876,7 +876,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - **Export pro GIS (v1.56):** hotovo, uživatel testuje import v práci. Doladit sloupce
   dle GISu podle výsledku.
 - **Úkol „Zkouška"** (bez pracoviště, neviditelný) — uživatel měl smazat konzolí na PC. Ověřit.
-- Storage pravidla pro `florian/…` zpřísnit na `auth != null` (ruční, Firebase konzole) — stále TODO.
+- ~~Storage pravidla pro `florian/…` zpřísnit na `auth != null`~~ → **hotovo v1.206**, `mojebudky/storage.rules` (deploy Action, už ne ručně v konzoli).
 - Doplnit tým (Halva, Krombholz, Milan Horník=Vedoucí pracoviště) — přidává si uživatel sám v appce.
 
 ## Vyřešeno (dřívější otevřené body)
@@ -907,7 +907,10 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   - RTDB: `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly`, `florian_lide`.
   - Storage: `florian/foto/…`, `florian/ukol/…`, `florian/koment/…`.
   - **Pravidla musí povolovat tyto cesty** (RTDB i Storage), jinak `PERMISSION_DENIED`.
-    Teď otevřená (`if true`) — jen interní fáze.
+    RTDB pravidla už **nejsou otevřená**: root je `.read/.write:false`, `florian_*` uzly
+    čte jen přihlášený (`auth != null`), zapisovat do `florian_lide` / `florian_revize` /
+    `florian_config` / `florian_login_email` smí **jen admin claim**. Viz „Bezpečnostní
+    audit (v1.206)" níže.
 
 ## Push notifikace — ✅ HOTOVO a NASAZENO (klient + server)
 Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v repu
@@ -931,6 +934,59 @@ Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v re
   hydranty (skutečný stav, ne falešné OK).
 - Zamknout Firebase pravidla na přihlášené uživatele.
 
+## Bezpečnostní audit (koncern, 8/2026) — nález a oprava (v1.206)
+
+**Nález:** *„Kolekce `florian_lide` je zapisovatelná běžným uživatelem bez admin claimu.
+Útočník úpravou `window._FL_ADMIN` zobrazí administrátorské funkce a edituje osoby v Týmu."*
+
+**Platný.** Příčina byla v `pkobelka/mojebudky` → `database.rules.json`: uzel `florian_lide`
+měl `".write": "auth != null"`. `window._FL_ADMIN` je jen **UI přepínač** (skrývá tlačítka),
+nikdy to nebyla bezpečnostní hranice — tou jsou výhradně pravidla na serveru. Dopad byl vážný
+i proto, že `florian_lide` nese **role** (Admin/TŘ/PŘ/GIS/Technik) a pracoviště, tedy z pohledu
+appky autorizační tabulku, a je zdrojem cílení push notifikací.
+
+**Oprava:** `florian_lide` → `".write": "auth.token.admin === true"` (čtení zůstává
+`auth != null`, appka seznam potřebuje pro cílení úkolů a výběr „kdo jsem"). Klient (v1.206)
+navíc pouští jednorázový seed týmu jen adminovi, ať ostatním nepadá `PERMISSION_DENIED`.
+Zápis do týmu tak zvládne admin v appce nebo servisní skript `seed_florian_lide.py`
+(Admin SDK jde mimo pravidla).
+
+**Při té příležitosti zkontrolovány všechny uzly** (doporučení auditu):
+
+| Uzel | read | write | poznámka |
+|---|---|---|---|
+| `florian_lide` | auth | **admin** | opraveno tímto nálezem |
+| `florian_revize`, `florian_config`, `florian_login_email` | auth | admin | už bylo správně |
+| `florian_kandidati`, `florian_domereni`, `florian_foto`, `florian_ukoly` | auth | auth | záměrně — společná data týmu |
+| `florian_push_tokens` | **nikdo** | auth (jen vlastní `$dev`, musí mít `token`) | čtení klient nepotřebuje, funkce jedou přes Admin SDK |
+| `florian_outbox` | **nikdo** | auth, jen nový záznam podepsaný `uid === auth.uid` | dřív mohl kdokoli rozeslat push celému týmu jménem systému |
+| `florian_gis_requests`, `florian_zarizeni` | auth | auth | záměrně |
+| `florian_pairing/$uid` | vlastní uid | vlastní uid + admin | už bylo správně |
+| `florian_presence`, `florian_seq` | auth | auth | **v pravidlech chyběly úplně** → root `false` je tiše blokoval (panel „kdo je online" a sdílené číslování úkolů nefungovaly). Doplněno. |
+
+**Storage (vyřešeno tímtéž zásahem):** pravidla už **nejsou** jen v konzoli — přibyl
+`mojebudky/storage.rules` + sekce `storage` v `firebase.json` + krok `deploy --only storage`
+ve `firebase-deploy.yml`. `florian/**` = jen přihlášený, všechno ostatní zavřeno. Storage
+v projektu `moje-budky` používá **jen Florián** (foto/úkoly/komentáře), Budky ani AquaCtrl ne,
+takže zavření zbytku nic nerozbije. Pozor: už vydané `getDownloadURL` (s `?token=`) fungují
+dál i bez přihlášení — tak to Firebase má, pravidla chrání výpis a zápis přes SDK.
+
+**Zbývá / vědomě neřešeno:**
+- **Role v appce (`flMyRole`) si uživatel volí sám** (`localStorage.florian_me`) — je to jen
+  pohodlí pro filtry a předvyplnění, ne oprávnění. Skutečné oprávnění = admin claim + pravidla.
+  Kdyby role měly něco doopravdy chránit, musí se navázat na `auth.uid`/`auth.token.person`,
+  jak to má AquaCtrl (`aquactrl_ukoly`).
+- **`florian_login_email` čte kterýkoli přihlášený** (vidí tak seznam e-mailů týmu). Omezit na
+  vlastní klíč jde přes `auth.token.email.replace('.', ',')`, ale při neshodě velikosti písmen
+  by se uživatel nepřihlásil — na tohle riziko to nestojí, dokud je to interní tým.
+- **Starší uzly `moje-budky`** (`hesla`, `spravci`, `push_tokens`, `prihlaseni`, `budky_edit`,
+  `admin_requests`, `navstevnost_*`, `zpravy_spravci`) mají `.read: true` / `.write: true`,
+  tedy **veřejné čtení i zápis bez přihlášení**. Floriána se to netýká, ale sdílí stejný projekt
+  — pro appku Budky je to samostatný nález k řešení (změna by ji rozbila, nedělal jsem ji).
+
+**Nasazení:** pravidla jedou auto-deployem (`firebase-deploy.yml`) po merge do `main`
+v `pkobelka/mojebudky`. Než se to mergne, díra trvá.
+
 ## Zabezpečení (rozpracováno, v1.41) — přihlášení jako AquaCtrl
 - **Přihlašovací brána** v `index.html`: Firebase Auth e-mailovým odkazem (passwordless),
   gate `flAuthGate` + overlay `flLoginOverlay`. Admin = ověřený claim `auth.token.admin`;
@@ -943,8 +999,9 @@ Kompletní a živé (auto-deploy přes GitHub Actions `firebase-deploy.yml` v re
 - Sdílený Firebase `moje-budky` → email-link provider i doména `pkobelka.github.io` už
   zapnuté z AquaCtrl; secret `FIREBASE_SERVICE_ACCOUNT` je v `mojebudky`. Admin claim je
   globální (kdo je admin v AquaCtrl přes stejný e-mail, je admin i ve Floriánovi).
-- **TODO ruční:** zpřísnit Firebase **Storage** pravidla pro `florian/…` na `auth != null`
-  (Storage se neřídí z repa, jen v konzoli). App Check je připravený (vypnutý, prázdný key).
+- ~~**TODO ruční:** zpřísnit Firebase **Storage** pravidla~~ → **hotovo v1.206**: Storage se
+  teď řídí z repa (`mojebudky/storage.rules`, deploy Action), ruční klikání odpadlo.
+  App Check je připravený (vypnutý, prázdný key).
 
 ## Vývoj / build
 - Edituje se přímo `index.html` v repu (data už jsou inline).

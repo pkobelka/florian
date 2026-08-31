@@ -1334,9 +1334,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.205';
+const APP_VERSION = '1.206';
 const APP_YEAR = 2026;
-const APP_UPDATED = '12. 8. 2026';
+const APP_UPDATED = '31. 8. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -4037,7 +4037,7 @@ function flPoprositNahrani(){ try{
   if(!window._FDB){ alert('Offline – žádost nelze odeslat.'); return; }
   var targets=flGisTargets(); if(!targets.length){ alert('V týmu zatím není nikdo s rolí GIS. Přidej správce GIS v panelu 👥 Tým.'); return; }
   var n=flPendingCount(); var kdo=flMeName()||'Někdo';
-  _FDB.ref('florian_outbox').push({ title:'🔼 Žádost o nahrání do GISu', body:kdo+' žádá o nahrání změn do GISu'+(n?(' · čeká '+n+' změn'):''), targets:targets, ts:Date.now() });
+  flOutbox({ title:'🔼 Žádost o nahrání do GISu', body:kdo+' žádá o nahrání změn do GISu'+(n?(' · čeká '+n+' změn'):''), targets:targets });
   try{ _FDB.ref('florian_gis_requests').push({ type:'req', by:kdo, pid:flMe(), n:n, ts:Date.now() }); }catch(_){} // historie žádostí
   alert('✅ Žádost odeslána správci GIS.'+(n?(' Čeká '+n+' změn.'):''));
 }catch(e){ alert('Chyba: '+(e&&e.message||e)); } }
@@ -4165,12 +4165,17 @@ function flPushAutoRenew(){ try{
     }).catch(function(){});
   }).catch(function(){});
 }catch(_){} }
+/* zápis do fronty push – vždy podepsaný uid odesílatele (pravidla RTDB to vyžadují,
+   aby nikdo nemohl rozeslat push jménem někoho jiného) */
+function flUid(){ try{ var u=window.firebase&&firebase.auth&&firebase.auth().currentUser; return u?u.uid:''; }catch(_){ return ''; } }
+function flOutbox(o){ if(!window._FDB) return; var u=flUid(); if(!u) return;
+  o.uid=u; o.ts=Date.now(); return _FDB.ref('florian_outbox').push(o); }
 /* zkušební push sám sobě (ověření bez zakládání úkolu) */
 function flTestPush(){ try{
   var me=flMe(); if(!me){ alert('Nejdřív nahoře vyber „Kdo jsi na tomto zařízení?".'); return; }
   if(!window._FDB){ flPushStav('❌ offline – nelze poslat'); return; }
   if(!('Notification'in window)||Notification.permission!=='granted'){ flPushStav('❌ nejdřív ťukni „Povolit notifikace"'); return; }
-  _FDB.ref('florian_outbox').push({ title:'🔔 Zkušební push', body:'Notifikace fungují ✔ ('+(flMeName()||'?')+')', targets:[me], ts:Date.now() });
+  flOutbox({ title:'🔔 Zkušební push', body:'Notifikace fungují ✔ ('+(flMeName()||'?')+')', targets:[me] });
   flPushStav('📨 odesláno – push dorazí za pár vteřin');
 }catch(e){ flPushStav('❌ chyba: '+(e&&e.message||e)); } }
 /* komu poslat push o úkolu: lidé na daném pracovišti + vedení (Admin/TŘ/PŘ) */
@@ -4187,7 +4192,7 @@ function flSendUkolPush(h, text){ try{
   var prac=pracOf(h); var targets=ukolTargets(prac);
   var kdo=flMeName(); var obec=resolveTown(h);
   var body=(text||'úkol')+' · '+obec+(kdo?(' · zadal '+kdo):'');
-  _FDB.ref('florian_outbox').push({ title:'🆕 Nový úkol', body:body, targets:targets, ts:Date.now() });
+  flOutbox({ title:'🆕 Nový úkol', body:body, targets:targets });
 }catch(e){ console.warn('florian outbox:',e); } }
 
 /* ===== Sdílení přes Firebase (moje-budky) ===== */
@@ -4263,8 +4268,8 @@ function flImport(files){ if(!files||!files.length) return;
     _FDB.ref('florian_gis_requests').limitToLast(30).on('value',function(sn){ var out=[]; sn.forEach(function(c){ var v=c.val()||{}; if(v.ts) out.push(v); }); out.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); if(typeof flRenderGisReq==='function') flRenderGisReq(out); }, function(){});
     var _lideFirst=true;
     _FDB.ref('florian_lide').on('value',function(sn){ lide=sn.val()||{}; var lp=document.getElementById('lidePanel'); if(lp&&lp.classList.contains('open')&&typeof buildLidePanel==='function') buildLidePanel(); try{ flApplyMyPracDefault(); }catch(_){} try{ flApplyRoleUI(); }catch(_){} if(_lideFirst){ _lideFirst=false; if(typeof flPushAutoRenew==='function') setTimeout(flPushAutoRenew,800); try{ flPresencePush(); }catch(_){} } }, function(){});
-    // jednorázový seed týmu (jen když je uzel úplně prázdný)
-    _FDB.ref('florian_lide').get().then(function(sn){ if(!sn.exists()){ [['Aleš Bubák','Mistr'],['Halva','Mistr']].forEach(function(pair){ var r=_FDB.ref('florian_lide').push(); r.set({jmeno:pair[0],role:pair[1],pracoviste:'',ts:Date.now()}); }); } }).catch(function(){});
+    // jednorázový seed týmu (jen když je uzel úplně prázdný) – zápis do florian_lide smí jen admin
+    if(window._FL_ADMIN) _FDB.ref('florian_lide').get().then(function(sn){ if(!sn.exists()){ [['Aleš Bubák','Mistr'],['Halva','Mistr']].forEach(function(pair){ var r=_FDB.ref('florian_lide').push(); r.set({jmeno:pair[0],role:pair[1],pracoviste:'',ts:Date.now()}); }); } }).catch(function(){});
   }
 
   // ===== Přihlášení e-mailovým odkazem (passwordless) – kdo se smí přihlásit, řídí uzel florian_login_email =====
