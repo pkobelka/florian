@@ -1335,9 +1335,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.207';
+const APP_VERSION = '1.208';
 const APP_YEAR = 2026;
-const APP_UPDATED = '31. 8. 2026';
+const APP_UPDATED = '1. 9. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -3120,7 +3120,7 @@ function openEditForm(h){
       inp('edTlakS','Hydrostatický tlak [MPa]',candVal(h,'tlakStat'))+
       inp('edTlakD','Hydrodynamický tlak [MPa]',candVal(h,'tlakDyn'))+
       inp('edDN','DN hydrantu [mm]',candVal(h,'dn'))+
-      '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150'].map(function(v){ return '<option'+(dnRaduOf(h)===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
+      '<label class="ed-row"><span>Osazen na potrubí DN [mm]</span><select id="edDnPot"><option value="">—</option>'+['80','100','150','200'].map(function(v){ return '<option'+(dnRaduOf(h)===v?' selected':'')+'>'+v+'</option>'; }).join('')+'</select></label>'+
       '<label class="ed-row"><span>Datum revize</span><input id="edRev" type="date" value="'+revIso+'"></label>'+
       '<div class="ed-row"><span>Průtok v l/s (dopočet)</span><div id="edLsAuto" class="ed-auto">—</div></div>'+
       '<div class="ed-row"><span>Splňuje průtok dle ČSN</span><div id="edCsnPauto" class="ed-auto">—</div></div>'+
