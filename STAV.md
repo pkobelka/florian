@@ -1,11 +1,26 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.211**._
+_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.212**._
 _Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Tisk zahazoval barvy pozadí – značky vyjely bílé** (v1.212)
+   - Nález z Křenova: hydranty se na tištěné mapě kreslily jako **prázdné bílé ovály** a v legendě
+     chyběly barevné tečky. Prohlížeč má ve výchozím stavu `print-color-adjust: economy`, což mu
+     dovoluje při tisku **zahodit barvy pozadí** (šetření inkoustem). Výplň značky i tečky v legendě
+     jsou `background`, takže zmizely; zůstaly jen rámečky a `box-shadow`.
+   - Ověřeno na skutečném tiskovém PDF (Background graphics vypnuto): zelená výplň podzemního
+     hydrantu v PDF **chyběla**, po přidání `print-color-adjust:exact` tam je. Modrá tam byla jen
+     proto, že ji kreslí i rámeček `.krect`.
+   - Opraveno ve **všech čtyřech** tiskových sestavách (`@page` bloky na ř. ~2578 protokol,
+     ~2674 seznam H, ~2789 klad listů, ~2947 aktualizace) — všechny na barvách pozadí stály a
+     žádná to neměla. Vedlejší efekt: v seznamu H se konečně vytisknou **zvýrazněné řádky se
+     změnou**, které dosud vyjely bílé.
+   - ⚠️ Není to regrese z v1.211 — pozadí se netisklo odjakživa. Ovály z v1.211 byly na papíře
+     vidět (tvar je rozměr, ne barva), ale bez výplně.
 
 **Klad listů: značky rozlišené tvarem + přehledka bez hydrantů** (v1.211)
    - **Nález:** na tištěné mapě se nadzemní a podzemní lišily **jen barvou** (`#1565c0` vs `#00897b`),
