@@ -1335,7 +1335,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.211';
+const APP_VERSION = '1.212';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 9. 2026';
 
@@ -2576,6 +2576,7 @@ function generateProtokolWord(towns){
   towns.forEach(function(t){ var items=protokolItemsForTown(t); if(items.length) sections.push(protokolSectionHtml(items,t)); });
   if(!sections.length){ alert('Ve vybraných obcích nejsou žádné hydranty.'); return; }
   var css='@page{size:21cm 29.7cm;margin:1.4cm}'+
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+   /* jinak prohlížeč při tisku zahodí barvy pozadí (výplně značek, zvýrazněné řádky) */
     'body{font-family:Arial,sans-serif;font-size:10pt;color:#000}'+
     '.phead{border-bottom:2px solid #1565c0;padding-bottom:4pt;margin-bottom:6pt}'+
     '.phead .brand{float:right;font-weight:bold;color:#1565c0;font-size:12pt}'+
@@ -2672,6 +2673,7 @@ function generateSeznam(towns){
   towns.forEach(function(t){ var items=protokolItemsForTown(t); if(items.length) pages.push(seznamPageHtml(items,t)); });
   if(!pages.length){ flToast('Ve vybraných obcích nejsou žádné hydranty.'); return; }
   var css='@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}'+
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+   /* jinak prohlížeč při tisku zahodí barvy pozadí (výplně značek, zvýrazněné řádky) */
     'body{font-family:"Segoe UI",Arial,sans-serif;color:#16202b;margin:0;font-size:10pt}'+
     '.pg{page-break-after:always}.pg:last-child{page-break-after:auto}'+
     '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0b3a63;padding-bottom:10px}'+
@@ -2787,6 +2789,7 @@ function generateKladMapa(town){
       '<div class="kfoot">Podklad © OpenStreetMap · Florián 2.0 v'+APP_VERSION+'</div></div>';
   });
   var css='@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}'+
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+   /* jinak prohlížeč při tisku zahodí barvy pozadí (výplně značek, zvýrazněné řádky) */
     'body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:#12202e}'+
     '.page{page-break-after:always;height:196mm;display:flex;flex-direction:column}.page:last-child{page-break-after:auto}'+
     '.khdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #0b3a63;padding-bottom:4px;margin-bottom:4px}'+
@@ -2945,6 +2948,7 @@ function generateAktualWord(towns){
   towns.forEach(function(t){ var items=aktualItemsForTown(t); if(items.length) sections.push(aktualSectionHtml(items,t)); });
   if(!sections.length){ alert('Ve vybraných obcích nejsou žádné hydranty.'); return; }
   var css='@page{size:29.7cm 21cm;margin:1.2cm}'+ /* na šířku (A4 landscape) kvůli široké tabulce */
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+   /* jinak prohlížeč při tisku zahodí barvy pozadí (výplně značek, zvýrazněné řádky) */
     'body{font-family:Arial,sans-serif;font-size:10pt;color:#000}'+
     '.phead{border-bottom:2px solid #1565c0;padding-bottom:4pt;margin-bottom:6pt}'+
     '.phead .brand{float:right;font-weight:bold;color:#1565c0;font-size:12pt}'+
