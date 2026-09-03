@@ -1,11 +1,24 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 31. 8. 2026 · verze aplikace **1.207**._
-_Pracovní větev: `claude/floriana-reseni-gln63p`._
+_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.208**._
+_Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Klad listů: přehledka ukazovala listy useknuté** (v1.208)
+   - Výřez přehledky se počítal jen z obálky hydrantů, ale mřížka listů je z principu větší
+     (každý list je celá A4 a mřížka se na obálku centruje) → `.kmap {overflow:hidden}` ustřihl
+     rámečky krajních listů.
+   - Změřeno na datech: postiženo bylo **všech 18 obcí s víc než jedním listem**, přesah 0,3 % až
+     30,1 % šířky výřezu. U Mor. Třebové jen 0,3 %, ale to stačilo na ustřižení 2px rámečku, takže
+     vnější rám kladu chyběl úplně.
+   - Oprava v `generateKladMapa`: výřez se počítá z **obálky listů** (`gx0/gy0/gx1/gy1`) plus 6 %
+     vzduchu (`MARG`), overview zoom se vybírá proti téže obálce. Ověřeno: přesah 0 u všech 18 obcí,
+     okraj 3 % ze všech stran, žádný hydrant nevypadl z výřezu.
+   - Vedlejší efekt (zamýšlený): přehledka je oddálenější, obec je na ní menší – vejdou se celé listy.
+   - ⚠️ **Neověřeno naživo:** dlaždice OSM sem proxy nepustí, ověřena jen geometrie (rámečky + piny).
 
 **Nadmořská výška v kartě H** (v1.207)
    - GIS má sloupce `Výška povrchu [m.n.m.]` a `Výška podzemní [m.n.m.]`, ale **v exportu, který máme
