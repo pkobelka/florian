@@ -1335,9 +1335,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.207';
+const APP_VERSION = '1.208';
 const APP_YEAR = 2026;
-const APP_UPDATED = '31. 8. 2026';
+const APP_UPDATED = '3. 9. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -2751,14 +2751,18 @@ function generateKladMapa(town){
   var Z=15; for(var zz=15;zz<=18;zz++){ Z=zz; if(pts.length<2 || _minGapMM(zz)>=6) break; }
   var sheets=_sheetsAt(Z); while(Z>15 && sheets.length>MAXP){ Z--; sheets=_sheetsAt(Z); }
   sheets.forEach(function(s,i){ s.no=i+1; });
-  // overview zoom: nejvyšší, kde se obec vejde na jednu stránku
-  var zo=Z; for(var z2=Z;z2>=9;z2--){ var g2=grid(z2); if(g2.spanX<=PAGE_W*0.94 && g2.spanY<=PAGE_H*0.94){ zo=z2; break; } zo=z2; }
-  var ovLx=_kladWorldPx(minLat,minLon,zo).x, ovRx=_kladWorldPx(minLat,maxLon,zo).x;
-  var ovTy=_kladWorldPx(maxLat,minLon,zo).y, ovBy=_kladWorldPx(minLat,minLon,zo).y;
-  var sX=ovRx-ovLx, sY=ovBy-ovTy, A=PAGE_W/PAGE_H;
-  var ovW=sX, ovH=sY; if(sX/sY < A) ovW=sY*A; else ovH=sX/A;
-  var ovBx=(ovLx+ovRx)/2-ovW/2, ovBy2=(ovTy+ovBy)/2-ovH/2;
-  var f=Math.pow(2,zo-Z);
+  // overview: výřez musí pokrýt CELÉ listy (ne jen obálku hydrantů) i s okrajem – jinak
+  // .kmap {overflow:hidden} ustřihne rámečky krajních listů a klad listů ztrácí smysl
+  var gx0=Infinity, gy0=Infinity, gx1=-Infinity, gy1=-Infinity;
+  sheets.forEach(function(s){ if(s.x0<gx0)gx0=s.x0; if(s.y0<gy0)gy0=s.y0;
+    if(s.x0+PAGE_W>gx1)gx1=s.x0+PAGE_W; if(s.y0+PAGE_H>gy1)gy1=s.y0+PAGE_H; });
+  var gW=gx1-gx0, gH=gy1-gy0, MARG=0.94;                 // 6 % vzduchu okolo kladu
+  // overview zoom: nejvyšší (= nejostřejší dlaždice), kde se klad i s okrajem vejde na stránku
+  var zo=Z; for(var z2=Z;z2>=9;z2--){ zo=z2; var ff=Math.pow(2,z2-Z);
+    if(gW*ff<=PAGE_W*MARG+0.5 && gH*ff<=PAGE_H*MARG+0.5) break; }
+  var f=Math.pow(2,zo-Z), A=PAGE_W/PAGE_H;
+  var ovW=Math.max(gW*f, gH*f*A)/MARG, ovH=ovW/A;
+  var ovBx=(gx0+gx1)/2*f-ovW/2, ovBy2=(gy0+gy1)/2*f-ovH/2;
   var rects='';
   sheets.forEach(function(s){
     var l=(s.x0*f-ovBx)/ovW*100, t=(s.y0*f-ovBy2)/ovH*100, w=(PAGE_W*f)/ovW*100, hh=(PAGE_H*f)/ovH*100;
