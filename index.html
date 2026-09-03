@@ -1335,7 +1335,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.208';
+const APP_VERSION = '1.209';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 9. 2026';
 
@@ -2800,9 +2800,35 @@ function generateKladMapa(town){
     '.klabel{position:absolute;background:#1565c0;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:0 0 4px 0}'+
     '.kscale{position:absolute;left:8px;bottom:8px;height:7px;border:2px solid #12202e;border-top:none;background:rgba(255,255,255,.7);font-size:8px;font-weight:700;color:#12202e;text-align:center;line-height:9px;padding-top:1px}'+
     '.kfoot{font-size:7.5pt;color:#8a94a0;margin-top:2px;text-align:right}'+
-    '@media screen{body{background:#5a6672;padding:10px}.page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4);margin:0 auto 12px;width:277mm;padding:6mm}}';
-  var wait='(function(){var g=document.images,n=g.length,d=0;function fin(){setTimeout(function(){try{window.print();}catch(e){}},500);}if(!n)return fin();var to=setTimeout(fin,8000);function c(){if(++d>=n){clearTimeout(to);fin();}}for(var i=0;i<n;i++){if(g[i].complete)c();else{g[i].onload=c;g[i].onerror=c;}}})();';
-  var doc='<!doctype html><html><head><meta charset="utf-8"><title>Klad listů – '+esc(town)+'</title><style>'+css+'</style></head><body>'+pages+'<scr'+'ipt>'+wait+'</scr'+'ipt></body></html>';
+    '@media screen{body{background:#5a6672;padding:10px}.page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4);margin:0 auto 12px;width:277mm;padding:6mm}}'+
+    // ukazatel průběhu stahování dlaždic (velká obec = i 200 dlaždic z OSM)
+    '#kprog{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9999;background:rgba(11,58,99,.95);color:#fff;border-radius:999px;padding:8px 16px;font:600 12.5px "Segoe UI",Arial,sans-serif;box-shadow:0 3px 14px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;white-space:nowrap}'+
+    '.kp-bar{width:120px;height:6px;background:rgba(255,255,255,.28);border-radius:4px;overflow:hidden;flex:none}'+
+    '.kp-bar i{display:block;height:100%;width:0;background:#7fd1ff;transition:width .15s}'+
+    '#kprogGo{display:none;padding:3px 10px;border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff;border-radius:999px;font:inherit;font-size:11.5px;cursor:pointer}'+
+    '@media print{#kprog{display:none !important}}';
+  // Tisk až po dotažení VŠECH dlaždic – dřív se tisklo natvrdo po 8 s, což u velkých obcí
+  // (přes 200 dlaždic) nestačilo a mapa vyjela s bílými dírami. Průběh vidí uživatel v pruhu nahoře.
+  var prog='<div id="kprog"><span id="kprogT">Načítám mapové podklady…</span>'+
+    '<span class="kp-bar"><i id="kprogB"></i></span>'+
+    '<button id="kprogGo" type="button">Tisknout i tak</button></div>';
+  var wait='(function(){'+
+    'var g=document.images,n=g.length,d=0,done=false;'+
+    'var box=document.getElementById("kprog"),lab=document.getElementById("kprogT"),bar=document.getElementById("kprogB"),go=document.getElementById("kprogGo");'+
+    'function upd(){if(lab)lab.textContent="Načítám mapové podklady… "+d+" / "+n;if(bar)bar.style.width=(n?d/n*100:100).toFixed(1)+"%";}'+
+    'function fin(){if(done)return;done=true;if(box)box.style.display="none";'+
+      'setTimeout(function(){try{window.print();}catch(e){}},300);}'+
+    'if(!n)return fin();'+
+    'upd();'+
+    'if(go)go.onclick=function(){fin();};'+
+    'var t1=setTimeout(function(){if(!done&&go)go.style.display="inline-block";},10000);'+   /* únikové tlačítko po 10 s */
+    'var t2=setTimeout(function(){if(!done&&lab)lab.textContent="Server map odpovídá pomalu – chybí "+(n-d)+" z "+n+" dlaždic.";},60000);'+
+    'function c(){d++;upd();if(d>=n){clearTimeout(t1);clearTimeout(t2);fin();}}'+
+    'for(var i=0;i<n;i++){if(g[i].complete)c();else{g[i].onload=c;g[i].onerror=c;}}'+
+  '})();';
+  var doc='<!doctype html><html><head><meta charset="utf-8"><title>Klad listů – '+esc(town)+'</title>'+
+    '<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin><link rel="dns-prefetch" href="https://tile.openstreetmap.org">'+
+    '<style>'+css+'</style></head><body>'+prog+pages+'<scr'+'ipt>'+wait+'</scr'+'ipt></body></html>';
   var w=window.open('','_blank');
   if(!w){ flToast('Povol vyskakovací okna a zkus to znovu.'); return; }
   w.document.open(); w.document.write(doc); w.document.close();
