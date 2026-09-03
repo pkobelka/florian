@@ -1335,7 +1335,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.209';
+const APP_VERSION = '1.210';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 9. 2026';
 
@@ -2827,7 +2827,7 @@ function generateKladMapa(town){
     'for(var i=0;i<n;i++){if(g[i].complete)c();else{g[i].onload=c;g[i].onerror=c;}}'+
   '})();';
   var doc='<!doctype html><html><head><meta charset="utf-8"><title>Klad listů – '+esc(town)+'</title>'+
-    '<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin><link rel="dns-prefetch" href="https://tile.openstreetmap.org">'+
+    '<link rel="preconnect" href="https://tile.openstreetmap.org"><link rel="dns-prefetch" href="https://tile.openstreetmap.org">'+
     '<style>'+css+'</style></head><body>'+prog+pages+'<scr'+'ipt>'+wait+'</scr'+'ipt></body></html>';
   var w=window.open('','_blank');
   if(!w){ flToast('Povol vyskakovací okna a zkus to znovu.'); return; }
@@ -2837,13 +2837,13 @@ function buildSeznamPanel(){
   var wrap=document.getElementById('seznamPanel'); if(!wrap) return;
   var obce=protokolObce();
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📋 Seznam pro obec</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Zruš filtry nebo vyber pracoviště/svazek.</div>'; return; }
-  var pre=selectedTowns, vis=visibleTownsNow();
-  function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
+  // Tisk pro obec záměrně startuje s NIČÍM zaškrtnutým – tisk celého pracoviště je drahý
+  // omyl (desítky stránek a stovky dlaždic). Vybrat vše jde jedním klikem na „Vše / nic".
   wrap.innerHTML=
     '<div class="tp-head"><b>🖨️ Tisk pro obec</b><button class="tp-clear" id="szAll">Vše / nic</button></div>'+
     '<input id="szSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="szList">'+
-      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<div style="display:flex;gap:6px;margin-top:6px">'+
       '<button class="btn-toggle btn-share" id="szGen" style="flex:1">📋 Seznam H</button>'+
