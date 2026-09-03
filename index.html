@@ -1335,7 +1335,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.210';
+const APP_VERSION = '1.211';
 const APP_YEAR = 2026;
 const APP_UPDATED = '3. 9. 2026';
 
@@ -2773,9 +2773,10 @@ function generateKladMapa(town){
   // 1) přehledka (jen když je víc listů – u jediného listu je zbytečná)
   if(sheets.length>1){
     pages+='<div class="page"><div class="khdr"><b>Klad listů – '+esc(town)+'</b>'+
-      '<span class="r">Přehledka · '+sheets.length+' '+(sheets.length<5?'listy':'listů')+
-      ' · <i class="d nad"></i> nadzemní &nbsp;<i class="d pod"></i> podzemní</span></div>'+
-      '<div class="kmap">'+_kladTiles(ovBx,ovBy2,ovW,ovH,zo)+rects+_kladPins(pts,ovBx,ovBy2,ovW,ovH,zo,false)+_kladScale(zo,cLat,ovW)+'</div>'+
+      '<span class="r">Přehledka · '+sheets.length+' '+(sheets.length<5?'listy':'listů')+'</span></div>'+
+      // bez hydrantů: v tomhle měřítku jsou stejně nečitelné a přehledka má ukázat jen rozdělení
+      // na listy. Legenda symbolů tu proto taky nemá co dělat – je u jednotlivých listů.
+      '<div class="kmap">'+_kladTiles(ovBx,ovBy2,ovW,ovH,zo)+rects+_kladScale(zo,cLat,ovW)+'</div>'+
       '<div class="kfoot">Podklad © OpenStreetMap · Florián 2.0 v'+APP_VERSION+'</div></div>';
   }
   // 2) jednotlivé listy
@@ -2790,12 +2791,16 @@ function generateKladMapa(town){
     '.page{page-break-after:always;height:196mm;display:flex;flex-direction:column}.page:last-child{page-break-after:auto}'+
     '.khdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #0b3a63;padding-bottom:4px;margin-bottom:4px}'+
     '.khdr b{font-size:13pt;color:#0b3a63}.khdr .r{font-size:9pt;color:#5a6672}'+
-    '.d{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1565c0;vertical-align:middle}.d.pod{background:#00897b;border-radius:2px}'+
+    '.d{display:inline-block;width:8px;height:11px;border-radius:50%;background:#1565c0;vertical-align:middle}.d.pod{width:11px;height:8px;background:#00897b}'+
     '.kmap{position:relative;flex:1;overflow:hidden;border:1px solid #7a8aa0;background:#e9eef2}'+
     '.kt{position:absolute}'+
-    '.kpin{position:absolute;transform:translate(-50%,-50%);min-width:15px;height:15px;padding:0 3px;border-radius:9px;background:#1565c0;color:#fff;font-size:9px;font-weight:800;line-height:15px;text-align:center;border:1.5px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6);white-space:nowrap}'+
-    '.kpin.pod{background:#00897b}'+
-    '.kpin.big{min-width:21px;height:21px;border-radius:11px;font-size:11px;line-height:21px;border-width:2px}'+
+    // Tvar rozlišuje typ, ne barva – na černobílé tiskárně byly modrá a zelenomodrá k nerozeznání.
+    // Nadzemní = ovál na stojato (hydrant stojí), podzemní = ovál na ležato (poklop leží).
+    '.kpin{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:#1565c0;color:#fff;font-size:9px;font-weight:800;text-align:center;border:1.5px solid #fff;box-shadow:0 0 2px rgba(0,0,0,.6);white-space:nowrap}'+
+    '.kpin{min-width:15px;height:20px;line-height:20px;padding:0 3px}'+
+    '.kpin.pod{min-width:21px;height:14px;line-height:14px;padding:0 5px;background:#00897b}'+
+    '.kpin.big{min-width:21px;height:27px;line-height:27px;font-size:11px;border-width:2px;padding:0 4px}'+
+    '.kpin.pod.big{min-width:29px;height:19px;line-height:19px;padding:0 7px}'+
     '.krect{position:absolute;border:2px solid #1565c0;background:rgba(21,101,192,.05)}'+
     '.klabel{position:absolute;background:#1565c0;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:0 0 4px 0}'+
     '.kscale{position:absolute;left:8px;bottom:8px;height:7px;border:2px solid #12202e;border-top:none;background:rgba(255,255,255,.7);font-size:8px;font-weight:700;color:#12202e;text-align:center;line-height:9px;padding-top:1px}'+
