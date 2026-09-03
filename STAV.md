@@ -1,11 +1,40 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.209**._
+_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.210**._
 _Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Tisk pro obec: nic není předvybrané** (v1.210)
+   - `buildSeznamPanel` startovalo se zaškrtnutými obcemi (`isPre` = vybrané filtrem, jinak všechny
+     viditelné v mapě). Snadno se tím omylem spustil tisk celého pracoviště. Nově prázdné;
+     „Vše / nic" vybere všechno jedním klikem (a `allOn=false` teď sedí s výchozím stavem).
+   - Protokol o revizi a Aktualizace údajů předvýběr **záměrně ponechány** – tam nikdo netiskl omylem.
+   - Opraven `preconnect` z v1.209: měl `crossorigin`, což předehřívá spojení pro CORS požadavky,
+     ale dlaždice se načítají bez CORS → hřálo se špatné spojení. Atribut odstraněn.
+
+**Varianta „B" (míň listů = míň dlaždic) NEVYPLATILA SE – neimplementováno**
+   - Změřeno přes všechny obce (skript logika = `generateKladMapa`):
+
+     | varianta | stránek | unikátních dlaždic | nejhorší obec | měřítko | min. rozestup H |
+     |---|---|---|---|---|---|
+     | nyní (MAXP 12, gap 6 mm) | 137 | 2046 | 140 | 1:12000 | 4,8 mm |
+     | MAXP 6 | 121 | – | 175 img | 1:12000 | **2,4 mm** |
+     | gap 4 mm | 130 | – | 202 img | 1:12000 | 4,1 mm |
+     | MAXP 6 + zoom od 14 | 111 | – | 112 img | **1:24000** | **2,4 mm** |
+
+   - Zisk ~11 % dlaždic za cenu rozestupu čísel H **2,4 mm**, přičemž bublina s číslem je sama
+     ~4 mm široká → čísla by se překrývala. Varianta s polovičním počtem dlaždic dá 1:24000,
+     což je pro terén nepoužitelné.
+   - Zkoušeno i **zarovnání listů na mřížku dlaždic** (nezarovnaný list protne 5×4=20 dlaždic
+     místo 4×3=12, režie 67 %). Nepomůže: zarovnání vyžaduje větší překryv → víc listů →
+     unikátních dlaždic je nakonec **víc** (2046 → 2326).
+   - Závěr: počet dlaždic je daný plochou obce při daném měřítku a je prakticky nestlačitelný.
+     Jediná reálná páka je zoom = měřítko mapy. Kdyby se to přesto chtělo, stačí v
+     `generateKladMapa` snížit konstantu `MAXP` (nyní 12).
+   - Pozn.: `MAXP` cap dnes obchází pravidlo 6 mm – u velkých obcí už teď spadne na 4,8 mm.
 
 **Klad listů: tisk čeká na dlaždice + ukazatel průběhu** (v1.209)
    - Čekací skript spouštěl `window.print()` **natvrdo po 8 s**. Změřeno: velká obec si vyžádá
