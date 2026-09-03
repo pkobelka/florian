@@ -1,11 +1,28 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.210**._
+_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.211**._
 _Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Klad listů: značky rozlišené tvarem + přehledka bez hydrantů** (v1.211)
+   - **Nález:** na tištěné mapě se nadzemní a podzemní lišily **jen barvou** (`#1565c0` vs `#00897b`),
+     tvar byl stejný. Na černobílé tiskárně = k nerozeznání. Legenda v záhlaví navíc ukazovala
+     kolečko a čtvereček, což **neodpovídalo** tomu, co se vykreslilo.
+   - Nově tvar: **nadzemní = ovál na stojato** (15×20 px), **podzemní = ovál na ležato** (21×14 px),
+     `big` varianta 21×27 / 29×19. Barvy zůstávají jako druhý (redundantní) signál. Legenda `.d`
+     zmenšena na 8×11 / 11×8, aby seděla s mapou.
+   - **Přehledka bez hydrantů** – v jejím měřítku jsou stejně nečitelné a přehledka má ukázat jen
+     rozdělení na listy. Legenda symbolů z jejího záhlaví taky odebrána (nemá tam co popisovat).
+     Data to neušetří (piny se nestahují), je to čistě čitelnost.
+   - Zamítnuto: **HN/HP v bublině**. Změřeno – bublina „12" je 3,9 mm, „HN12" 7,8 mm, přičemž
+     nejtěsnější dvojice hydrantů v datech je 4,8 mm → čísla by se překrývala. A aby se nepřekrývala,
+     algoritmus by přiblížil mapu → víc listů → víc dlaždic → pomalejší tisk.
+   - Zamítnuto: **přehledka bez podkladové mapy**. Změřeno – ušetří 17,3 % dlaždic napříč obcemi,
+     ale jen **5,9 % u největší obce**, kde čekání bolí. A bez podkladu nepoznáš, kterou část
+     vesnice list pokrývá.
 
 **Tisk pro obec: nic není předvybrané** (v1.210)
    - `buildSeznamPanel` startovalo se zaškrtnutými obcemi (`isPre` = vybrané filtrem, jinak všechny
