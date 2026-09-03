@@ -1,11 +1,23 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.208**._
+_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.209**._
 _Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Klad listů: tisk čeká na dlaždice + ukazatel průběhu** (v1.209)
+   - Čekací skript spouštěl `window.print()` **natvrdo po 8 s**. Změřeno: velká obec si vyžádá
+     až **202 dlaždic** (578576, 12 stránek), průměr 38/obec – za 8 s se to nestihne, takže se
+     tiskový dialog otevřel nad rozdělanou mapou a tisk vyjel s bílými dírami.
+   - Nově: pruh nahoře s průběhem („Načítám mapové podklady… 87 / 202"), tisk se spustí **až po
+     dotažení všech** dlaždic. Po 10 s se objeví tlačítko „Tisknout i tak", po 60 s se pruh přepne
+     na varování, kolik dlaždic chybí. Pruh se netiskne (`@media print`).
+   - Chyby dlaždic (404) se počítají jako dokončené – tisk nezamrzne.
+   - Přidán `preconnect`/`dns-prefetch` na `tile.openstreetmap.org`.
+   - Ověřeno v Chromiu: v 8 s netiskne, tlačítko naskočí v 10 s, tisk až po dotažení, klik na
+     tlačítko tiskne hned, samé 404 nezamrznou, nula dlaždic tiskne hned.
 
 **Klad listů: přehledka ukazovala listy useknuté** (v1.208)
    - Výřez přehledky se počítal jen z obálky hydrantů, ale mřížka listů je z principu větší
