@@ -12,6 +12,9 @@ PWA pro **mapu požárních hydrantů**. Sesterská appka k [AquaCtrl](https://g
 - Hydranty na mapě jako **symboly** (🔴 nadzemní / ⚫ podzemní) nad podkladem OpenStreetMap.
 - **Shlukování** (clustering) – při oddálení se body slučují do kolečka s počtem, při přiblížení se rozpadají.
 - **Vrstva pokrytí** – přepínač „Pokrytí 200 m" vykreslí kolem každého hydrantu kruh o poloměru 200 m (dle ČSN 73 0873). Překryv = pokryto, mezera = díra.
+- **Vodojem** – ve vrstvě „🚰 Vodovod" je i vodojem (objem, počet komor, min./max. hladina). Z jeho
+  max. hladiny a nadmořské výšky hydrantu se dopočítá **orientační statický tlak** (`p = Δh × 0,00981 MPa`);
+  naměřená hodnota má vždy přednost, dopočet je jen doplněk a kontrola.
 - **Karta hydrantu** (klik na bod): všechny údaje z tabulky, zvýrazněné hodnoty (průtok, tlaky), soulad s ČSN, **výřez mapy s kružnicí a okolními hydranty**, přidání fotografie (vyfotit / z galerie), **stažení (PDF přes tisk)** a **tisk (A4)**.
 
 ## Kam dál (Fáze 2)
@@ -24,6 +27,7 @@ PWA pro **mapu požárních hydrantů**. Sesterská appka k [AquaCtrl](https://g
 |---|---|
 | `index.html` | celá appka (mapa Leaflet + shlukování + data + karty + tisk) |
 | `hydranty.json` | zdrojová data (199 hydrantů) – jinak už jsou vložená v `index.html` |
+| `vodojemy.json` | zdrojová data vodojemů (VDJ Staré Město) – vložená i v `index.html` jako `VODOJEMY` |
 | `manifest.json` | PWA manifest |
 | `sw.js` | service worker (scope `/florian/`) |
 | `icon-*.png` | ikony (modrý hydrant – prozatímní, dle faviconu) |

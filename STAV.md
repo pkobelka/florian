@@ -1,11 +1,41 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 3. 9. 2026 · verze aplikace **1.212**._
-_Pracovní větev: `claude/florian-app-duplication-xnz3yk`._
+_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.213**._
+_Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Vodojem Staré Město + dopočet statického tlaku u hydrantů** (v1.213)
+   - Nová data `vodojemy.json` (inline v `index.html` jako `VODOJEMY`) z exportu GISu VHOS
+     (OBJECTID 69): objem **150 m³**, **2 komory**, hladina **436,6–439,1 m n. m.**, zemní/zásobní,
+     rok 1966, IČME, vlastník, poznámka (železobetonová konstrukce).
+   - **Dopočet statického tlaku** hydrantu z hladiny ve VDJ a jeho nadmořské výšky:
+     `p [MPa] = (hladina VDJ − výška hydrantu) × 0,00981` (1 m vodního sloupce ≈ 9,81 kPa).
+     V kartě H (požární i kandidát) přibyl řádek **„Statický tlak z VDJ"** hned za nadmořskou výškou
+     a pod dlaždicí hydrostatického tlaku drobný řádek `≈ 0,45 z VDJ`. Do tisku karty jde řádek
+     s oběma hladinami (max. i min.).
+   - **Zdroj pravdy zůstává měření.** Dopočet je vždy s „≈", nevstupuje do hodnocení ČSN ani do
+     exportu pro GIS. Když je hydrant naměřený, ukáže se i rozdíl (`naměřeno 0,52 (−0,07)`) – slouží
+     jako kontrola dat.
+   - Výška hydrantu se bere z GISu/doměření (`vyskaPovrchu`), jinak z výškopisu (v1.207) – pak je
+     dopočet označený „výška z výškopisu". Než výškopis dorazí, je v řádku „čeká na nadmořskou výšku";
+     doplní se sám (`wireVyska` teď překresluje i tlak z VDJ).
+   - **Přiřazení hydrantu k VDJ** je přes katastr (`ku` v datech VDJ) = jedno tlakové pásmo:
+     **754480 Staré Město, 754471 Radišov, 626074 Dětřichov** – přesně to, co pokrývá vrstva vodovodu
+     (52 hydrantů). Kunčina (677141) přiřazená **není**, v exportu vodovodu jsou z ní jen 4 úseky.
+   - Ověřeno proti měření: výšky odvozené z naměřených statických tlaků vycházejí 375–413 m n. m.,
+     což pro Staré Město/Dětřichov/Radišov sedí. Např. H 2 Staré Město 81 – výškopis 376 m →
+     dopočet 0,62 MPa = naměřeno 0,62 MPa.
+   - **Poloha VDJ chybí** – export z GISu je čistě atributový, X/Y ani geometrie v něm nejsou
+     (41 sloupců, poslední GLOBALID). `lat`/`lon` jsou proto `null`; VDJ se ukazuje v legendě vrstvy
+     🚰 Vodovod (objem, komory, hladiny) a počítá tlaky. **Značka na mapě naskočí sama**, jakmile se
+     souřadnice do dat doplní – marker `VDJ` s bublinou (objem, hladiny, rok, IČME, vlastník…) je
+     hotový a otestovaný s dosazenými souřadnicemi.
+   - Ověřeno v Chromiu (headless, localhost): dopočet z GISové i výškopisné výšky, hydrant bez měření,
+     hydrant uměle nad max. hladinou (→ 0 MPa a poznámka), hydrant mimo pásmo (řádek se nezobrazí),
+     značka + bublina VDJ po dosazení souřadnic, legenda. Bez chyb v konzoli.
 
 **Tisk zahazoval barvy pozadí – značky vyjely bílé** (v1.212)
    - Nález z Křenova: hydranty se na tištěné mapě kreslily jako **prázdné bílé ovály** a v legendě
