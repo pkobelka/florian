@@ -1339,7 +1339,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.213';
+const APP_VERSION = '1.214';
 const APP_YEAR = 2026;
 const APP_UPDATED = '10. 9. 2026';
 
@@ -2083,12 +2083,12 @@ if(vodToggle){
   };
 }
 // ===== 🏛️ Vodojemy (VDJ) – data z GISu a dopočet statického tlaku u hydrantů =====
-// Data podle exportu VHOS (Vodojem Staré Město, OBJECTID 69). Pozor: ten export je čistě
-// atributový – X/Y ani geometrie v něm nejsou, proto `lat`/`lon` = null. Dokud tam nejsou, ukazuje
-// se VDJ jen v legendě vrstvy 🚰 Vodovod (a počítá tlaky); značka na mapě naskočí sama, jakmile se
-// souřadnice do dat doplní. Zdroj v repozitáři: `vodojemy.json`.
+// Data podle exportu VHOS (Vodojem Staré Město, OBJECTID 69). Poloha přepočtena ze S-JTSK
+// (EPSG:5514, `xJtsk`/`yJtsk` = X/Y z GISu) na WGS84 stejně jako hydranty a vodovodní řady.
+// Kontrola zákresu: bod padl 0,9 m od konce tří krátkých řadů (49 / 11 / 33 m – přítok, odtok,
+// přepad) a 6,1 m od konce hlavního řadu PVC 100. Zdroj v repozitáři: `vodojemy.json`.
 // `ku` = katastry, které VDJ zásobuje (jedno tlakové pásmo) – podle nich se hydrantu přiřadí VDJ.
-var VODOJEMY=[{"id":"69","nazev":"Vodojem Staré Město","druh":"zemní","funkce":"zásobní","komor":2,"objem":150,"objemKomor":"150","minHl":436.6,"maxHl":439.1,"druhVody":"pitná","dochlorace":"ne","rok":"1966","stav":"31.08.2015","etapa":"v provozu","icme":"5308-698806-72053453-1/1","vlastnik":"Skupinový vodovod Moravskotřebovska","provozovatel":"Vhos, a.s.","typSmlouvy":"Provozovatelská smlouva","provozniStredisko":"Moravská Třebová","obec":"578789","okres":"3609","katastr":"754480","poznamka":"konstrukce: železobetonová","zdroj":"šetření pracovníky provozovatele","presnost":"Přibližný zákres","lat":null,"lon":null,"ku":["754480","754471","626074"]}];
+var VODOJEMY=[{"id":"69","nazev":"Vodojem Staré Město","druh":"zemní","funkce":"zásobní","komor":2,"objem":150,"objemKomor":"150","minHl":436.6,"maxHl":439.1,"druhVody":"pitná","dochlorace":"ne","rok":"1966","stav":"31.08.2015","etapa":"v provozu","icme":"5308-698806-72053453-1/1","vlastnik":"Skupinový vodovod Moravskotřebovska","provozovatel":"Vhos, a.s.","typSmlouvy":"Provozovatelská smlouva","provozniStredisko":"Moravská Třebová","obec":"578789","okres":"3609","katastr":"754480","poznamka":"konstrukce: železobetonová","zdroj":"šetření pracovníky provozovatele","presnost":"Přibližný zákres","lat":49.79422,"lon":16.661389,"xJtsk":-587178.47,"yJtsk":-1094923.91,"ku":["754480","754471","626074"]}];
 // 1 m vodního sloupce = ρ·g ≈ 9,81 kPa = 0,00981 MPa
 var MPA_NA_METR=0.00981;
 function czNum(n){ return String(n).replace('.',','); }

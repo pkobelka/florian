@@ -25,8 +25,10 @@
     "poznamka": "konstrukce: železobetonová",
     "zdroj": "šetření pracovníky provozovatele",
     "presnost": "Přibližný zákres",
-    "lat": null,
-    "lon": null,
+    "lat": 49.79422,
+    "lon": 16.661389,
+    "xJtsk": -587178.47,
+    "yJtsk": -1094923.91,
     "ku": ["754480", "754471", "626074"]
   }
 ]

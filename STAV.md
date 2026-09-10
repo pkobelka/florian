@@ -1,13 +1,13 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.213**._
+_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.214**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
 
-**Vodojem Staré Město + dopočet statického tlaku u hydrantů** (v1.213)
+**Vodojem Staré Město + dopočet statického tlaku u hydrantů** (v1.213, poloha v1.214)
    - Nová data `vodojemy.json` (inline v `index.html` jako `VODOJEMY`) z exportu GISu VHOS
      (OBJECTID 69): objem **150 m³**, **2 komory**, hladina **436,6–439,1 m n. m.**, zemní/zásobní,
      rok 1966, IČME, vlastník, poznámka (železobetonová konstrukce).
@@ -28,11 +28,15 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
    - Ověřeno proti měření: výšky odvozené z naměřených statických tlaků vycházejí 375–413 m n. m.,
      což pro Staré Město/Dětřichov/Radišov sedí. Např. H 2 Staré Město 81 – výškopis 376 m →
      dopočet 0,62 MPa = naměřeno 0,62 MPa.
-   - **Poloha VDJ chybí** – export z GISu je čistě atributový, X/Y ani geometrie v něm nejsou
-     (41 sloupců, poslední GLOBALID). `lat`/`lon` jsou proto `null`; VDJ se ukazuje v legendě vrstvy
-     🚰 Vodovod (objem, komory, hladiny) a počítá tlaky. **Značka na mapě naskočí sama**, jakmile se
-     souřadnice do dat doplní – marker `VDJ` s bublinou (objem, hladiny, rok, IČME, vlastník…) je
-     hotový a otestovaný s dosazenými souřadnicemi.
+   - **Poloha doplněna (v1.214)** – první export byl čistě atributový (41 sloupců, X/Y ani geometrie
+     v něm nebyly), druhý už má `S_JTSK_X = -587178,47`, `S_JTSK_Y = -1094923,91`. Přepočteno
+     z EPSG:5514 na WGS84 → **49,79422 / 16,661389**; v datech zůstávají i zdrojové `xJtsk`/`yJtsk`.
+   - Kontrola zákresu proti síti: bod padl **0,9 m** od konce tří krátkých řadů (49 / 11 / 33 m –
+     přítok, odtok, přepad) a **6,1 m** od konce hlavního řadu PVC 100 (1986). Nejbližší hydranty
+     H33 a H32 (429 a 519 m) mají zároveň nejnižší naměřený statický tlak v obci (0,28 MPa), tedy
+     leží nejvýš – to k poloze vodojemu sedí.
+   - Na mapě je ve vrstvě 🚰 Vodovod značka **VDJ** s bublinou (objem, komory, hladiny, druh/funkce,
+     rok, IČME, vlastník, provozovatel, poznámka).
    - Ověřeno v Chromiu (headless, localhost): dopočet z GISové i výškopisné výšky, hydrant bez měření,
      hydrant uměle nad max. hladinou (→ 0 MPa a poznámka), hydrant mimo pásmo (řádek se nezobrazí),
      značka + bublina VDJ po dosazení souřadnic, legenda. Bez chyb v konzoli.
