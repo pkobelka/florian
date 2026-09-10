@@ -1,11 +1,21 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.214**._
+_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.215**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Export do GISu: „Název" = holé číslo H** (v1.215)
+   - Nález při zkušebním importu jednoho hydrantu (HN25 Staré Město 111, OBJECTID 3765): do sloupce
+     `Název` se psalo `cisloLabel(h)`, tedy **`HN25`** i s předponou podle typu. V GISu je ale v tom
+     sloupci holé číslo (u tohoto H `15`), takže by import zapsal jinak formátovanou hodnotu.
+   - Nově `cisloOf(h)` → `25`. Předpona **HN/HP zůstává jen v aplikaci** (chip v kartě, klad listů) –
+     je to zobrazení, ne data.
+   - Zbytek exportu beze změny: 44 sloupců v pořadí `Hydrant_vod_info`, `;`, BOM, CRLF; sloupce, které
+     aplikace nevlastní (výšky, TBFID, GLOBALID, Vytvořeno/editace…), jdou prázdné a **při importu se
+     nemají mapovat**, párování přes OBJECTID / IČME.
 
 **Vodojem Staré Město + dopočet statického tlaku u hydrantů** (v1.213, poloha v1.214)
    - Nová data `vodojemy.json` (inline v `index.html` jako `VODOJEMY`) z exportu GISu VHOS

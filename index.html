@@ -1339,7 +1339,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.214';
+const APP_VERSION = '1.215';
 const APP_YEAR = 2026;
 const APP_UPDATED = '10. 9. 2026';
 
@@ -4096,13 +4096,14 @@ function _flCsvCell(v){ v=(v==null?'':String(v)); return /[";\n\r]/.test(v) ? '"
 function _flTsFmt(ts){ if(!ts) return ''; try{ var d=new Date(ts); return d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}); }catch(_){ return ''; } }
 function flFieldVal(h,d,k){ return (d&&d[k]!==undefined&&d[k]!==null&&String(d[k]).trim()!=='')?String(d[k]).trim():(h&&h[k]!=null?String(h[k]).trim():''); }
 // Přesné pořadí a názvy sloupců z GIS CSV (Hydrant_vod_info) – nesmí se měnit ani doplňovat.
-// Do „volných" polí zapisujeme: Název = číslo H, Poznámka = DN vodovodního řadu (osazení H),
+// Do „volných" polí zapisujeme: Název = číslo H (holé číslo, bez předpony HN/HP), Poznámka = DN
+// vodovodního řadu (osazení H),
 // Upřesnění polohy hydrantu = upřesnění. Naměřené hodnoty jdou do svých GIS sloupců; ostatní zůstávají
 // původní z GISu (candVal). Sloupce, které aplikace nemá (OBJECTID/GLOBALID, výšky, TBFID…), jdou prázdné
 // – při importu je nemapujte, ať se nepřepíšou. Párování řádků řeší GIS (primárně přes IČME).
 var GIS_EXPORT_COLS=[
   ['OBJECTID', function(h){ var id=parseInt(h.id,10); return (isFinite(id)&&id<900000)?String(h.id):''; }], // = naše id; umělé 900000+ (body přidané v appce) nechává prázdné
-  ['Název', function(h){ return cisloLabel(h); }],
+  ['Název', function(h){ return cisloOf(h); }],   // holé číslo H, jak to má GIS (v appce se ukazuje s předponou HN/HP, do dat se předpona nepíše)
   ['Typ hydrantu', function(h){ return candVal(h,'typ'); }],
   ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
   ['Umístění', function(h){ return candVal(h,'umisteni'); }],
