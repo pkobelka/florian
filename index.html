@@ -1338,7 +1338,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.220';
+const APP_VERSION = '1.221';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -2756,6 +2756,9 @@ function seznamPageHtml(items, oblast){
 }
 // otevře tiskové okno s barevnou A4 (jedna stránka na obec) – uživatel uloží jako PDF
 function generateSeznam(towns){
+  // Tiskne se vždy jen JEDNA obec (panel nabízí přepínač, ne zaškrtávátka) – pojistka,
+  // kdyby se sem někdy dostal delší seznam, ať z toho není omylem tisk celého pracoviště.
+  if(towns.length>1){ flToast('Tiskne se vždy jen jedna obec – vyber jednu.'); return; }
   var pages=[];
   towns.forEach(function(t){ var items=protokolItemsForTown(t); if(items.length) pages.push(seznamPageHtml(items,t)); });
   if(!pages.length){ flToast('Ve vybraných obcích nejsou žádné hydranty.'); return; }
@@ -2976,22 +2979,23 @@ function buildSeznamPanel(){
     generateKladMapa(t);
   };
 }
-// Obec k předvýběru v „Tisk pro obec": jediná vybraná ve filtru, jinak obec s nejvíc
-// hydranty v aktuálním výřezu mapy ('' = na ploše není nic, co by šlo nabídnout).
+// Obec k předvýběru v „Tisk pro obec": jediná vybraná ve filtru, jinak obec, kterou má
+// uživatel uprostřed plochy – tj. ta s hydrantem nejblíž středu výřezu mapy. (Na ploše bývají
+// klidně dvě obce; „ta uprostřed" je ta, na kterou se uživatel dívá, i když ta druhá zasahuje
+// do rohu víc hydranty.) '' = na ploše není nic, co by šlo nabídnout.
 function szPreTown(obce){
   // kandidáti: obce vybrané ve filtru (když nějaké jsou), jinak všechny z nabídky
   var cand=obce.map(function(o){return o.t;});
   if(selectedTowns.size) cand=cand.filter(function(t){ return selectedTowns.has(t); });
   if(!cand.length) return '';
   if(cand.length===1) return cand[0];
-  // víc kandidátů → ta s nejvíc hydranty v aktuálním výřezu mapy
   var ok={}; cand.forEach(function(t){ ok[t]=1; });
-  var cnt={}, best='', bestN=0;
-  try{ var b=map.getBounds();
+  var best='', bestD=Infinity;
+  try{ var b=map.getBounds(), c=b.getCenter();
     (typeof allItems!=='undefined'?allItems:[]).forEach(function(it){ var h=it.h;
       if(!h||h.lat==null||!b.contains([h.lat,h.lon])) return;
       var t=filterTown(h); if(!t||!ok[t]) return;
-      cnt[t]=(cnt[t]||0)+1; if(cnt[t]>bestN){ bestN=cnt[t]; best=t; } });
+      var d=haversineM(c.lat,c.lng,h.lat,h.lon); if(d<bestD){ bestD=d; best=t; } });
   }catch(e){}
   // na ploše nic z kandidátů → při vybraném filtru nabídni aspoň první z nich
   return best || (selectedTowns.size?cand[0]:'');
