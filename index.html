@@ -1119,7 +1119,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .candmk .ci-pod{border-radius:50%}
 .candmk .ci-nad{border-radius:3px}
 .candmk .ci-badge{position:absolute;top:-8px;right:-10px;background:#16a34a;color:#fff;border-radius:9px;font-size:10px;font-weight:800;padding:0 4px;border:1.5px solid #fff;line-height:15px;transform:none}
-.reclmk{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #d32f2f;box-shadow:0 1px 4px rgba(0,0,0,.55);color:#d32f2f;font-size:13px;font-weight:900;line-height:14px;text-align:center;box-sizing:border-box}
 .cluster.candcl{background:#8e24aa !important;border-color:#6a1b9a !important}
 .cluster.markcl{background:#16a34a !important;border-color:#0f7a37 !important}
 #candToggle.on{background:#8e24aa;color:#fff;border-color:#8e24aa}
@@ -1339,7 +1338,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.218';
+const APP_VERSION = '1.219';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -1455,10 +1454,15 @@ let markedShownOn = true; // vidět vrstvu vybraných „k doměření" (mříž
 
 // „Zrušené jako požární" – hydrant je sice v GISu požární, ale dle aktuálnějšího seznamu z pracoviště
 // už jím není. Ukládá se do domereni[id].neniPozarni (sdílí se přes Firebase). Nekreslí se v požární
-// vrstvě ani se nepočítá; místo toho šedý křížek ve vlastní vrstvě reclassLayer. Lze vrátit zpět.
+// vrstvě, nepočítá se a nejde do protokolu ani seznamu – v mapě vypadá jako ostatní (nepožární)
+// hydrant, protože tím teď je; funkce se všude i do GISu píše „bez rozlišení". Lze vrátit zpět.
+// Vlastní vrstva (ne mezi „Ostatní hydranty") jen proto, aby nezmizel z mapy, když je ta vrstva
+// vypnutá – jinak by po zrušení nebyl k nalezení a nešel vrátit.
 const reclassLayer = L.layerGroup();
 function isNeniPozarni(h){ var d=(typeof domereni!=='undefined'&&domereni)?domereni[h.id]:null; return !!(d&&d.neniPozarni); }
-function reclassIcon(){ return L.divIcon({className:'',html:'<div class="reclmk" title="Zrušeno jako požární (dle aktuálního seznamu z pracoviště)">✕</div>',iconSize:[18,18],iconAnchor:[9,9]}); }
+// Funkce hydrantu pro kartu, tisk i export do GISu: zrušený požární = „bez rozlišení"
+// (odvozeno z příznaku, ne z uložené hodnoty – platí i pro dřív zrušené hydranty).
+function funkceOf(h){ return isNeniPozarni(h) ? 'bez rozlišení' : candVal(h,'funkce'); }
 
 const cluster = L.markerClusterGroup({
   maxClusterRadius: 50,
@@ -1513,8 +1517,8 @@ function applyFilter(noFit){
   const pts=[];
   allItems.forEach(it=>{
     if(matches(it.h) && (!revStatusFilter || dimStatus(it.h)===revStatusFilter)){
-      if(isNeniPozarni(it.h)){ // zrušený požární → šedý křížek, mimo požární vrstvu i pokrytí
-        var rm=L.marker([it.h.lat,it.h.lon],{icon:reclassIcon()}); rm.on('click',(function(hh){return function(){ openCard(hh); };})(it.h)); reclassLayer.addLayer(rm);
+      if(isNeniPozarni(it.h)){ // zrušený požární → značka jako „ostatní" hydrant, mimo požární vrstvu i pokrytí
+        var rm=L.marker([it.h.lat,it.h.lon],{icon:candIcon(it.h,'base')}); rm.on('click',(function(hh){return function(){ openCard(hh); };})(it.h)); reclassLayer.addLayer(rm);
         pts.push([it.h.lat,it.h.lon]);
         return;
       }
@@ -1613,7 +1617,7 @@ renderLegend();
 function flRevList(){
   var panel=document.getElementById('revListPanel'); if(!panel) return;
   if(!revMode || !revStatusFilter){ panel.classList.remove('open'); panel.innerHTML=''; return; }
-  var list=allItems.filter(function(it){ return matches(it.h) && dimStatus(it.h)===revStatusFilter; }).map(function(it){ return it.h; });
+  var list=allItems.filter(function(it){ return matches(it.h) && !isNeniPozarni(it.h) && dimStatus(it.h)===revStatusFilter; }).map(function(it){ return it.h; });
   list.sort(function(a,b){ var da=revDaysLeft(a), db=revDaysLeft(b); if(da==null) return 1; if(db==null) return -1; return da-db; });
   var body = list.length ? list.map(function(h){
       return '<div class="tp-item" data-id="'+esc(h.id)+'" style="cursor:pointer"><span><b>'+esc(label(h))+'</b><br><span style="font-size:12px;color:#6b7a8d">📍 '+esc(town(h))+' · '+esc(revDaysText(h))+'</span></span></div>'; }).join('')
@@ -2421,7 +2425,7 @@ function openCard(h){
       '<button class="btn line" id="btnPdf">📥 Stáhnout</button>'+
       '<button class="btn primary" id="btnPrint">🖨️ Tisk</button>'+
     '</div>'+
-    (isNeniPozarni(h)?'<div class="note" style="color:#b71c1c">🚫 Tento hydrant je označen jako <b>nepožární</b> (dle aktuálního seznamu z pracoviště) – nezobrazuje se v požární vrstvě ani v počtech.</div>':'');
+    (isNeniPozarni(h)?'<div class="note">Zrušen jako požární (dle aktuálního seznamu z pracoviště) – veden jako <b>bez rozlišení</b>, stejně jako ostatní hydranty. Nepočítá se mezi požární a nejde do protokolu ani do seznamu H.</div>':'');
 
   backdrop.classList.add('open');
   requestAnimationFrame(()=> card.classList.add('open'));
@@ -2525,7 +2529,7 @@ function doPrint(h){
   const rows = [
     ['Číslo H v obci', txt(cisloLabel(h))],
     ['Typ hydrantu', (nad?'nadzemní':'podzemní')],
-    ['Funkce', txt(h.funkce)],
+    ['Funkce', txt(funkceOf(h))],
     ['Obec / město', town(h)],
     ['Umístění', txt(h.umisteni)],
     ['Upřesnění polohy', txt(candVal(h,'upresneni'))],
@@ -2596,6 +2600,7 @@ function protokolObce(){
 }
 function protokolItemsForTown(t){
   return allItems.filter(function(it){ var h=it.h;
+    if(isNeniPozarni(h)) return false; // zrušený požární – do protokolu ani seznamu požárních H nepatří
     if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return false;
     if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return false;
     return filterTown(h)===t;
@@ -2684,25 +2689,27 @@ function generateProtokolWord(towns){
   setTimeout(function(){ URL.revokeObjectURL(url); },1500);
 }
 // obce, které mají aspoň jeden hydrant v aktuálním výřezu mapy (pro předvýběr)
-function visibleTownsNow(){ var s={}; try{ var b=map.getBounds(); (typeof allItems!=='undefined'?allItems:[]).forEach(function(it){ var h=it.h; if(h&&h.lat!=null&&b.contains([h.lat,h.lon])){ var t=filterTown(h); if(t)s[t]=1; } }); }catch(e){} return s; }
 function buildProtokolPanel(){
   var wrap=document.getElementById('protokolPanel'); if(!wrap) return;
   var obce=protokolObce();
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📄 Protokol o revizi</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
-  var pre=selectedTowns, vis=visibleTownsNow();
-  // předvýběr: vybrané obce z filtru, jinak obce zrovna na ploše (mapě); jinak nic
-  function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
+  // předvýběr: vybrané obce z filtru (klidně víc – protokol jich zvládne víc naráz),
+  // jinak obec, kterou má uživatel na ploše (stejné pravidlo jako „Tisk pro obec")
+  var pre=selectedTowns, preTown=szPreTown(obce);
+  function isPre(t){ return pre.size ? pre.has(t) : (t===preTown); }
   wrap.innerHTML=
     '<div class="tp-head"><b>📄 Protokol – zaškrtni obce</b><button class="tp-clear" id="prtAll">Vše / nic</button></div>'+
     '<input id="prtSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="prtList">'+
-      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<button class="btn-toggle btn-share" id="prtGen" style="margin-top:6px">⬇️ Stáhnout protokol (Word)</button>';
   wrap.onclick=function(e){ e.stopPropagation(); };
   var _ps=document.getElementById('prtSearch');
   if(_ps){ _ps.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#prtList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _ps.focus(); }catch(e){} }, 60); }
+  // ať je předvybraná obec hned vidět (seznam obcí bývá dlouhý)
+  setTimeout(function(){ try{ var el=wrap.querySelector('#prtList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70);
   var allOn=false;
   document.getElementById('prtAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#prtList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
   document.getElementById('prtGen').onclick=function(){
@@ -2930,7 +2937,7 @@ function buildSeznamPanel(){
   // hydranty); má-li ve filtru vybranou jedinou obec, vyhrává ta. Stačí sjet dolů a tisknout.
   var preTown=szPreTown(obce);
   wrap.innerHTML=
-    '<div class="tp-head"><b>🖨️ Tisk pro obec</b><span style="font-size:10.5px;color:#7a8590">vyber 1 obec</span></div>'+
+    '<div class="tp-head"><b>🖨️ Tisk pro obec</b><button class="tp-clear" id="szClose">✕ Zruš tisk</button></div>'+
     '<input id="szSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="szList">'+
       obce.map(function(o){ var ch=(o.t===preTown)?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="radio" name="szTown" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
@@ -2941,6 +2948,7 @@ function buildSeznamPanel(){
     '</div>'+
     '<div style="font-size:10.5px;color:#7a8590;margin-top:4px;line-height:1.35">📋 Seznam H = tabulka k tisku · 🗺️ Mapa = klad listů A4 s ulicemi a čísly</div>';
   wrap.onclick=function(e){ e.stopPropagation(); };
+  document.getElementById('szClose').onclick=function(){ wrap.classList.remove('open'); };
   var _ss=document.getElementById('szSearch');
   if(_ss){ _ss.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _ss.focus(); }catch(e){} }, 60); }
@@ -3078,19 +3086,21 @@ function buildAktualPanel(){
   var wrap=document.getElementById('aktualPanel'); if(!wrap) return;
   var obce=protokolObce(); // stejná nabídka obcí jako protokol
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📝 Aktualizace údajů</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Vyber nejdřív 🏭 Pracoviště nebo 🏢 Svazek (nebo zruš filtry).</div>'; return; }
-  var pre=selectedTowns, vis=visibleTownsNow();
-  function isPre(t){ return pre.size ? pre.has(t) : !!vis[t]; }
+  var pre=selectedTowns, preTown=szPreTown(obce); // stejný předvýběr jako protokol/tisk
+  function isPre(t){ return pre.size ? pre.has(t) : (t===preTown); }
   wrap.innerHTML=
     '<div class="tp-head"><b>📝 Aktualizace – zaškrtni obce</b><button class="tp-clear" id="aktAll">Vše / nic</button></div>'+
     '<input id="aktSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="aktList">'+
-      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=isPre(o.t)?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<button class="btn-toggle btn-share" id="aktGen" style="margin-top:6px">⬇️ Stáhnout aktualizaci (Word)</button>';
   wrap.onclick=function(e){ e.stopPropagation(); };
   var _as=document.getElementById('aktSearch');
   if(_as){ _as.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#aktList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _as.focus(); }catch(e){} }, 60); }
+  // ať je předvybraná obec hned vidět (seznam obcí bývá dlouhý)
+  setTimeout(function(){ try{ var el=wrap.querySelector('#aktList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70);
   var allOn=false;
   document.getElementById('aktAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#aktList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
   document.getElementById('aktGen').onclick=function(){
@@ -3467,7 +3477,7 @@ function renderMarked(){
 map.addLayer(markedLayer); map.addLayer(markedCovLayer);
 function renderCand(){ candCluster.clearLayers(); candCovLayer.clearLayers(); if(revStatusFilter) return; if(!candOn||!KAND) return;
   var obecSet=visibleObecSet();
-  var fireVisible = allItems.filter(function(it){return matches(it.h);}).map(function(it){return it.h;});
+  var fireVisible = allItems.filter(function(it){return matches(it.h) && !isNeniPozarni(it.h);}).map(function(it){return it.h;});
   var promoted = KAND.filter(function(h){ var d=domereni[h.id]; return d&&d.povyseno; });
   var fireForGap = fireVisible.concat(promoted);
   KAND.forEach(function(h){
@@ -3519,7 +3529,7 @@ function openCandCard(h){
     ['Obec / město',candTown(h)],
     ['Provozní středisko',candPrac(h)],
     ['Vlastník',txt(h.vlastnik)],
-    ['Funkce (dnes)',txt(h.funkce)],
+    ['Funkce (dnes)',txt(funkceOf(h))],
     ['Umístění',txt(h.umisteni)],
     ['Upřesnění polohy',txt(h.upresneni)],
     ['DN hydrantu',txt(candVal(h,'dn'))],
@@ -4107,7 +4117,7 @@ var GIS_EXPORT_COLS=[
   ['OBJECTID', function(h){ var id=parseInt(h.id,10); return (isFinite(id)&&id<900000)?String(h.id):''; }], // = naše id; umělé 900000+ (body přidané v appce) nechává prázdné
   ['Název', function(h){ return cisloOf(h); }],   // holé číslo H, jak to má GIS (v appce se ukazuje s předponou HN/HP, do dat se předpona nepíše)
   ['Typ hydrantu', function(h){ return candVal(h,'typ'); }],
-  ['Funkce hydrantu', function(h){ return candVal(h,'funkce'); }],
+  ['Funkce hydrantu', function(h){ return funkceOf(h); }],   // zrušený požární jde do GISu jako „bez rozlišení"
   ['Umístění', function(h){ return candVal(h,'umisteni'); }],
   ['DN hydrantu', function(h){ return candVal(h,'dn'); }],
   ['Výška povrchu [m.n.m.]', function(h){ return vyskaGis(h); }],   // jen hodnota z GISu/doměření – orientační výškopis se sem NEPÍŠE
