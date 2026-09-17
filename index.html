@@ -1338,7 +1338,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.221';
+const APP_VERSION = '1.222';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -1873,9 +1873,15 @@ document.getElementById('shareBtn').onclick=async()=>{
   }catch(e){ /* uživatel sdílení zrušil – nic nedělat */ }
 };
 
-// ---- promo video (otevře přehrávač promo v novém okně) ----
+// ---- promo video (otevře stránku s videem – přehraje se i na mobilu a jde odtud sdílet) ----
+// Otevírá se klikem na <a target=_blank>, ne window.open(): to v PWA (appka spuštěná z plochy)
+// i s blokovanými pop-upy často neudělá nic. Animovaná verze promo/florian-promo.html je jen
+// pro PC – na výšku je z 16:9 scény nečitelný proužek; na mobilu patří MP4.
 (function(){ var b=document.getElementById('promoBtn'); if(b) b.onclick=function(){
-  window.open('https://pkobelka.github.io/florian/promo/florian-promo.html','_blank','noopener');
+  var u='https://pkobelka.github.io/florian/promo/video.html';
+  try{ var a=document.createElement('a'); a.href=u; a.target='_blank'; a.rel='noopener';
+       document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+  catch(e){ location.href=u; }
 }; })();
 
 // coverage toggle

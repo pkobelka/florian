@@ -11,8 +11,13 @@ Krátký přehled, ať se dá příště rychle navázat. Poslední aktualizace:
 - **Živé veřejné odkazy** (GitHub Pages, bez přihlášení):
   - Video: https://pkobelka.github.io/florian/promo/florian-promo.mp4
   - Přehrávač: https://pkobelka.github.io/florian/promo/florian-promo.html
+- **Stránka s videem pro mobil + sdílení**: `promo/video.html` – nativní `<video>` s MP4
+  (přehraje se i na výšku), tlačítka Sdílet (Web Share API: na mobilu pošle rovnou soubor,
+  jinak odkaz), WhatsApp, Facebook, Kopírovat odkaz, Stáhnout; OG tagy pro náhled odkazu.
+  Animace `florian-promo.html` je jen pro PC – v portrétu je z 16:9 scény nečitelný proužek.
+  - Stránka: https://pkobelka.github.io/florian/promo/video.html
 - **V appce**: tlačítko **🎬 Promo video** vedle „📤 Sdílet appku“ (admin-only,
-  `promoBtn` v `index.html`, řízeno `flApplyAdminUI`). App verze **1.172**, sw `florian-v179`.
+  `promoBtn` v `index.html`, řízeno `flApplyAdminUI`) – otevírá `promo/video.html`.
 
 ## Scény promo (7)
 1. Hook — foto hydrantu, „Když hoří, počítá se každá minuta.“
