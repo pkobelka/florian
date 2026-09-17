@@ -1338,7 +1338,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.219';
+const APP_VERSION = '1.220';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -2954,6 +2954,16 @@ function buildSeznamPanel(){
     setTimeout(function(){ try{ _ss.focus(); }catch(e){} }, 60); }
   // ať je předvybraná obec hned vidět (seznam obcí bývá dlouhý)
   if(preTown){ setTimeout(function(){ try{ var el=wrap.querySelector('#szList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70); }
+  // Přepínač jinak nejde odškrtnout: druhý klik na už vybranou obec výběr zruší
+  // (na ploše bývají i dvě obce – předvybere se jedna a uživatel chce tu druhou, nebo žádnou).
+  // Reagujeme jen na klik s cílem <input> – klik na text štítku pošle na input vlastní klik,
+  // takže se každý klik uživatele započítá právě jednou.
+  var _szSel=preTown;
+  var _szl=document.getElementById('szList');
+  if(_szl) _szl.addEventListener('click', function(e){
+    var r=e.target; if(!r||r.tagName!=='INPUT'||r.name!=='szTown') return;
+    if(r.value===_szSel){ r.checked=false; _szSel=''; } else { _szSel=r.value; }
+  });
   function _szTown(){ var c=wrap.querySelector('#szList input[name=szTown]:checked'); return c?c.value:''; }
   document.getElementById('szGen').onclick=function(){
     var t=_szTown();
