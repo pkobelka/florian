@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="cs">
+<meta charset="utf-8">
+<title>Florián 2.0 — promo video</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06192e">
+<!-- náhled odkazu ve WhatsAppu / na Facebooku -->
+<meta property="og:type" content="video.other">
+<meta property="og:site_name" content="Florián 2.0">
+<meta property="og:title" content="Florián 2.0 — požární hydranty pod kontrolou">
+<meta property="og:description" content="Mapa požárních hydrantů, pokrytí dle ČSN 73 0873, karta hydrantu, protokol o revizi. Zdarma, bez instalace – mobil, tablet i PC.">
+<meta property="og:url" content="https://pkobelka.github.io/florian/promo/video.html">
+<meta property="og:image" content="https://pkobelka.github.io/florian/icon-512.png">
+<meta property="og:video" content="https://pkobelka.github.io/florian/promo/florian-promo.mp4">
+<meta property="og:video:secure_url" content="https://pkobelka.github.io/florian/promo/florian-promo.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:video:width" content="1280">
+<meta property="og:video:height" content="720">
+<meta name="twitter:card" content="player">
+<link rel="icon" href="../icon-192.png">
+<style>
+:root{ --navy:#06192e; --ink:#eef4fb; --muted:#9fb4cc; --blue:#2f8fe0; --line:rgba(159,180,204,.22) }
+*{box-sizing:border-box;margin:0;padding:0}
+body{ background:#02080f; color:#eef4fb; font:500 16px/1.5 -apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  min-height:100dvh; padding:16px 16px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:14px }
+.wrap{ width:100%; max-width:760px; display:flex; flex-direction:column; gap:14px }
+header{ display:flex; align-items:center; gap:10px }
+header img{ height:40px; width:auto; border-radius:9px; display:block }
+header h1{ font-size:17px; font-weight:800; letter-spacing:.01em; line-height:1.2 }
+header .sub{ font-size:12.5px; color:var(--muted); font-weight:500 }
+video{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; display:block; box-shadow:0 10px 34px rgba(0,0,0,.55) }
+.btns{ display:grid; grid-template-columns:1fr 1fr; gap:9px }
+.btn{ appearance:none; border:1px solid var(--line); background:#0d2440; color:var(--ink); font:700 15px/1 inherit;
+  padding:14px 12px; border-radius:11px; cursor:pointer; text-align:center; text-decoration:none; display:flex;
+  align-items:center; justify-content:center; gap:7px; min-height:50px }
+.btn:active{ transform:translateY(1px) }
+.btn.primary{ grid-column:1 / -1; background:var(--blue); border-color:var(--blue); color:#fff; font-size:16px }
+.btn[disabled]{ opacity:.55; pointer-events:none }
+.note{ font-size:12.5px; color:var(--muted); line-height:1.45 }
+.note a{ color:var(--blue) }
+#msg{ font-size:13px; color:var(--blue); min-height:18px; text-align:center }
+</style>
+
+<div class="wrap">
+  <header>
+    <img src="../icon-192.png" alt="">
+    <div>
+      <h1>Florián 2.0 — promo video</h1>
+      <div class="sub">59 s · bez mluveného slova · VHOS, a.s.</div>
+    </div>
+  </header>
+
+  <video id="v" controls playsinline preload="metadata" src="florian-promo.mp4"></video>
+
+  <div class="btns">
+    <button class="btn primary" id="bShare">📤 Sdílet video</button>
+    <a class="btn" id="bWa" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+    <a class="btn" id="bFb" href="#" target="_blank" rel="noopener">📘 Facebook</a>
+    <button class="btn" id="bCopy">🔗 Kopírovat odkaz</button>
+    <a class="btn" id="bDl" href="florian-promo.mp4" download="florian-promo.mp4">⬇️ Stáhnout</a>
+  </div>
+
+  <div id="msg"></div>
+
+  <div class="note">
+    <b>📤 Sdílet video</b> pošle do WhatsAppu rovnou celý soubor (na mobilu). Facebook umí jen odkaz —
+    tam se sdílí tahle stránka s náhledem. Na počítači stáhni video tlačítkem ⬇️ a nahraj ho jako příspěvek.
+    <br><br>
+    Odkaz na aplikaci: <a href="https://pkobelka.github.io/florian/">pkobelka.github.io/florian</a> ·
+    <a href="florian-promo.html">promo jako animace (na PC)</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PAGE = 'https://pkobelka.github.io/florian/promo/video.html';  // co se posílá dál (veřejný odkaz)
+  // video se stahuje ze stejného původu jako tahle stránka – jinak by sdílení souboru
+  // padalo na CORS a fungovalo by jen na github.io
+  var MP4  = new URL('florian-promo.mp4', location.href).href;
+  var TITLE= 'Florián 2.0 — požární hydranty pod kontrolou';
+  var TEXT = 'Florián 2.0 – mapa požárních hydrantů, pokrytí dle ČSN 73 0873, karta hydrantu i protokol o revizi. Zdarma, bez instalace: https://pkobelka.github.io/florian/';
+  var msg=document.getElementById('msg');
+  function say(t){ msg.textContent=t||''; }
+
+  document.getElementById('bWa').href = 'https://wa.me/?text='+encodeURIComponent(TEXT+'\n'+PAGE);
+  document.getElementById('bFb').href = 'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(PAGE);
+
+  function copyLink(){
+    var done=function(){ say('Odkaz zkopírován ✓'); setTimeout(function(){say('');},2500); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(PAGE).then(done, fallback); }
+    else fallback();
+    function fallback(){ // starší prohlížeče: vyber text a zkopíruj postaru
+      try{ var ta=document.createElement('textarea'); ta.value=PAGE; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
+      }catch(e){ say('Zkopíruj ručně: '+PAGE); }
+    }
+  }
+  document.getElementById('bCopy').onclick=copyLink;
+
+  // Sdílení: na mobilu pošli rovnou soubor (WhatsApp ho vezme jako video),
+  // jinak sdílej odkaz; když prohlížeč sdílení neumí, zkopíruj odkaz.
+  var bShare=document.getElementById('bShare');
+  bShare.onclick=function(){
+    var canFiles=false;
+    try{ canFiles = !!(navigator.canShare && navigator.share && window.File); }catch(e){}
+    if(!canFiles) return shareLink();
+    bShare.disabled=true; say('Připravuji video (6,8 MB)…');
+    fetch(MP4).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){
+      var f=new File([b],'florian-promo.mp4',{type:'video/mp4'});
+      if(!navigator.canShare({files:[f]})) throw 0;
+      return navigator.share({files:[f], title:TITLE, text:TEXT});
+    }).then(function(){ bShare.disabled=false; say(''); })
+     .catch(function(e){
+        bShare.disabled=false; say('');
+        if(e && e.name==='AbortError') return;      // uživatel sdílení zavřel – nic dalšího nedělej
+        shareLink();
+     });
+  };
+  function shareLink(){
+    if(navigator.share){
+      navigator.share({title:TITLE, text:TEXT, url:PAGE}).catch(function(e){
+        if(e && e.name==='AbortError') return;
+        copyLink();
+      });
+    } else copyLink();
+  }
+})();
+</script>
