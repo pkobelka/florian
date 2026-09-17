@@ -1339,7 +1339,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.217';
+const APP_VERSION = '1.218';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -2925,45 +2925,58 @@ function buildSeznamPanel(){
   var wrap=document.getElementById('seznamPanel'); if(!wrap) return;
   var obce=protokolObce();
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📋 Seznam pro obec</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Zruš filtry nebo vyber pracoviště/svazek.</div>'; return; }
-  // Předvýběr jako u protokolu: obce z filtru, jinak obce zrovna na ploše (v mapě) – ať se
-  // po zoomu na obec rovnou nabídne zaškrtnutá a stačí sjet dolů a tisknout.
-  // Pojistka: při odzoomované mapě (víc než SZ_PRE_MAX obcí na ploše) se nezaškrtne nic –
-  // tisk celého pracoviště je drahý omyl (desítky stránek a stovky dlaždic).
-  var SZ_PRE_MAX=3;
-  var pre=selectedTowns, vis=visibleTownsNow();
-  var preList=obce.filter(function(o){ return pre.size ? pre.has(o.t) : !!vis[o.t]; }).map(function(o){return o.t;});
-  if(preList.length>SZ_PRE_MAX) preList=[];
-  var preSet={}; preList.forEach(function(t){ preSet[t]=1; });
+  // Tiskne se vždy jen JEDNA obec → přepínač (radio), ne zaškrtávátka.
+  // Předvybere se obec, kterou má uživatel na ploše (při víc obcích v záběru ta s nejvíc
+  // hydranty); má-li ve filtru vybranou jedinou obec, vyhrává ta. Stačí sjet dolů a tisknout.
+  var preTown=szPreTown(obce);
   wrap.innerHTML=
-    '<div class="tp-head"><b>🖨️ Tisk pro obec</b><button class="tp-clear" id="szAll">Vše / nic</button></div>'+
+    '<div class="tp-head"><b>🖨️ Tisk pro obec</b><span style="font-size:10.5px;color:#7a8590">vyber 1 obec</span></div>'+
     '<input id="szSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="szList">'+
-      obce.map(function(o){ var ch=preSet[o.t]?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=(o.t===preTown)?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="radio" name="szTown" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<div style="display:flex;gap:6px;margin-top:6px">'+
       '<button class="btn-toggle btn-share" id="szGen" style="flex:1">📋 Seznam H</button>'+
       '<button class="btn-toggle btn-share" id="szMap" style="flex:1">🗺️ Mapa</button>'+
     '</div>'+
-    '<div style="font-size:10.5px;color:#7a8590;margin-top:4px;line-height:1.35">📋 Seznam H = tabulka k tisku · 🗺️ Mapa = klad listů A4 (jen 1 obec)</div>';
+    '<div style="font-size:10.5px;color:#7a8590;margin-top:4px;line-height:1.35">📋 Seznam H = tabulka k tisku · 🗺️ Mapa = klad listů A4 s ulicemi a čísly</div>';
   wrap.onclick=function(e){ e.stopPropagation(); };
   var _ss=document.getElementById('szSearch');
   if(_ss){ _ss.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _ss.focus(); }catch(e){} }, 60); }
-  // ať je předzaškrtnutá obec hned vidět (seznam obcí bývá dlouhý)
-  if(preList.length){ setTimeout(function(){ try{ var el=wrap.querySelector('#szList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70); }
-  var allOn=false;
-  document.getElementById('szAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
-  function _szTowns(){ var t=[]; wrap.querySelectorAll('#szList input[type=checkbox]:checked').forEach(function(c){ t.push(c.value); }); return t; }
+  // ať je předvybraná obec hned vidět (seznam obcí bývá dlouhý)
+  if(preTown){ setTimeout(function(){ try{ var el=wrap.querySelector('#szList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70); }
+  function _szTown(){ var c=wrap.querySelector('#szList input[name=szTown]:checked'); return c?c.value:''; }
   document.getElementById('szGen').onclick=function(){
-    var towns=_szTowns();
-    if(!towns.length){ flToast('Zaškrtni aspoň jednu obec.'); return; }
-    generateSeznam(towns);
+    var t=_szTown();
+    if(!t){ flToast('Vyber obec.'); return; }
+    generateSeznam([t]);
   };
   document.getElementById('szMap').onclick=function(){
-    var towns=_szTowns();
-    if(towns.length!==1){ flToast('Pro mapu (klad listů) zaškrtni právě jednu obec.'); return; }
-    generateKladMapa(towns[0]);
+    var t=_szTown();
+    if(!t){ flToast('Vyber obec.'); return; }
+    generateKladMapa(t);
   };
+}
+// Obec k předvýběru v „Tisk pro obec": jediná vybraná ve filtru, jinak obec s nejvíc
+// hydranty v aktuálním výřezu mapy ('' = na ploše není nic, co by šlo nabídnout).
+function szPreTown(obce){
+  // kandidáti: obce vybrané ve filtru (když nějaké jsou), jinak všechny z nabídky
+  var cand=obce.map(function(o){return o.t;});
+  if(selectedTowns.size) cand=cand.filter(function(t){ return selectedTowns.has(t); });
+  if(!cand.length) return '';
+  if(cand.length===1) return cand[0];
+  // víc kandidátů → ta s nejvíc hydranty v aktuálním výřezu mapy
+  var ok={}; cand.forEach(function(t){ ok[t]=1; });
+  var cnt={}, best='', bestN=0;
+  try{ var b=map.getBounds();
+    (typeof allItems!=='undefined'?allItems:[]).forEach(function(it){ var h=it.h;
+      if(!h||h.lat==null||!b.contains([h.lat,h.lon])) return;
+      var t=filterTown(h); if(!t||!ok[t]) return;
+      cnt[t]=(cnt[t]||0)+1; if(cnt[t]>bestN){ bestN=cnt[t]; best=t; } });
+  }catch(e){}
+  // na ploše nic z kandidátů → při vybraném filtru nabídni aspoň první z nich
+  return best || (selectedTowns.size?cand[0]:'');
 }
 var _szb=document.getElementById('seznamBtn');
 if(_szb) _szb.onclick=function(e){ e.stopPropagation();
