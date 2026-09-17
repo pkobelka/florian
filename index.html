@@ -1339,7 +1339,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.216';
+const APP_VERSION = '1.217';
 const APP_YEAR = 2026;
 const APP_UPDATED = '17. 9. 2026';
 
@@ -2113,32 +2113,13 @@ function vdjTlak(h){
     nadHladinou:(dMax<=0) };
 }
 function fmtMPa(n){ return n.toFixed(2).replace('.',','); }
-// rozdíl proti naměřenému tlaku (kontrola dat); '' když se neměřilo
-function vdjRozdil(h,t){ var raw=candVal(h,'tlakStat'); if(!hasVal(raw)) return '';
-  var m=parseNum(raw); if(m==null) return '';
-  var d=t.pMax-m; return ' · naměřeno '+fmtMPa(m)+' ('+(d<0?'−':'+')+fmtMPa(Math.abs(d))+')'; }
-// hodnota do karty (HTML) – vždy „≈", je to dopočet, ne měření
-function vdjTlakHtml(h){
-  var v=vdjFor(h); if(!v) return '—';
-  var t=vdjTlak(h);
-  if(!t) return '<span class="vy-dem">čeká na nadmořskou výšku</span>';
-  if(t.nadHladinou) return '0 MPa <span class="vy-dem">(hydrant leží nad max. hladinou VDJ)</span>';
-  return '≈ '+fmtMPa(t.pMax)+' MPa <span class="vy-dem" title="Dopočet z hladiny ve vodojemu a nadmořské výšky hydrantu (1 m vodního sloupce ≈ 0,00981 MPa). Není to měření.">('+
-    esc(v.nazev)+', max. hladina '+czNum(v.maxHl)+' m n. m. · Δ '+czNum(t.dh)+' m'+
-    (t.zdroj==='dem'?' · výška z výškopisu':'')+vdjRozdil(h,t)+')</span>'; }
-// hodnota do tisku / textového výpisu (bez HTML)
-function vdjTlakText(h){
-  var v=vdjFor(h); if(!v) return '—';
+// Jedna hodnota hydrostatického tlaku do karty i tisku: přednost má naměřená hodnota,
+// když se neměřilo, doplní se dopočet z vodojemu (bez rozlišení, odkud číslo je).
+// Pozor: hodnocení dle ČSN (tlakStatStav / csnOk) se dál dělá JEN z naměřených hodnot –
+// dopočet je orientační a nesmí hydrant „shodit" ani „zachránit".
+function tlakStatDisp(h){ var v=meas(candVal(h,'tlakStat')); if(v!=='—') return v;
   var t=vdjTlak(h); if(!t) return '—';
-  if(t.nadHladinou) return '0 MPa (hydrant leží nad max. hladinou VDJ)';
-  return '≈ '+fmtMPa(t.pMax)+' (max. hladina) / '+fmtMPa(t.pMin)+' (min. hladina) · '+v.nazev+
-    ', Δ '+czNum(t.dh)+' m'+(t.zdroj==='dem'?', výška z výškopisu':''); }
-// řádek do bloku „facts" v kartě (async doplnění přes #factVdjTlak, až dorazí výška)
-function vdjFactHtml(h){ if(!vdjFor(h)) return '';
-  return '<div class="fact"><div class="fk">Statický tlak z VDJ</div><div class="fv" id="factVdjTlak">'+vdjTlakHtml(h)+'</div></div>'; }
-// dopočet pod dlaždicí hydrostatického tlaku (drobným, jako doplněk k naměřené hodnotě)
-function vdjTileHtml(h){ var t=vdjTlak(h); if(!t||t.nadHladinou) return '';
-  return '<div class="m3h" title="Dopočet z vodojemu '+esc(t.vdj.nazev)+' (max. hladina '+czNum(t.vdj.maxHl)+' m n. m.), ne měření">≈ '+fmtMPa(t.pMax)+' z VDJ</div>'; }
+  return t.nadHladinou ? '0' : fmtMPa(t.pMax); }
 // blok vodojemů do legendy vrstvy 🚰 Vodovod (objem, komory, hladiny)
 function vdjLegendHtml(){
   return VODOJEMY.map(function(v){
@@ -2286,7 +2267,7 @@ function prutokLsTile(h){ var v=candVal(h,'prutok'); var bad=prutokStav(v)==='ba
   return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">průtok l/s</div>'+(bad?'<div class="mwarn">min '+PRUTOK_MIN+' l/s ✗</div>':'')+'</div>'; }
 /* dlaždice hydrostatického tlaku do karty (zvýrazní, když nesplňuje) */
 function tlakStatTile(h){ var v=candVal(h,'tlakStat'); var bad=tlakStatStav(v)==='bad';
-  return '<div class="metric'+(bad?' bad':'')+'"><div class="v">'+meas(v)+'</div><div class="k">hydrostatický tlak (MPa)</div>'+(bad?'<div class="mwarn">min '+String(TLAK_STAT_MIN).replace('.',',')+' MPa ✗</div>':'')+'<div id="tileVdjTlak">'+vdjTileHtml(h)+'</div></div>'; }
+  return '<div class="metric'+(bad?' bad':'')+'"><div class="v" id="tileTlakStat">'+tlakStatDisp(h)+'</div><div class="k">hydrostatický tlak (MPa)</div>'+(bad?'<div class="mwarn">min '+String(TLAK_STAT_MIN).replace('.',',')+' MPa ✗</div>':'')+'</div>'; }
 /* dlaždice hydrodynamického tlaku do karty (informativní – měří se při odběru) */
 function tlakDynTile(h){ var v=candVal(h,'tlakDyn');
   return '<div class="metric"><div class="v">'+meas(v)+'</div><div class="k">hydrodynamický tlak (MPa)</div></div>'; }
@@ -2554,7 +2535,7 @@ function doPrint(h){
     ['Osazen na potrubí DN', txt(dnRaduOf(h))],
     ['Průtok [m³/h]', (prutokM3h(candVal(h,'prutok'))||'—')],
     ['Průtok [l/s]', meas(candVal(h,'prutok'))],
-    ['Hydrostatický tlak [MPa]', meas(candVal(h,'tlakStat'))],
+    ['Hydrostatický tlak [MPa]', tlakStatDisp(h)],
     ['Hydrodynamický tlak [MPa]', meas(candVal(h,'tlakDyn'))],
     ['Poslední revize', txt(candVal(h,'datumRevize'))],
     ['Vlastník', txt(h.vlastnik)],
@@ -2564,7 +2545,6 @@ function doPrint(h){
     ['OBJECTID (GIS)', txt(String(h.id||''))],
     ['GPS', h.lat.toFixed(6)+', '+h.lon.toFixed(6)],
     ['Nadmořská výška', vyskaText(h)],
-    ['Statický tlak z VDJ [MPa]', vdjTlakText(h)],
   ];
   const ph = cloudPhotos[h.id] || photoData[h.id];
   const tbl = arr => '<table>'+arr.map(r=>'<tr><td class="k">'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</table>';
@@ -2945,13 +2925,20 @@ function buildSeznamPanel(){
   var wrap=document.getElementById('seznamPanel'); if(!wrap) return;
   var obce=protokolObce();
   if(!obce.length){ wrap.innerHTML='<div class="tp-head"><b>📋 Seznam pro obec</b></div><div style="font-size:12px;color:#666;padding:8px;line-height:1.4">Nejsou žádné obce. Zruš filtry nebo vyber pracoviště/svazek.</div>'; return; }
-  // Tisk pro obec záměrně startuje s NIČÍM zaškrtnutým – tisk celého pracoviště je drahý
-  // omyl (desítky stránek a stovky dlaždic). Vybrat vše jde jedním klikem na „Vše / nic".
+  // Předvýběr jako u protokolu: obce z filtru, jinak obce zrovna na ploše (v mapě) – ať se
+  // po zoomu na obec rovnou nabídne zaškrtnutá a stačí sjet dolů a tisknout.
+  // Pojistka: při odzoomované mapě (víc než SZ_PRE_MAX obcí na ploše) se nezaškrtne nic –
+  // tisk celého pracoviště je drahý omyl (desítky stránek a stovky dlaždic).
+  var SZ_PRE_MAX=3;
+  var pre=selectedTowns, vis=visibleTownsNow();
+  var preList=obce.filter(function(o){ return pre.size ? pre.has(o.t) : !!vis[o.t]; }).map(function(o){return o.t;});
+  if(preList.length>SZ_PRE_MAX) preList=[];
+  var preSet={}; preList.forEach(function(t){ preSet[t]=1; });
   wrap.innerHTML=
     '<div class="tp-head"><b>🖨️ Tisk pro obec</b><button class="tp-clear" id="szAll">Vše / nic</button></div>'+
     '<input id="szSearch" placeholder="🔍 hledat obec…" style="width:100%;padding:6px 8px;margin:4px 0;border:1px solid #cdd6e0;border-radius:6px;font-size:13px;font-family:inherit">'+
     '<div class="tp-list" id="szList">'+
-      obce.map(function(o){ var ch=''; return '<label class="tp-item"><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
+      obce.map(function(o){ var ch=preSet[o.t]?' checked':''; return '<label class="tp-item"'+(ch?' data-pre="1"':'')+'><input type="checkbox" value="'+esc(o.t)+'"'+ch+'><span>'+esc(o.t)+'</span><span class="tp-c">'+o.n+'</span></label>'; }).join('')+
     '</div>'+
     '<div style="display:flex;gap:6px;margin-top:6px">'+
       '<button class="btn-toggle btn-share" id="szGen" style="flex:1">📋 Seznam H</button>'+
@@ -2962,6 +2949,8 @@ function buildSeznamPanel(){
   var _ss=document.getElementById('szSearch');
   if(_ss){ _ss.oninput=function(){ var q=this.value.trim().toLowerCase(); wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ var sp=it.querySelector('span'); var t=(sp?sp.textContent:'').toLowerCase(); it.style.display=(!q||t.indexOf(q)>=0)?'':'none'; }); };
     setTimeout(function(){ try{ _ss.focus(); }catch(e){} }, 60); }
+  // ať je předzaškrtnutá obec hned vidět (seznam obcí bývá dlouhý)
+  if(preList.length){ setTimeout(function(){ try{ var el=wrap.querySelector('#szList .tp-item[data-pre]'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }catch(e){} }, 70); }
   var allOn=false;
   document.getElementById('szAll').onclick=function(){ allOn=!allOn; wrap.querySelectorAll('#szList .tp-item').forEach(function(it){ if(it.style.display!=='none'){ var c=it.querySelector('input'); if(c)c.checked=allOn; } }); };
   function _szTowns(){ var t=[]; wrap.querySelectorAll('#szList input[type=checkbox]:checked').forEach(function(c){ t.push(c.value); }); return t; }
@@ -3210,13 +3199,12 @@ function vyskaHtml(h){ var g=vyskaGis(h); if(g!=='') return esc(g)+' m n. m.';
 function vyskaText(h){ var g=vyskaGis(h); if(g!=='') return g+' m n. m.';
   var d=vyskaDem(h); return (d==null)?'—':('≈ '+d+' m n. m. (výškopis)'); }
 // řádek do bloku „facts“ v kartě (async doplnění přes #factVyska)
-function vyskaFactHtml(h){ return '<div class="fact"><div class="fk">Nadmořská výška</div><div class="fv" id="factVyska">'+vyskaHtml(h)+'</div></div>'+vdjFactHtml(h); }
+function vyskaFactHtml(h){ return '<div class="fact"><div class="fk">Nadmořská výška</div><div class="fv" id="factVyska">'+vyskaHtml(h)+'</div></div>'; }
 // až dorazí výška z výškopisu, dopočítej i tlak z VDJ (karta je otevřená, jen se doplní hodnoty)
 function wireVyska(h){ flFetchVyska(h,function(){
   if(!(current&&current.id===h.id)) return;
   var el=document.getElementById('factVyska'); if(el) el.innerHTML=vyskaHtml(h);
-  var ev=document.getElementById('factVdjTlak'); if(ev) ev.innerHTML=vdjTlakHtml(h);
-  var et=document.getElementById('tileVdjTlak'); if(et) et.innerHTML=vdjTileHtml(h); }); }
+  var et=document.getElementById('tileTlakStat'); if(et) et.textContent=tlakStatDisp(h); }); }
 function csnLbl(v){ return ((v||'').trim()==='Ne')?'Ne ✗':'Ano ✓'; }
 function _cz2iso(v){ v=(v||'').trim(); var m=v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/); return m?(m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2)):''; }
 function _iso2cz(v){ v=(v||'').trim(); var m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?(parseInt(m[3],10)+'.'+parseInt(m[2],10)+'.'+m[1]):''; }
