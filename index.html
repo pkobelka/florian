@@ -2552,6 +2552,7 @@ function doPrint(h){
     ['Druh vody', txt(h.druhVody)],
     ['DN hydrantu', txt(candVal(h,'dn'))],
     ['Osazen na potrubí DN', txt(dnRaduOf(h))],
+    ['Průtok [m³/h]', (prutokM3h(candVal(h,'prutok'))||'—')],
     ['Průtok [l/s]', meas(candVal(h,'prutok'))],
     ['Hydrostatický tlak [MPa]', meas(candVal(h,'tlakStat'))],
     ['Hydrodynamický tlak [MPa]', meas(candVal(h,'tlakDyn'))],
