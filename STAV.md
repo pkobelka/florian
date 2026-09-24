@@ -1,11 +1,21 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.223**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.224**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Nejbližší hydranty: hodnoty v seznamu + rychlý přehled** (v1.224)
+   - V seznamu 3 nejbližších je u každého řádek `💧 m³/h · statický / dynamický MPa`, nejvyšší průtok
+     zeleně „nejvíc vody" (`nearBest`) – hasič vybere nejvydatnější, i když je o kus dál.
+   - **Ukázat** otevře místo celé karty **rychlý přehled uprostřed displeje** (`nearInfoOpen`):
+     průtok m³/h (+ l/s), statický tlak (≈ dopočet z VDJ, když není měřený), dynamický tlak,
+     tlačítka Vést sem / Mapy.com / Google / Celá karta / Zavřít. Pod normou červeně.
+   - **Celá karta** z přehledu jede přes celý displej (`.card.full`).
+   - **Oprava (v1.223):** zvětšená otočená mapa roztahovala na mobilu rozvržení stránky → karta
+     a okna vyjížděly posunuté (vidět jen část). Nově v navigaci `body{position:fixed;overflow:hidden}`.
 
 **Navigace: mapa po směru jízdy + nejbližší hydrant** (v1.223)
    - Po zapnutí 📍 polohy se mapa **otáčí po směru jízdy** (směr nahoru, jako navigace). Směr z GPS

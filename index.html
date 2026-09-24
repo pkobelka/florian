@@ -865,7 +865,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   filter:drop-shadow(0 0 1.5px #fff)}
 .me-nav.nodir .me-cone{display:none}
 /* navigace: mapa po směru jízdy – #map je zvětšený na úhlopříčku a otáčí se (viz navApply) */
-html.navbig, html.navbig body{overflow:hidden}
+/* body ořízne zvětšenou mapu – jinak by mobilní prohlížeč roztáhl rozvržení na její rozměr
+   a karty/okna (position:fixed) by vyjely posunuté mimo displej */
+html.navbig{overflow:hidden}
+html.navbig body{position:fixed;inset:0;overflow:hidden}
 html.navbig #map{transform-origin:50% 50%;transition:transform .6s ease-out}
 html.navbig #map .leaflet-marker-icon > :not(.me-nav){rotate:var(--nav-unrot,0deg);transition:rotate .6s ease-out}
 html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-px);top:var(--nav-py);width:var(--nav-w);height:var(--nav-h);
@@ -893,6 +896,28 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .near-acts button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 4px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;color:var(--blue-dark)}
 .near-acts button[data-act=lead]{background:var(--blue);color:#fff;border-color:var(--blue)}
 .near-sub{margin-top:8px;font-size:12px;color:#78909c;font-weight:700}
+.near-c{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.near-v{font-size:11.5px;color:#546e7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.near-v.best{color:#1b5e20;font-weight:700}
+/* rychlý přehled hydrantu uprostřed displeje */
+.near-info{display:none;position:fixed;inset:0;z-index:1150;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
+.near-info.open{display:flex}
+.ni-box{background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.35);width:100%;max-width:300px;max-height:calc(100dvh - 32px);overflow:auto;padding:14px}
+.ni-hd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-bottom:8px}
+.ni-hd b{font-size:17px}
+.ni-t{font-size:12.5px;color:#607d8b}
+.ni-m{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;border-radius:10px;background:#f1f6fb;padding:8px 12px;margin-top:6px}
+.ni-m span{font-size:13px;color:#455a64;font-weight:600}
+.ni-m b{font-size:22px;color:var(--blue-dark)}
+.ni-m b small{font-size:12px;font-weight:600}
+.ni-m i{flex-basis:100%;text-align:right;font-style:normal;font-size:11.5px;color:#78909c}
+.ni-m.bad{background:#fdecea}
+.ni-m.bad b{color:var(--red)}
+.ni-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.ni-acts button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 6px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;color:var(--blue-dark)}
+.ni-acts button.pri{grid-column:1/-1;background:var(--blue);color:#fff;border-color:var(--blue)}
+.ni-acts button.ni-x{grid-column:2}
+.card.full{max-height:none;height:100dvh;border-radius:0}
 .legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
   color:#111;font-size:11px;line-height:1.5;font-weight:600}
 .legend .credit b{display:inline;color:#111;font-weight:800;margin:0;gap:0}
@@ -1342,6 +1367,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2.5l4.6 9.5H7.4z" fill="#c62828"/><path d="M12 21.5L7.4 12h9.2z" fill="#90a4ae"/></svg>
 </button>
 <div class="near-h" id="nearH" style="display:none"></div>
+<div class="near-info" id="nearInfo"></div>
 
 <div class="backdrop" id="backdrop"></div>
 <div class="card" id="card" role="dialog" aria-modal="true">
@@ -1378,7 +1404,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.223';
+const APP_VERSION = '1.224';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2413,6 +2439,7 @@ function nearRender(ll){
   if(!nearEl) return;
   if(ll) nearLast=ll; ll=nearLast;
   if(!watching || !ll){ nearEl.style.display='none'; nearEl.innerHTML=''; nearIds=''; nearLast=null; return; }
+  var nd=nearInfoH&&document.getElementById('niDist'); if(nd) nd.textContent=nearDist(ll,nearInfoH);
   var list=nearList(ll,3); if(!list.length && !navTarget){ nearEl.style.display='none'; return; }
   nearEl.style.display='';
   if(navTarget) navDrawLine(ll);
@@ -2435,12 +2462,14 @@ function nearRender(ll){
   nearIds=ids; nearEl.classList.add('open');
   var html='<div class="near-hd"><span>'+(navTarget?'🎯 Vedu k hydrantu':'🚒 Nejbližší hydranty')+'</span><button type="button" class="near-x" data-act="close" aria-label="Sbalit">✕</button></div>';
   if(navTarget){
-    html+='<div class="near-row near-tg" data-live="'+esc(navTarget.id)+'">'+nearArrow(ll,navTarget)+'<b class="near-d">'+nearDist(ll,navTarget)+'</b><span class="near-n">'+esc(nearName(navTarget))+'</span></div>'+
+    html+='<div class="near-row near-tg" data-live="'+esc(navTarget.id)+'">'+nearArrow(ll,navTarget)+'<b class="near-d">'+nearDist(ll,navTarget)+'</b><span class="near-c"><span class="near-n">'+esc(nearName(navTarget))+'</span>'+nearValsLine(navTarget,false)+'</span></div>'+
       '<div class="near-acts"><button type="button" data-act="show" data-id="'+esc(navTarget.id)+'">📍 Ukázat</button><button type="button" data-act="stop">✕ Zrušit vedení</button></div>'+
       '<div class="near-sub">Další v okolí</div>';
   }
+  var best=nearBest(list.map(function(x){ return x.h; }));
   list.forEach(function(x){ if(navTarget && x.h===navTarget) return;
-    html+='<div class="near-row'+(!navTarget&&x.h===nearSel?' sel':'')+'" data-act="sel" data-id="'+esc(x.h.id)+'" data-live="'+esc(x.h.id)+'">'+nearArrow(ll,x.h)+'<b class="near-d">'+nearDist(ll,x.h)+'</b><span class="near-n">'+esc(nearName(x.h))+'</span></div>'; });
+    html+='<div class="near-row'+(!navTarget&&x.h===nearSel?' sel':'')+'" data-act="sel" data-id="'+esc(x.h.id)+'" data-live="'+esc(x.h.id)+'">'+nearArrow(ll,x.h)+'<b class="near-d">'+nearDist(ll,x.h)+'</b>'+
+      '<span class="near-c"><span class="near-n">'+esc(nearName(x.h))+'</span>'+nearValsLine(x.h,x.h===best)+'</span></div>'; });
   var s=navTarget?null:nearSel;
   if(s) html+='<div class="near-acts">'+
       '<button type="button" data-act="show" data-id="'+esc(s.id)+'">📍 Ukázat</button>'+
@@ -2469,11 +2498,15 @@ if(nearEl) nearEl.addEventListener('click', function(ev){
   if(act==='close'){ nearOpen=false; nearRender(); return; }
   if(act==='sel'){ nearSel=h; nearIds=''; nearRender(); return; }
   if(act==='stop'){ navSetTarget(null); nearRender(); return; }
+  nearAction(act,h);
+});
+function nearAction(act,h){
   if(!h) return;
   if(act==='show'){                 // pozastav sledování, ať mapu hned neodtáhne zpátky k poloze
     nearOpen=false; if(follow){ follow=false; setLocState(); navApply(true); }
-    nearRender(); map.setView([h.lat,h.lon],17); openCard(h); return; }
-  if(act==='lead'){
+    nearRender(); map.setView([h.lat,h.lon],17); nearInfoOpen(h); return; }
+  if(act==='card'){ nearInfoClose(); openCard(h); card.classList.add('full'); return; }
+  if(act==='lead'){ nearInfoClose();
     navSetTarget(h); nearOpen=false; if(!follow) navResume(); nearRender();
     flToast('🎯 Vedu k '+(cisloLabel(h)||'hydrantu')+' – vzdálenost dole'); return; }
   var me=meMarker?meMarker.getLatLng():null;
@@ -2481,6 +2514,43 @@ if(nearEl) nearEl.addEventListener('click', function(ev){
     ? 'https://mapy.com/fnc/v1/route?'+(me?'start='+me.lng.toFixed(6)+','+me.lat.toFixed(6)+'&':'')+'end='+h.lon.toFixed(6)+','+h.lat.toFixed(6)+'&routeType=car_fast_traffic&navigate=true'
     : 'https://www.google.com/maps/dir/?api=1&destination='+h.lat.toFixed(6)+','+h.lon.toFixed(6)+'&travelmode=driving&dir_action=navigate';
   window.open(url,'_blank','noopener');
+}
+/* hodnoty pro rozhodnutí „ke kterému jet": průtok m³/h, statický a dynamický tlak (MPa) */
+function nearVals(h){
+  var q=prutokM3h(candVal(h,'prutok')), st=candVal(h,'tlakStat'), dy=candVal(h,'tlakDyn');
+  var stD=hasVal(st)?meas(st):tlakStatDisp(h); if(!hasVal(st) && stD!=='—') stD='≈'+stD; // dopočet z vodojemu
+  return {q:q||'—', ls:meas(candVal(h,'prutok')), st:stD, dy:meas(dy), qBad:prutokStav(candVal(h,'prutok'))==='bad', stBad:tlakStatStav(st)==='bad'}; }
+/* nejvydatnější z nabídnutých (nejvyšší naměřený průtok) */
+function nearBest(hs){ var b=null,bq=0; hs.forEach(function(h){ var n=parseNum(candVal(h,'prutok')); if(n!=null && n>bq){ bq=n; b=h; } }); return b; }
+function nearValsLine(h,best){ var v=nearVals(h);
+  return '<span class="near-v'+(best?' best':'')+'">💧 '+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'; }
+/* rychlý přehled hydrantu uprostřed displeje (místo celé karty) */
+const nearInfo=document.getElementById('nearInfo');
+var nearInfoH=null;
+function nearInfoOpen(h){
+  if(!nearInfo) return; nearInfoH=h; var v=nearVals(h), c=cisloLabel(h), t=filterTown(h);
+  var ll=nearLast||(meMarker&&meMarker.getLatLng());
+  nearInfo.innerHTML='<div class="ni-box" role="dialog" aria-modal="true">'+
+    '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
+      '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
+    '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+PRUTOK_MIN+' l/s':'')+'</i>':'')+'</div>'+
+    '<div class="ni-m'+(v.stBad?' bad':'')+'"><span>Statický tlak</span><b>'+v.st+(v.st!=='—'?' <small>MPa</small>':'')+'</b>'+(v.st.charAt(0)==='≈'?'<i>dopočet z vodojemu</i>':(v.stBad?'<i>pod min. '+String(TLAK_STAT_MIN).replace('.',',')+' MPa</i>':''))+'</div>'+
+    '<div class="ni-m"><span>Dynamický tlak</span><b>'+v.dy+(v.dy!=='—'?' <small>MPa</small>':'')+'</b></div>'+
+    '<div class="ni-acts">'+
+      '<button type="button" data-qa="lead" class="pri">🎯 Vést sem</button>'+
+      '<button type="button" data-qa="mapy">🚗 Mapy.com</button>'+
+      '<button type="button" data-qa="google">🚗 Google</button>'+
+      '<button type="button" data-qa="card">📋 Celá karta</button>'+
+      '<button type="button" data-qa="close" class="ni-x">✕ Zavřít</button></div></div>';
+  nearInfo.classList.add('open');
+}
+function nearInfoClose(){ if(nearInfo){ nearInfo.classList.remove('open'); nearInfo.innerHTML=''; } nearInfoH=null; }
+if(nearInfo) nearInfo.addEventListener('click', function(ev){
+  if(ev.target===nearInfo){ nearInfoClose(); return; }          // klepnutí vedle = zavřít
+  var b=ev.target.closest('[data-qa]'); if(!b) return;
+  var a=b.getAttribute('data-qa'), h=nearInfoH;
+  if(a==='close'){ nearInfoClose(); return; }
+  nearAction(a,h);
 });
 
 // ---- formátování ----
@@ -2761,7 +2831,7 @@ function rotatePhoto(h){
 }
 
 function closeCard(){
-  card.classList.remove('open');
+  card.classList.remove('open'); setTimeout(function(){ if(!card.classList.contains('open')) card.classList.remove('full'); }, 240);
   setTimeout(()=>{ backdrop.classList.remove('open'); if(miniMap){miniMap.remove();miniMap=null;} }, 220);
 }
 backdrop.onclick = closeCard;
