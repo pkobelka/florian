@@ -883,21 +883,21 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .near-pill{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:7px 13px;background:rgba(11,58,99,.94);color:#fff;
   font-family:inherit;font-weight:700;font-size:15px;line-height:1;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
 .near-arr{display:inline-flex;transition:transform .5s ease-out}
-.near-h.open{bottom:calc(env(safe-area-inset-bottom) + 40px);width:280px;background:#fff;color:var(--ink);border-radius:14px;
+.near-h.open{bottom:calc(env(safe-area-inset-bottom) + 40px);width:min(360px,calc(100vw - 84px));max-height:calc(100dvh - 170px);overflow:auto;background:#fff;color:var(--ink);border-radius:14px;
   box-shadow:0 4px 18px rgba(0,0,0,.3);padding:8px 10px;font-size:13.5px}
-.near-hd{display:flex;align-items:center;justify-content:space-between;font-weight:800;margin-bottom:3px}
+.near-hd{display:flex;align-items:center;justify-content:space-between;font-weight:800;margin-bottom:3px;font-size:16px}
 .near-x{border:0;background:#eceff1;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer}
 .near-row{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:9px;cursor:pointer}
 .near-row.sel,.near-row.near-tg{background:#e3f2fd}
 .near-row .near-arr{color:var(--blue);width:18px;justify-content:center}
-.near-row b{min-width:58px}
-.near-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#37474f}
+.near-row b{min-width:62px;font-size:17px}
+.near-n{flex:1;min-width:0;color:#263238;font-weight:700;font-size:14.5px}
 .near-acts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
-.near-acts button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 4px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;color:var(--blue-dark)}
+.near-acts button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 4px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--blue-dark)}
 .near-acts button[data-act=lead]{background:var(--blue);color:#fff;border-color:var(--blue)}
 .near-sub{margin-top:8px;font-size:12px;color:#78909c;font-weight:700}
 .near-c{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.near-v{font-size:11.5px;color:#546e7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.near-v{font-size:13.5px;color:#37474f}
 .near-v.best{color:#1b5e20;font-weight:700}
 /* rychlý přehled hydrantu uprostřed displeje */
 .near-info{display:none;position:fixed;inset:0;z-index:1150;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:16px}
@@ -974,8 +974,8 @@ body.rez-H .ctrl .btn-toggle{font-size:16px!important;padding:11px 16px!importan
 .ni-typ{margin-top:6px;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:700;background:#fff8e1;color:#8d5a00}
 .ni-typ.nad{background:#e8f5e9;color:#1b5e20}
 .fdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0;flex:none}
-.near-w{font-size:11.5px;color:#b71c1c;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.near-leg{margin-top:6px;font-size:11px;color:#607d8b;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px}
+.near-w{font-size:13px;color:#b71c1c;font-weight:700}
+.near-leg{margin-top:6px;font-size:12px;color:#607d8b;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px}
 .ni-warn{background:#fdecea;border:1px solid #f5c2c0;color:#b71c1c;border-radius:10px;padding:7px 10px;margin:4px 0 2px;font-size:13px}
 /* tlačítko zásahu – nad tlačítkem polohy, na místě kompasu (ten je jen při sledování polohy) */
 .zasah-btn{position:absolute;z-index:899;right:12px;bottom:calc(env(safe-area-inset-bottom) + 100px);border:0;border-radius:999px;
@@ -983,16 +983,15 @@ body.rez-H .ctrl .btn-toggle{font-size:16px!important;padding:11px 16px!importan
 /* zásahový režim – velké, kontrastní, bez zbytečností */
 body.zasah .legend, body.zasah .vodleg{display:none!important}
 body.zasah .near-pill{font-size:18px;padding:9px 15px;background:#b71c1c}
-body.zasah .near-h.open{left:auto;right:64px;width:min(340px,calc(100vw - 76px));font-size:14px;color:#000;border:2px solid #b71c1c;max-height:calc(100dvh - 190px);overflow:auto}
+body.zasah .near-h.open{left:auto;right:64px;width:min(360px,calc(100vw - 76px));font-size:15px;color:#000;border:2px solid #b71c1c;max-height:calc(100dvh - 190px);overflow:auto}
 body.zasah .near-hd{font-size:15px}
 body.zasah .near-row{padding:6px 5px;border-bottom:1px solid #e0e0e0}
-body.zasah .near-row b.near-d{font-size:16px;min-width:58px}
+body.zasah .near-row b.near-d{font-size:17px;min-width:62px}
 body.zasah .near-n{color:#000;font-weight:700}
-body.zasah .near-v, body.zasah .near-w{font-size:12.5px;color:#000;white-space:normal}
+body.zasah .near-v{color:#000}
 body.zasah .near-v.best{color:#1b5e20}
-body.zasah .near-w{font-size:12px;color:#b71c1c}
 body.zasah .fdot{width:10px;height:10px}
-body.zasah .near-acts button{min-height:40px;font-size:14px}
+body.zasah .near-acts button{min-height:44px}
 body.zasah .ni-box{max-width:380px}
 body.zasah .ni-v b{font-size:23px}
 body.zasah .ni-acts button{min-height:52px;font-size:16px}
@@ -1353,6 +1352,25 @@ body.starosta .op-only{display:none !important}
 body.starosta .uk-badge{display:none !important}  /* úkoly (🛠️) externím uživatelům (obce/starostové) neukazuj */
 .starosta-banner{display:none}
 body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:1500;background:rgba(11,58,99,.94);color:#fff;font-weight:700;font-size:12.5px;padding:6px 15px;border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+/* velká obrazovka (PC, tablet naležato): nabídka nejbližších i přehled větší, ať nejsou ztracené */
+@media (min-width:1025px){
+  .near-h.open, body.zasah .near-h.open{width:460px;font-size:17px;padding:12px 14px}
+  .near-hd{font-size:19px}
+  .near-row b, body.zasah .near-row b.near-d{font-size:21px;min-width:78px}
+  .near-n{font-size:17px}
+  .near-v{font-size:15.5px}
+  .near-w{font-size:15px}
+  .near-acts button{font-size:17px;padding:12px 6px}
+  .near-leg{font-size:13.5px}
+  .near-pill{font-size:19px;padding:10px 17px}
+  .ni-box, body.zasah .ni-box{max-width:440px}
+  .ni-ph{height:240px}
+  .ni-hd b{font-size:20px}
+  .ni-v b{font-size:26px}
+  .ni-v span, .ni-v i{font-size:12.5px}
+  .ni-typ{font-size:15px}
+  .ni-acts button{font-size:17px;padding:13px 6px}
+}
 </style>
 </head>
 <body>
@@ -1492,7 +1510,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.234';
+const APP_VERSION = '1.235';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
