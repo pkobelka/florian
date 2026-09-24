@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.239**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.240**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -24,7 +24,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
      (`ukolySekce` jen v P), bez správcovských tlačítek (revize do cloudu, tým, sdílení, QR).
    - **H:** menu pod sebou jen Foto, Satelit, Vše, Obce (v1.231 bez Čísel; v1.233 velká tlačítka i hamburger; v1.236 na PC/tabletu naležato ještě větší – 20 px); pryč pokrytí, vodovod,
      tisky, protokoly, revize. Karta: bez revize, ČSN štítku, nahrávání fotek a tlačítek; údaje jen obec,
-     druh vody, DN hydrantu, DN potrubí. Větší tlačítko 🚒 Nejbližší voda.
+     druh vody, DN hydrantu, DN potrubí. Větší tlačítko 🚒 Nejbližší hydrant.
    - **Typ hydrantu** v nabídce nejbližších (štítek nadz./podz.) a v přehledu: „▲ Nadzemní – dobře
      vidět" / „⚠️ Podzemní – poklop může zakrývat zaparkované auto nebo sníh" (všechny režimy).
    - ⚠️ **Režim jen schovává ovládání.** Úkoly/poznámky se do prohlížeče načítají všem přihlášeným –
@@ -32,7 +32,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
      Hasiči i vlastníci se zatím musí přihlásit (e-mail v „Přístup (e-maily)").
 
 **Zásahový režim, semafor výdatnosti, upozornění** (v1.225)
-   - **🚒 Nejbližší voda** (červené tlačítko nad 📍, jen když poloha neběží): jedním klepnutím zapne
+   - **🚒 Nejbližší hydrant** (červené tlačítko nad 📍, jen když poloha neběží): jedním klepnutím zapne
      polohu + navigaci a rovnou rozbalí nejbližší hydranty. Velké písmo/tlačítka, kontrast, bez legend
      (`body.zasah`, `zasahSet`). K 3 nejbližším přidá i **nejvydatnější do 500 m**, když mezi nimi není.
      Končí vypnutím polohy (v1.232: na PC/tabletu panel vpravo, ne přes celou šířku; v1.235 čitelná velikost: mobil ~360 px, PC ≥1025 px 460 px a větší písmo i v rychlém přehledu). Základ budoucí **varianty pro hasiče** (plán: 3 náhledy – provozovatel /
