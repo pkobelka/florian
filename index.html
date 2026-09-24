@@ -857,6 +857,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 @keyframes locpulse{0%,100%{box-shadow:0 0 0 2px var(--blue),var(--shadow)}50%{box-shadow:0 0 0 6px rgba(21,101,192,.22),var(--shadow)}}
 .me-dot{width:18px;height:18px;border-radius:50%;background:#111;border:3px solid #fff;
   box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 7px rgba(0,0,0,.4)}
+/* směr jízdy u tečky polohy */
+.me-nav{position:relative;width:18px;height:18px;transform-origin:50% 50%;transition:transform .5s ease-out}
+.me-nav .me-dot{position:absolute;left:0;top:0;box-sizing:border-box}
+.me-cone{position:absolute;left:50%;top:-15px;margin-left:-9px;width:0;height:0;
+  border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:17px solid rgba(21,101,192,.9);
+  filter:drop-shadow(0 0 1.5px #fff)}
+.me-nav.nodir .me-cone{display:none}
+/* navigace: mapa po směru jízdy – #map je zvětšený na úhlopříčku a otáčí se (viz navApply) */
+html.navbig, html.navbig body{overflow:hidden}
+html.navbig #map{transform-origin:50% 50%;transition:transform .6s ease-out}
+html.navbig #map .leaflet-marker-icon > :not(.me-nav){rotate:var(--nav-unrot,0deg);transition:rotate .6s ease-out}
+html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-px);top:var(--nav-py);width:var(--nav-w);height:var(--nav-h);
+  rotate:var(--nav-unrot,0deg);transition:rotate .6s ease-out;pointer-events:none}
+#map.nav-now, #map.nav-now .leaflet-marker-icon > *, #map.nav-now > .leaflet-control-container{transition:none!important}
+/* kompas nad tlačítkem polohy */
+.locate.navbtn{bottom:calc(env(safe-area-inset-bottom) + 96px);width:40px;height:40px;right:16px}
+.locate.navbtn svg{fill:none;transition:transform .6s ease-out}
+.locate.navbtn.on{background:#fff;box-shadow:0 0 0 2px var(--blue),var(--shadow)}
+/* nejbližší hydrant – proužek vlevo od tlačítka polohy, po klepnutí nabídka */
+.near-h{position:absolute;z-index:899;right:70px;bottom:calc(env(safe-area-inset-bottom) + 46px);max-width:calc(100vw - 84px)}
+.near-pill{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:7px 13px;background:rgba(11,58,99,.94);color:#fff;
+  font-family:inherit;font-weight:700;font-size:15px;line-height:1;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
+.near-arr{display:inline-flex;transition:transform .5s ease-out}
+.near-h.open{bottom:calc(env(safe-area-inset-bottom) + 40px);width:280px;background:#fff;color:var(--ink);border-radius:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);padding:8px 10px;font-size:13.5px}
+.near-hd{display:flex;align-items:center;justify-content:space-between;font-weight:800;margin-bottom:3px}
+.near-x{border:0;background:#eceff1;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer}
+.near-row{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:9px;cursor:pointer}
+.near-row.sel,.near-row.near-tg{background:#e3f2fd}
+.near-row .near-arr{color:var(--blue);width:18px;justify-content:center}
+.near-row b{min-width:58px}
+.near-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#37474f}
+.near-acts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.near-acts button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 4px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;color:var(--blue-dark)}
+.near-acts button[data-act=lead]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.near-sub{margin-top:8px;font-size:12px;color:#78909c;font-weight:700}
 .legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
   color:#111;font-size:11px;line-height:1.5;font-weight:600}
 .legend .credit b{display:inline;color:#111;font-weight:800;margin:0;gap:0}
@@ -1059,7 +1095,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   body.mapprint #map, body.mapprint #map *{visibility:visible}
   body.mapprint #map{top:13mm!important;left:0!important;right:auto!important;bottom:auto!important}
   body.mapprint .leaflet-control-container,
-  body.mapprint .topbar, body.mapprint .ctrl, body.mapprint .locate{display:none!important}
+  body.mapprint .topbar, body.mapprint .ctrl, body.mapprint .locate, body.mapprint .near-h{display:none!important}
   body.mapprint .num-badge{display:block!important}   /* číslo H vždy v tisku mapy */
   body.mapprint .pozn-badge{display:none!important}   /* poznámkové „i" v tisku mapy skrýt */
   body.mapprint .legend, body.mapprint .legend *{visibility:visible}
@@ -1302,6 +1338,10 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
 <button class="locate" id="locBtn" aria-label="Moje poloha" title="Moje poloha">
   <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A9 9 0 0013 3.06V1h-2v2.06A9 9 0 003.06 11H1v2h2.06A9 9 0 0011 20.94V23h2v-2.06A9 9 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>
 </button>
+<button class="locate navbtn" id="navBtn" style="display:none" aria-label="Mapa po směru jízdy">
+  <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2.5l4.6 9.5H7.4z" fill="#c62828"/><path d="M12 21.5L7.4 12h9.2z" fill="#90a4ae"/></svg>
+</button>
+<div class="near-h" id="nearH" style="display:none"></div>
 
 <div class="backdrop" id="backdrop"></div>
 <div class="card" id="card" role="dialog" aria-modal="true">
@@ -1338,9 +1378,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.222';
+const APP_VERSION = '1.223';
 const APP_YEAR = 2026;
-const APP_UPDATED = '17. 9. 2026';
+const APP_UPDATED = '24. 9. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -1825,6 +1865,7 @@ function restoreFromPrint(){
 }
 document.getElementById('printMapBtn').onclick=()=>{
   if(printGroup) return; // už probíhá
+  if(watching) stopLocate(); // navigace (otočená/zvětšená mapa) by se s tiskovým rozměrem mapy pletla
   const items=allItems.filter(it=>matches(it.h));
   if(!items.length){ alert('Na mapě nejsou žádné hydranty k tisku.'); return; }
   let title='VHOS – všechny skupiny';
@@ -2195,7 +2236,8 @@ revToggle.onclick = ()=>{
 // ---- moje poloha (GPS) ----
 let watching=false, meMarker=null, meCircle=null, firstFix=true;
 const locBtn=document.getElementById('locBtn');
-const meIcon=L.divIcon({className:'',html:'<div class="me-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+// tečka polohy + kužel směru jízdy (kužel se ukáže, až je směr známý – viz navMeDir)
+const meIcon=L.divIcon({className:'',html:'<div class="me-nav nodir"><div class="me-cone"></div><div class="me-dot"></div></div>',iconSize:[18,18],iconAnchor:[9,9]});
 // follow = navigační režim: mapa se posouvá s polohou. Když uživatel šoupne mapou,
 // follow se pozastaví (tlačítko pulzuje), dalším klepnutím se vycentruje a zase sleduje.
 let follow=false;
@@ -2207,43 +2249,238 @@ function setLocState(){
 }
 locBtn.onclick=()=>{
   if(!watching){                    // zapnout: GPS + sledování
-    watching=true; follow=true; firstFix=true; setLocState(); acquireWake();
-    map.locate({watch:true, enableHighAccuracy:true, maximumAge:5000, timeout:20000});
+    watching=true; follow=true; firstFix=true; setLocState(); acquireWake(); navApply();
+    map.locate({watch:true, enableHighAccuracy:true, maximumAge:1000, timeout:20000});
     return;
   }
   if(!follow){                      // pozastaveno → vycentrovat a zase sledovat
-    follow=true; setLocState();
-    if(meMarker) map.setView(meMarker.getLatLng(), Math.max(map.getZoom(),16));
+    navResume();
     return;
   }
   stopLocate();                     // sleduji → vypnout
 };
+function navResume(){
+  follow=true; setLocState();
+  if(meMarker) map.setView(meMarker.getLatLng(), Math.max(map.getZoom(),16), {animate:false});
+  navApply();
+}
 function stopLocate(){
   watching=false; follow=false; setLocState(); releaseWake();
   map.stopLocate();
   if(meMarker){ map.removeLayer(meMarker); meMarker=null; }
   if(meCircle){ map.removeLayer(meCircle); meCircle=null; }
+  navHeading=null; navPrev=null; navSetTarget(null); nearOpen=false; nearRender(null);
+  navApply(true);
 }
 map.on('locationfound', e=>{
   if(!watching) return;
+  navUpdHeading(e);
   if(meMarker) meMarker.setLatLng(e.latlng);
   else meMarker=L.marker(e.latlng,{icon:meIcon,zIndexOffset:2000,interactive:false}).addTo(map);
   if(meCircle){ meCircle.setLatLng(e.latlng); meCircle.setRadius(e.accuracy); }
-  else meCircle=L.circle(e.latlng,{radius:e.accuracy,color:'#222',weight:1,opacity:.55,fillColor:'#222',fillOpacity:.10}).addTo(map);
+  else meCircle=L.circle(e.latlng,{radius:e.accuracy,color:'#222',weight:1,opacity:.55,fillColor:'#222',fillOpacity:.10,interactive:false}).addTo(map);
+  navMeDir();
   if(firstFix){ map.setView(e.latlng, Math.max(map.getZoom(),16)); firstFix=false; }
   else if(follow){ map.panTo(e.latlng, {animate:true, duration:.6}); }  // navigační posun s polohou
+  navApply();
+  nearRender(e.latlng);
 });
-// když uživatel sám posune mapu, sledování pozastav (panTo výše dragstart nespouští)
-map.on('dragstart', function(){ if(watching && follow){ follow=false; setLocState(); } });
+// když uživatel sám posune mapu, sledování pozastav (panTo výše dragstart nespouští);
+// otočená mapa se hned srovná severem nahoru, ať tah prstem jede tím směrem, kam táhne
+map.on('dragstart', function(){
+  if(watching && follow){ follow=false; setLocState(); navApply(true);
+    var dr=map.dragging&&map.dragging._draggable; if(dr) dr._parentScale={x:1,y:1}; } // měřítko se změřilo ještě na otočené mapě
+});
 // Wake Lock – displej nezhasne během sledování (jako navigace); po skrytí se znovu vyžádá
 let _wakeLock=null;
 function acquireWake(){ try{ if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(function(w){ _wakeLock=w; }).catch(function(){}); } }catch(e){} }
 function releaseWake(){ try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){} }
 document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible' && watching) acquireWake(); });
-map.on('locationerror', ()=>{
+map.on('locationerror', e=>{
   if(!watching) return;
+  // výpadek signálu za jízdy (tunel, les) – sledování běží dál a poloha naskočí sama;
+  // končí se jen při zakázané poloze nebo když se nepodařilo zaměřit vůbec
+  if(meMarker && e.code!==1) return;
   stopLocate();
   alert('Polohu se nepodařilo zjistit. Zkontroluj, že máš v prohlížeči/telefonu povolenou polohu (GPS) pro tuto stránku.');
+});
+
+// ---- navigace: mapa se otáčí po směru jízdy (jako navigace v autě) ----
+// Leaflet otáčení neumí, proto se otáčí celý kontejner #map CSS transformací. Aby při otočení
+// nebyly vidět prázdné rohy, je kontejner po dobu sledování zvětšený na úhlopříčku obrazovky
+// (střed zůstává uprostřed obrazovky). Ovládání Leafletu (zoom, atribuce) a značky se otáčí
+// zpět, ať zůstanou rovně. Posun mapy prstem = pozastavení sledování → mapa se srovná na sever.
+var navUp=(function(){ try{ return localStorage.getItem('fl_navUp')!=='0'; }catch(e){ return true; } })();
+var navHeading=null, navPrev=null, navRot=0, navBig=false;
+const mapEl=map.getContainer();
+const navBtn=document.getElementById('navBtn');
+/* azimut z a do b ve stupních (0 = sever, po směru hodin) */
+function navAzimut(aLat,aLon,bLat,bLon){ var r=Math.PI/180, dl=(bLon-aLon)*r;
+  var y=Math.sin(dl)*Math.cos(bLat*r), x=Math.cos(aLat*r)*Math.sin(bLat*r)-Math.sin(aLat*r)*Math.cos(bLat*r)*Math.cos(dl);
+  return (Math.atan2(y,x)/r+360)%360; }
+/* směr jízdy: z GPS, když se jede (> ~5 km/h); jinak dopočet z posledního posunu ≥ 10 m */
+function navUpdHeading(e){
+  var p={lat:e.latlng.lat,lng:e.latlng.lng};
+  var moved=navPrev?haversineM(navPrev.lat,navPrev.lng,p.lat,p.lng):Infinity;
+  if(e.heading!=null && isFinite(e.heading) && e.speed!=null && e.speed>=1.5) navHeading=e.heading;
+  else if(navPrev && moved>=10 && !(e.accuracy>moved*1.5)) navHeading=navAzimut(navPrev.lat,navPrev.lng,p.lat,p.lng);
+  if(moved>=10) navPrev=p;
+}
+/* aktuální otočení mapy na obrazovce (0–360) */
+function navScreenRot(){ return ((navRot%360)+360)%360; }
+function navLayout(){
+  var W=document.documentElement.clientWidth, H=document.documentElement.clientHeight;
+  var D=Math.ceil(Math.sqrt(W*W+H*H)), px=Math.ceil((D-W)/2), py=Math.ceil((D-H)/2), s=mapEl.style;
+  s.left=-px+'px'; s.top=-py+'px'; s.width=(W+2*px)+'px'; s.height=(H+2*py)+'px';
+  s.setProperty('--nav-px',px+'px'); s.setProperty('--nav-py',py+'px'); s.setProperty('--nav-w',W+'px'); s.setProperty('--nav-h',H+'px');
+}
+/* zvětšený kontejner drží po celé sledování (i pozastavené) – ať se velikost nemění uprostřed tahu prstem */
+function navSize(on){
+  if(on===navBig) return; navBig=on;
+  var s=mapEl.style;
+  if(on) navLayout();
+  else { s.left=s.top=s.width=s.height=s.transform=s.transition=''; navRot=0; s.removeProperty('--nav-unrot'); }
+  document.documentElement.classList.toggle('navbig', on);
+  map.invalidateSize({animate:false});   // pan:true (výchozí) drží střed mapy na místě
+}
+function navApply(instant){
+  navSize(watching && navUp && !document.body.classList.contains('mapprint'));
+  if(navBig){
+    var target=(follow && navHeading!=null)?navHeading:0;
+    var d=((target-navScreenRot()+540)%360)-180;            // nejkratší cestou (přes sever ne dokola)
+    if(Math.abs(d)>=3 || target===0) navRot+=d;              // drobné kolísání směru ignoruj
+    if(target===0) navRot=Math.round(navRot/360)*360;
+    var s=mapEl.style, t='rotate('+(-navRot)+'deg)';
+    if(instant){ mapEl.classList.add('nav-now'); s.transform=t; s.setProperty('--nav-unrot',navRot+'deg'); void mapEl.offsetWidth; mapEl.classList.remove('nav-now'); }
+    else { s.transform=t; s.setProperty('--nav-unrot',navRot+'deg'); }
+  }
+  // zoom kolečkem / prsty / dvojklikem kolem středu – na otočené mapě by bod pod prsty ujel
+  var rot=navBig && navScreenRot()!==0;
+  map.options.touchZoom = rot?'center':true; map.options.scrollWheelZoom = rot?'center':true; map.options.doubleClickZoom = rot?'center':true;
+  navBtnUpd();
+}
+// klik/klepnutí na otočené mapě: přepočet bodu z obrazovky do souřadnic kontejneru (otočení zpět)
+(function(){ var orig=map.mouseEventToContainerPoint;
+  map.mouseEventToContainerPoint=function(ev){
+    var a=navBig?navScreenRot():0; if(!a) return orig.call(this,ev);
+    var r=mapEl.getBoundingClientRect(), dx=ev.clientX-(r.left+r.width/2), dy=ev.clientY-(r.top+r.height/2);
+    var t=a*Math.PI/180, c=Math.cos(t), s=Math.sin(t), sz=this.getSize();
+    return L.point(sz.x/2+dx*c-dy*s, sz.y/2+dx*s+dy*c);
+  };
+})();
+window.addEventListener('resize', function(){ if(navBig){ navLayout(); map.invalidateSize({animate:false}); } });
+/* kužel u tečky polohy ukazuje směr jízdy (v souřadnicích mapy → na otočené mapě míří nahoru) */
+function navMeDir(){ var el=meMarker&&meMarker.getElement(), w=el&&el.querySelector('.me-nav'); if(!w) return;
+  w.classList.toggle('nodir', navHeading==null);
+  if(navHeading!=null) w.style.transform='rotate('+Math.round(navHeading)+'deg)'; }
+/* kompas nad tlačítkem polohy: střelka ukazuje sever, klepnutí přepíná „po směru jízdy" ↔ „sever nahoru" */
+function navBtnUpd(){ if(!navBtn) return;
+  navBtn.style.display=watching?'':'none';
+  navBtn.classList.toggle('on', navUp);
+  var n=navBtn.querySelector('svg'); if(n) n.style.transform='rotate('+(navBig?-navRot:0)+'deg)';
+  navBtn.title = navUp ? 'Mapa se otáčí po směru jízdy – klepni pro sever nahoru' : 'Sever nahoru – klepni, ať se mapa otáčí po směru jízdy';
+  navBtn.setAttribute('aria-label', navBtn.title); }
+if(navBtn) navBtn.onclick=function(){
+  navUp=!navUp; try{ localStorage.setItem('fl_navUp',navUp?'1':'0'); }catch(e){}
+  if(navUp && watching && !follow) navResume(); else navApply();
+  flToast(navUp ? ('🧭 Mapa po směru jízdy'+(navHeading==null?' – otočí se, jakmile se dáš do pohybu':'')) : '🧭 Sever nahoru');
+};
+navBtnUpd();
+
+// ---- nejbližší hydrant (při sledování polohy) ----
+// Proužek vedle tlačítka polohy „🚒 ↑ 120 m": šipka ukazuje na obrazovce směr k nejbližšímu
+// požárnímu hydrantu, číslo je vzdušná vzdálenost; přepočítává se s každou polohou.
+// Klepnutí rozbalí nabídku: 3 nejbližší H, Ukázat (mapa + karta), Vést sem (čára + vzdálenost
+// přímo v appce) a Navigovat (Mapy.com / Google Mapy – trasa po silnici).
+const nearEl=document.getElementById('nearH');
+var nearOpen=false, nearSel=null, nearIds='', nearLast=null, navTarget=null, navLine=null, navRing=null;
+const NEAR_U_H=15;   // blíž než 15 m = „jsi u hydrantu"
+/* požární hydranty seřazené podle vzdálenosti (náhled pro obec jen z vybrané oblasti) */
+function nearList(ll,n){
+  var star=document.body.classList.contains('starosta'), out=[];
+  for(var i=0;i<HYDRANTY.length;i++){ var h=HYDRANTY[i]; if(h.lat==null||h.lon==null||isNeniPozarni(h)) continue;
+    if(star && !matches(h)) continue;
+    out.push({h:h,d:haversineM(ll.lat,ll.lng,h.lat,h.lon)}); }
+  out.sort(function(a,b){ return a.d-b.d; }); return out.slice(0,n); }
+function nearName(h){ var c=cisloLabel(h), t=filterTown(h), l=label(h);
+  return (c?c+' · ':'')+l+(t&&l.indexOf(t)<0?', '+t:''); }
+function nearArrow(ll,h){ if(haversineM(ll.lat,ll.lng,h.lat,h.lon)<NEAR_U_H) return '<span class="near-arr">📍</span>';
+  var a=navAzimut(ll.lat,ll.lng,h.lat,h.lon)-(navBig?navScreenRot():0);
+  return '<span class="near-arr" style="transform:rotate('+Math.round(a)+'deg)"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M8 1l6 13-6-3.2L2 14z" fill="currentColor"/></svg></span>'; }
+function nearDist(ll,h){ var d=haversineM(ll.lat,ll.lng,h.lat,h.lon); return d<NEAR_U_H?'jsi u něj':fmtDist(d); }
+function nearById(id){ for(var i=0;i<HYDRANTY.length;i++) if(String(HYDRANTY[i].id)===String(id)) return HYDRANTY[i]; return null; }
+function nearRender(ll){
+  if(!nearEl) return;
+  if(ll) nearLast=ll; ll=nearLast;
+  if(!watching || !ll){ nearEl.style.display='none'; nearEl.innerHTML=''; nearIds=''; nearLast=null; return; }
+  var list=nearList(ll,3); if(!list.length && !navTarget){ nearEl.style.display='none'; return; }
+  nearEl.style.display='';
+  if(navTarget) navDrawLine(ll);
+  var main=navTarget||list[0].h;
+  if(!nearOpen){
+    nearEl.classList.remove('open'); nearIds='';
+    nearEl.innerHTML='<button class="near-pill" type="button" aria-label="'+esc((navTarget?'Vedu k hydrantu ':'Nejbližší hydrant ')+nearName(main)+', '+nearDist(ll,main))+'">'+
+      '<span>'+(navTarget?'🎯':'🚒')+'</span>'+nearArrow(ll,main)+'<b>'+nearDist(ll,main)+'</b></button>';
+    return;
+  }
+  // rozbaleno: přestav jen když se změnil seznam / výběr, jinak přepiš jen vzdálenosti a šipky
+  // (přestavění pod prstem by „spolklo" klepnutí na tlačítko)
+  if(!nearSel || !list.some(function(x){ return x.h===nearSel; })) nearSel=(navTarget&&list.some(function(x){ return x.h===navTarget; }))?navTarget:list[0].h;
+  var ids=list.map(function(x){ return x.h.id; }).join(',')+'|'+nearSel.id+'|'+(navTarget?navTarget.id:'');
+  if(ids===nearIds){
+    nearEl.querySelectorAll('[data-live]').forEach(function(el){ var h=nearById(el.getAttribute('data-live')); if(!h) return;
+      el.querySelector('.near-arr').outerHTML=nearArrow(ll,h); el.querySelector('.near-d').textContent=nearDist(ll,h); });
+    return;
+  }
+  nearIds=ids; nearEl.classList.add('open');
+  var html='<div class="near-hd"><span>'+(navTarget?'🎯 Vedu k hydrantu':'🚒 Nejbližší hydranty')+'</span><button type="button" class="near-x" data-act="close" aria-label="Sbalit">✕</button></div>';
+  if(navTarget){
+    html+='<div class="near-row near-tg" data-live="'+esc(navTarget.id)+'">'+nearArrow(ll,navTarget)+'<b class="near-d">'+nearDist(ll,navTarget)+'</b><span class="near-n">'+esc(nearName(navTarget))+'</span></div>'+
+      '<div class="near-acts"><button type="button" data-act="show" data-id="'+esc(navTarget.id)+'">📍 Ukázat</button><button type="button" data-act="stop">✕ Zrušit vedení</button></div>'+
+      '<div class="near-sub">Další v okolí</div>';
+  }
+  list.forEach(function(x){ if(navTarget && x.h===navTarget) return;
+    html+='<div class="near-row'+(!navTarget&&x.h===nearSel?' sel':'')+'" data-act="sel" data-id="'+esc(x.h.id)+'" data-live="'+esc(x.h.id)+'">'+nearArrow(ll,x.h)+'<b class="near-d">'+nearDist(ll,x.h)+'</b><span class="near-n">'+esc(nearName(x.h))+'</span></div>'; });
+  var s=navTarget?null:nearSel;
+  if(s) html+='<div class="near-acts">'+
+      '<button type="button" data-act="show" data-id="'+esc(s.id)+'">📍 Ukázat</button>'+
+      '<button type="button" data-act="lead" data-id="'+esc(s.id)+'">🎯 Vést sem</button>'+
+      '<button type="button" data-act="mapy" title="Navigace po silnici v Mapy.com" data-id="'+esc(s.id)+'">🚗 Mapy.com</button>'+
+      '<button type="button" data-act="google" title="Navigace po silnici v Google Mapách" data-id="'+esc(s.id)+'">🚗 Google</button></div>';
+  nearEl.innerHTML=html;
+}
+/* čára od mé polohy k cílovému hydrantu + kroužek kolem něj */
+function navDrawLine(ll){
+  if(!navTarget) return; var t=[navTarget.lat,navTarget.lon];
+  if(navLine) navLine.setLatLngs([ll,t]);
+  else navLine=L.polyline([ll,t],{color:'#c62828',weight:4,opacity:.85,dashArray:'2 9',lineCap:'round',interactive:false}).addTo(map);
+  if(!navRing) navRing=L.circleMarker(t,{radius:19,color:'#c62828',weight:3,fill:false,interactive:false}).addTo(map);
+}
+function navSetTarget(h){
+  navTarget=h||null;
+  if(!navTarget){ if(navLine){ map.removeLayer(navLine); navLine=null; } if(navRing){ map.removeLayer(navRing); navRing=null; } }
+  else if(navRing){ navRing.setLatLng([h.lat,h.lon]); }
+  nearIds='';
+}
+if(nearEl) nearEl.addEventListener('click', function(ev){
+  var b=ev.target.closest('[data-act]');
+  if(!b){ if(ev.target.closest('.near-pill')){ nearOpen=true; nearSel=null; nearRender(); } return; }
+  var act=b.getAttribute('data-act'), h=nearById(b.getAttribute('data-id'));
+  if(act==='close'){ nearOpen=false; nearRender(); return; }
+  if(act==='sel'){ nearSel=h; nearIds=''; nearRender(); return; }
+  if(act==='stop'){ navSetTarget(null); nearRender(); return; }
+  if(!h) return;
+  if(act==='show'){                 // pozastav sledování, ať mapu hned neodtáhne zpátky k poloze
+    nearOpen=false; if(follow){ follow=false; setLocState(); navApply(true); }
+    nearRender(); map.setView([h.lat,h.lon],17); openCard(h); return; }
+  if(act==='lead'){
+    navSetTarget(h); nearOpen=false; if(!follow) navResume(); nearRender();
+    flToast('🎯 Vedu k '+(cisloLabel(h)||'hydrantu')+' – vzdálenost dole'); return; }
+  var me=meMarker?meMarker.getLatLng():null;
+  var url = act==='mapy'
+    ? 'https://mapy.com/fnc/v1/route?'+(me?'start='+me.lng.toFixed(6)+','+me.lat.toFixed(6)+'&':'')+'end='+h.lon.toFixed(6)+','+h.lat.toFixed(6)+'&routeType=car_fast_traffic&navigate=true'
+    : 'https://www.google.com/maps/dir/?api=1&destination='+h.lat.toFixed(6)+','+h.lon.toFixed(6)+'&travelmode=driving&dir_action=navigate';
+  window.open(url,'_blank','noopener');
 });
 
 // ---- formátování ----
