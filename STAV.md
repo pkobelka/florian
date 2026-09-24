@@ -1,11 +1,16 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.229**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.230**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Rychlý přehled hydrantu s fotkou** (v1.230)
+   - Nahoře **fotka** (klepnutí = zvětšit, respektuje otočení), pod ní hodnoty **v jednom řádku**
+     (průtok m³/h + l/s · statický · dynamický MPa), pak typ (nadzemní / ⚠️ podzemní) a tlačítka.
+     Bez fotky jen tenký řádek „📷 bez fotky". Fce `nearInfoPhoto`, `nearInfoFitPhoto`.
 
 **Tři režimy appky: P provoz / M vlastník / H hasiči** (v1.228)
    - Jedna appka, režim podle odkazu (`FL_REZIM`, třída `body.rez-P|M|H`, nastaví se hned po `<body>`):

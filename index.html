@@ -906,13 +906,6 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .ni-hd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-bottom:8px}
 .ni-hd b{font-size:17px}
 .ni-t{font-size:12.5px;color:#607d8b}
-.ni-m{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;border-radius:10px;background:#f1f6fb;padding:8px 12px;margin-top:6px}
-.ni-m span{font-size:13px;color:#455a64;font-weight:600}
-.ni-m b{font-size:22px;color:var(--blue-dark)}
-.ni-m b small{font-size:12px;font-weight:600}
-.ni-m i{flex-basis:100%;text-align:right;font-style:normal;font-size:11.5px;color:#78909c}
-.ni-m.bad{background:#fdecea}
-.ni-m.bad b{color:var(--red)}
 .ni-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
 .ni-acts button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 6px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;color:var(--blue-dark)}
 .ni-acts button.pri{grid-column:1/-1;background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -957,6 +950,15 @@ body.rez-H .zasah-btn{font-size:17px;padding:12px 18px}
 /* typ hydrantu v nabídce nejbližších */
 .ntyp{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;background:#eceff1;color:#455a64;vertical-align:1px}
 .ntyp.nad{background:#e3f2fd;color:#0d47a1}
+.ni-ph{position:relative;height:180px;margin:4px -4px 6px;border-radius:12px;overflow:hidden;background:#eceff1;cursor:zoom-in}
+.ni-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ni-noph{margin:4px 0 6px;border:1px dashed #cfd8dc;border-radius:10px;padding:6px;text-align:center;font-size:12.5px;color:#90a4ae}
+.ni-vals{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}
+.ni-v{background:#f1f6fb;border-radius:10px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.ni-v b{font-size:20px;line-height:1.1;color:var(--blue-dark)}
+.ni-v span{font-size:10.5px;color:#546e7a;font-weight:600;margin-top:2px}
+.ni-v i{font-style:normal;font-size:10.5px;color:#78909c}
+.ni-v.bad{background:#fdecea} .ni-v.bad b{color:var(--red)}
 .ni-typ{margin-top:6px;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:700;background:#fff8e1;color:#8d5a00}
 .ni-typ.nad{background:#e8f5e9;color:#1b5e20}
 .fdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0;flex:none}
@@ -980,7 +982,7 @@ body.zasah .near-w{font-size:13.5px;color:#b71c1c}
 body.zasah .fdot{width:12px;height:12px}
 body.zasah .near-acts button{min-height:50px;font-size:16px}
 body.zasah .ni-box{max-width:380px}
-body.zasah .ni-m b{font-size:28px}
+body.zasah .ni-v b{font-size:23px}
 body.zasah .ni-acts button{min-height:52px;font-size:16px}
 .legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
   color:#111;font-size:11px;line-height:1.5;font-weight:600}
@@ -1479,7 +1481,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.229';
+const APP_VERSION = '1.230';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2675,28 +2677,40 @@ function nearInfoOpen(h){
   nearInfo.innerHTML='<div class="ni-box" role="dialog" aria-modal="true">'+
     '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
       '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
+    nearInfoPhoto(h)+
     nearInfoWarn(h)+
+    '<div class="ni-vals">'+
+      '<div class="ni-v'+(v.qBad?' bad':'')+'"><b>'+v.q+'</b><span>m³/h průtok</span>'+(v.ls!=='—'?'<i>'+v.ls+' l/s</i>':'')+'</div>'+
+      '<div class="ni-v'+(v.stBad?' bad':'')+'"><b>'+v.st+'</b><span>MPa statický</span>'+(v.st.charAt(0)==='≈'?'<i>z vodojemu</i>':(v.stBad?'<i>pod 0,2</i>':''))+'</div>'+
+      '<div class="ni-v"><b>'+v.dy+'</b><span>MPa dynamický</span></div>'+
+    '</div>'+
     (h.typ==='nadzemní'?'<div class="ni-typ nad">▲ Nadzemní – dobře vidět a přístupný</div>'
-      :'<div class="ni-typ">⚠️ Podzemní – poklop může zakrývat zaparkované auto nebo sníh</div>')+
-    '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+prutokM3h(PRUTOK_MIN)+' m³/h':'')+'</i>':'')+'</div>'+
-    '<div class="ni-m'+(v.stBad?' bad':'')+'"><span>Statický tlak</span><b>'+v.st+(v.st!=='—'?' <small>MPa</small>':'')+'</b>'+(v.st.charAt(0)==='≈'?'<i>dopočet z vodojemu</i>':(v.stBad?'<i>pod min. '+String(TLAK_STAT_MIN).replace('.',',')+' MPa</i>':''))+'</div>'+
-    '<div class="ni-m"><span>Dynamický tlak</span><b>'+v.dy+(v.dy!=='—'?' <small>MPa</small>':'')+'</b></div>'+
+      :'<div class="ni-typ">⚠️ Podzemní – poklop může zakrývat auto nebo sníh</div>')+
     '<div class="ni-acts">'+
       '<button type="button" data-qa="lead" class="pri">🎯 Vést sem</button>'+
       '<button type="button" data-qa="mapy">🚗 Mapy.com</button>'+
       '<button type="button" data-qa="google">🚗 Google</button>'+
       '<button type="button" data-qa="card">📋 Celá karta</button>'+
       '<button type="button" data-qa="close" class="ni-x">✕ Zavřít</button></div></div>';
-  nearInfo.classList.add('open');
+  nearInfo.classList.add('open'); nearInfoFitPhoto();
 }
 function nearInfoWarn(h){ var w=nearWarn(h); if(!w.length) return '';
   return '<div class="ni-warn"><b>⚠️ '+w.join(' · ')+'</b></div>'; }
+/* fotka nahoře v rychlém přehledu – hasič hned pozná, kam jede; klepnutí = zvětšit */
+function nearInfoPhoto(h){ var src=null; try{ src=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); }catch(e){}
+  if(!src) return '<div class="ni-noph">📷 bez fotky</div>';
+  return '<div class="ni-ph" data-qa="zoom"><img alt="foto hydrantu" data-rot="'+rotOf(h.id)+'" src="'+src+'"></div>'; }
+function nearInfoFitPhoto(){ var im=nearInfo&&nearInfo.querySelector('.ni-ph img'); if(!im) return; var d=+im.getAttribute('data-rot')||0;
+  if(d===90||d===270){ var bx=im.parentNode; // otočená fotka: prohoď rozměry, ať vyplní rámeček
+    im.style.cssText='position:absolute;left:50%;top:50%;width:'+bx.clientHeight+'px;height:'+bx.clientWidth+'px;transform:translate(-50%,-50%) rotate('+d+'deg)'; }
+  else if(d===180) im.style.transform='rotate(180deg)'; }
 function nearInfoClose(){ if(nearInfo){ nearInfo.classList.remove('open'); nearInfo.innerHTML=''; } nearInfoH=null; }
 if(nearInfo) nearInfo.addEventListener('click', function(ev){
   if(ev.target===nearInfo){ nearInfoClose(); return; }          // klepnutí vedle = zavřít
   var b=ev.target.closest('[data-qa]'); if(!b) return;
   var a=b.getAttribute('data-qa'), h=nearInfoH;
   if(a==='close'){ nearInfoClose(); return; }
+  if(a==='zoom'){ var im=b.querySelector('img'); if(im && typeof flZoomPhoto==='function') flZoomPhoto(im.src, rotOf(h.id)); return; }
   nearAction(a,h);
 });
 
