@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.228**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.229**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -11,7 +11,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
    - Jedna appka, režim podle odkazu (`FL_REZIM`, třída `body.rez-P|M|H`, nastaví se hned po `<body>`):
      **P** = bez parametru (plná verze), **M** = `?nahled=<svazek>` (dosavadní náhled pro obec),
      **H** = `?rezim=H`. Štítek v hlavičce „P · Provoz / M · Vlastník / H · Hasiči", barva hlavičky
-     modrá / zelená / červená.
+     modrá / zelená / červená. (v1.229: u M se klepnutím rozbalí seznam svazků – tlačítka, klepnutí = přepnout.)
    - **Přepínač pro správce** (`_FL_ADMIN`): klepnutí na štítek v hlavičce nebo „👁️ Zobrazit jako…"
      dole v menu → volba P / M (s výběrem svazku) / H, „📋 Zkopírovat odkaz pro hasiče". Přepnutí =
      načtení odkazu daného režimu (přihlášení zůstává) → správce vidí přesně to, co adresát.
