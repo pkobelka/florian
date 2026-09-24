@@ -1428,7 +1428,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.226';
+const APP_VERSION = '1.227';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -1506,9 +1506,12 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 /* semafor výdatnosti – během navigace (sledování polohy) se značky obarví podle průtoku,
    ať je na mapě hned vidět, kam pro vodu jet. Mimo navigaci zůstávají modré. */
 var flowMode=false;
-const FLOW_GOOD=6;   // l/s (= 21,6 m³/h) – od tohoto průtoku zeleně (4–6 l/s = 14,4–21,6 m³/h oranžově = splní jen minimum ČSN); hasičům se ukazuje v m³/h
+// hranice v m³/h (hasiči počítají v kubících): zelená ≥ 40, oranžová 20–40, červená < 20.
+// Nastaveno podle naměřených průtoků (medián ~36 m³/h), ať semafor opravdu odliší nejvydatnější.
+const FLOW_GOOD=40, FLOW_MID=20;
 const FLOW_COLOR={good:'#2e7d32',mid:'#ef6c00',bad:'#d32f2f',none:'#78909c'};
-function flowClass(h){ var n=parseNum(candVal(h,'prutok')); if(n==null||n<=0) return 'none'; if(n<PRUTOK_MIN) return 'bad'; return n>=FLOW_GOOD?'good':'mid'; }
+function flowClass(h){ var n=parseNum(candVal(h,'prutok')); if(n==null||n<=0) return 'none'; var q=n*3.6; // l/s → m³/h
+  if(q<FLOW_MID) return 'bad'; return q>=FLOW_GOOD?'good':'mid'; }
 function flowRefresh(on){ flowMode=on; try{ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); cluster.refreshClusters(); }catch(e){} }
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
@@ -2517,7 +2520,7 @@ function nearRender(ll){
       '<button type="button" data-act="lead" data-id="'+esc(s.id)+'">🎯 Vést sem</button>'+
       '<button type="button" data-act="mapy" title="Navigace po silnici v Mapy.com" data-id="'+esc(s.id)+'">🚗 Mapy.com</button>'+
       '<button type="button" data-act="google" title="Navigace po silnici v Google Mapách" data-id="'+esc(s.id)+'">🚗 Google</button></div>';
-  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+prutokM3h(FLOW_GOOD)+' m³/h <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+prutokM3h(PRUTOK_MIN)+'–'+prutokM3h(FLOW_GOOD)+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+prutokM3h(PRUTOK_MIN)+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
+  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+FLOW_GOOD+' m³/h <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+FLOW_MID+'–'+FLOW_GOOD+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+FLOW_MID+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
   nearEl.innerHTML=html;
 }
 /* čára od mé polohy k cílovému hydrantu + kroužek kolem něj */
