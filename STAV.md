@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.237**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.238**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -54,7 +54,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
    - **Ukázat** otevře místo celé karty **rychlý přehled uprostřed displeje** (`nearInfoOpen`):
      průtok m³/h (+ l/s), statický tlak (≈ dopočet z VDJ, když není měřený), dynamický tlak,
      tlačítka Vést sem / Mapy.com / Google / Celá karta / Zavřít. Pod normou červeně.
-   - **Celá karta** z přehledu smí až přes celý displej (`.card.full` = max-height 100dvh; v1.237 výška podle obsahu, na PC bez prázdné bílé plochy).
+   - **Celá karta** z přehledu smí až přes celý displej (`.card.full` = max-height 100dvh; v1.237 výška podle obsahu; v1.238 okno uprostřed obrazovky, na PC/tabletu zoom 1,2).
    - **Oprava (v1.223):** zvětšená otočená mapa roztahovala na mobilu rozvržení stránky → karta
      a okna vyjížděly posunuté (vidět jen část). Nově v navigaci `body{position:fixed;overflow:hidden}`.
 
