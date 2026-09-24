@@ -1385,7 +1385,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
 <body>
 <script>
 /* Režim appky: P = provozovatel (plná verze), M = majitel/vlastník (náhled pro obec, ?nahled=<svazek>),
-   H = hasiči (?rezim=H – jen mapa, nejbližší voda, průtok, typ, foto). Jedna appka, liší se jen tím,
+   H = hasiči (?rezim=H – jen mapa, nejbližší hydrant, průtok, typ, foto). Jedna appka, liší se jen tím,
    co je vidět. Pozor: režim jen schovává ovládání – přístup k datům hlídá přihlášení a Firebase pravidla. */
 var FL_REZIM=(function(){ try{ var q=new URLSearchParams(location.search), r=String(q.get('rezim')||'').toUpperCase();
   if(r==='H'||r==='M'||r==='P') return (r==='M'&&!(q.get('nahled')||q.get('starosta')))?'P':r;
@@ -1481,7 +1481,7 @@ document.body.classList.add('rez-'+FL_REZIM);
   <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2.5l4.6 9.5H7.4z" fill="#c62828"/><path d="M12 21.5L7.4 12h9.2z" fill="#90a4ae"/></svg>
 </button>
 <div class="near-h" id="nearH" style="display:none"></div>
-<button class="zasah-btn" id="zasahBtn" type="button" title="Zásah: zapne polohu a ukáže nejbližší hydranty s průtokem">🚒 Nejbližší voda</button>
+<button class="zasah-btn" id="zasahBtn" type="button" title="Zásah: zapne polohu a ukáže nejbližší hydranty s průtokem">🚒 Nejbližší hydrant</button>
 <div class="near-info" id="nearInfo"></div>
 
 <div class="backdrop" id="backdrop"></div>
@@ -1519,7 +1519,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.239';
+const APP_VERSION = '1.240';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2653,7 +2653,7 @@ function nearAction(act,h){
   window.open(url,'_blank','noopener');
 }
  /* ---- režimy P / M / H: označení + přepínač pro správce ---- */
-const REZ_INFO={P:{t:'P · Provoz',d:'plná verze pro provozovatele (VHOS)'},M:{t:'M · Vlastník',d:'náhled pro obec / svazek – prohlížení bez provozních věcí'},H:{t:'H · Hasiči',d:'mapa, nejbližší voda, průtok, typ a fotka – nic navíc'}};
+const REZ_INFO={P:{t:'P · Provoz',d:'plná verze pro provozovatele (VHOS)'},M:{t:'M · Vlastník',d:'náhled pro obec / svazek – prohlížení bez provozních věcí'},H:{t:'H · Hasiči',d:'mapa, nejbližší hydrant, průtok, typ a fotka – nic navíc'}};
 (function(){ var c=document.getElementById('rezChip'); if(c){ c.textContent=REZ_INFO[FL_REZIM].t; c.onclick=function(){ if(window._FL_ADMIN) rezPanel(); }; } })();
 function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle('rez-admin',a);
 }
@@ -2681,7 +2681,7 @@ function rezPanel(){
     location.href=rezUrl(r);
   });
 }
-/* zásahový režim „🚒 Nejbližší voda": jedním klepnutím poloha + navigace + rovnou rozbalené
+/* zásahový režim „🚒 Nejbližší hydrant": jedním klepnutím poloha + navigace + rovnou rozbalené
    nejbližší hydranty; velké písmo a tlačítka (rukavice, tma), bez legend navíc.
    Základ budoucí varianty appky pro hasiče. Končí vypnutím polohy. */
 var zasah=false;
