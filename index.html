@@ -977,7 +977,7 @@ body.rez-H .ctrl .btn-toggle{margin-bottom:5px}
 /* zásahový režim – velké, kontrastní, bez zbytečností */
 body.zasah .legend, body.zasah .vodleg{display:none!important}
 body.zasah .near-pill{font-size:21px;padding:11px 18px;background:#b71c1c}
-body.zasah .near-h.open{left:8px;right:64px;width:auto;font-size:16px;color:#000;border:2px solid #b71c1c;max-height:calc(100dvh - 190px);overflow:auto}
+body.zasah .near-h.open{left:auto;right:64px;width:min(420px,calc(100vw - 76px));font-size:16px;color:#000;border:2px solid #b71c1c;max-height:calc(100dvh - 190px);overflow:auto}
 body.zasah .near-hd{font-size:17px}
 body.zasah .near-row{padding:9px 6px;border-bottom:1px solid #e0e0e0}
 body.zasah .near-row b.near-d{font-size:20px;min-width:72px}
@@ -1486,7 +1486,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.231';
+const APP_VERSION = '1.232';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
