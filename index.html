@@ -918,6 +918,43 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .ni-acts button.pri{grid-column:1/-1;background:var(--blue);color:#fff;border-color:var(--blue)}
 .ni-acts button.ni-x{grid-column:2}
 .card.full{max-height:none;height:100dvh;border-radius:0}
+/* ---- režimy P / M / H ---- */
+.rez-chip{display:inline-block;vertical-align:2px;margin-left:6px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.18);color:#fff;
+  font-family:inherit;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.2px;cursor:default}
+body.rez-admin .rez-chip{cursor:pointer}
+body.rez-admin .rez-chip::after{content:' ▾';font-size:9px}
+body.rez-M .topbar{background:linear-gradient(180deg,#2e7d32,#1b5e20)}
+body.rez-M .statusbar{background:#1b5e20}
+body.rez-H .topbar{background:linear-gradient(180deg,#c62828,#8e0000)}
+body.rez-H .statusbar{background:#8e0000}
+.rez-ov{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px}
+.rez-box{background:#fff;border-radius:16px;width:100%;max-width:360px;max-height:calc(100dvh - 32px);overflow:auto;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.rez-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:16px}
+.rez-opt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;margin-top:8px;font-family:inherit;cursor:pointer}
+.rez-opt b{display:block;font-size:16px}
+.rez-opt span{display:block;font-size:12.5px;color:#607d8b;margin-top:2px}
+.rez-oP b{color:#0d47a1} .rez-oM b{color:#1b5e20} .rez-oH b{color:#b71c1c}
+.rez-opt.cur{border-color:#90a4ae;background:#f5f7f9}
+.rez-sel{width:100%;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px}
+.rez-link{width:100%;margin-top:12px;border:1px dashed #b71c1c;background:#fff5f5;color:#b71c1c;border-radius:10px;padding:9px;font-family:inherit;font-weight:700;cursor:pointer}
+.rez-note{margin-top:10px;font-size:12px;color:#78909c;line-height:1.4}
+/* M a H: správcovská provozní tlačítka pryč (zůstává jen přepínač „Zobrazit jako…") – ať náhled odpovídá tomu, co uvidí oni */
+body.rez-M #revUploadBtn, body.rez-M #lideBtn, body.rez-M #shareBtn, body.rez-M #promoBtn, body.rez-M #qrPairBtn,
+body.rez-H #revUploadBtn, body.rez-H #lideBtn, body.rez-H #shareBtn, body.rez-H #promoBtn, body.rez-H #qrPairBtn{display:none!important}
+/* M a H: poznámky jsou jen pro provoz */
+body.rez-M #poznToggle, body.rez-M #infoBtn, body.rez-M .pozn-badge,
+body.rez-H #poznToggle, body.rez-H #infoBtn, body.rez-H .pozn-badge{display:none!important}
+/* H (hasiči): jen mapa, obce, satelit, fotky – žádné protokoly, seznamy, tisky, revize, úkoly */
+body.rez-H .op-only, body.rez-H #covMatrix, body.rez-H #vodToggle, body.rez-H #seznamBtn, body.rez-H #printMapBtn,
+body.rez-H .uk-badge, body.rez-H .vodleg,
+body.rez-H .card .revbig, body.rez-H .card .chip-csn, body.rez-H .card .pbtns, body.rez-H .card .ptip,
+body.rez-H .card .actions{display:none!important}
+body.rez-H .zasah-btn{font-size:17px;padding:12px 18px}
+/* typ hydrantu v nabídce nejbližších */
+.ntyp{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;background:#eceff1;color:#455a64;vertical-align:1px}
+.ntyp.nad{background:#e3f2fd;color:#0d47a1}
+.ni-typ{margin-top:6px;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:700;background:#fff8e1;color:#8d5a00}
+.ni-typ.nad{background:#e8f5e9;color:#1b5e20}
 .fdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0;flex:none}
 .near-w{font-size:11.5px;color:#b71c1c;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .near-leg{margin-top:6px;font-size:11px;color:#607d8b;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px}
@@ -1301,12 +1338,21 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
 </style>
 </head>
 <body>
+<script>
+/* Režim appky: P = provozovatel (plná verze), M = majitel/vlastník (náhled pro obec, ?nahled=<svazek>),
+   H = hasiči (?rezim=H – jen mapa, nejbližší voda, průtok, typ, foto). Jedna appka, liší se jen tím,
+   co je vidět. Pozor: režim jen schovává ovládání – přístup k datům hlídá přihlášení a Firebase pravidla. */
+var FL_REZIM=(function(){ try{ var q=new URLSearchParams(location.search), r=String(q.get('rezim')||'').toUpperCase();
+  if(r==='H'||r==='M'||r==='P') return (r==='M'&&!(q.get('nahled')||q.get('starosta')))?'P':r;
+  if(q.get('nahled')||q.get('starosta')) return 'M'; }catch(e){} return 'P'; })();
+document.body.classList.add('rez-'+FL_REZIM);
+</script>
 <div id="map"></div>
 
 <div class="topbar">
   <img class="logo" src="icon-192.png" alt="">
   <div>
-    <div class="t">Florián 2.0</div>
+    <div class="t">Florián 2.0 <button type="button" class="rez-chip" id="rezChip" aria-label="Režim appky"></button></div>
     <div class="s">Požární hydranty · VHOS (všechny skupiny)</div>
   </div>
   <div class="count" id="count">–</div>
@@ -1376,6 +1422,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share op-only" id="promoBtn" style="display:none" title="Otevřít promo video Florián 2.0">🎬 Promo video</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
+  <button class="btn-toggle rez-adm" id="rezMenuBtn" style="display:none" title="Přepnout, jak appku vidí provoz / vlastník / hasiči (jen pro správce)">👁️ Zobrazit jako… (P / M / H)</button>
   <button class="btn-toggle btn-share op-only" id="qrPairBtn" style="display:none" title="Vyrobí QR s přihlašovacím odkazem pro přihlášení dalšího zařízení (tabletu) – naskenuješ ho fotoaparátem na tabletu">🔳 Přihlásit tablet (QR)</button>
 </div>
 
@@ -1428,7 +1475,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.227';
+const APP_VERSION = '1.228';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2561,6 +2608,34 @@ function nearAction(act,h){
     : 'https://www.google.com/maps/dir/?api=1&destination='+h.lat.toFixed(6)+','+h.lon.toFixed(6)+'&travelmode=driving&dir_action=navigate';
   window.open(url,'_blank','noopener');
 }
+ /* ---- režimy P / M / H: označení + přepínač pro správce ---- */
+const REZ_INFO={P:{t:'P · Provoz',d:'plná verze pro provozovatele (VHOS)'},M:{t:'M · Vlastník',d:'náhled pro obec / svazek – prohlížení bez provozních věcí'},H:{t:'H · Hasiči',d:'mapa, nejbližší voda, průtok, typ a fotka – nic navíc'}};
+(function(){ var c=document.getElementById('rezChip'); if(c){ c.textContent=REZ_INFO[FL_REZIM].t; c.onclick=function(){ if(window._FL_ADMIN) rezPanel(); }; } })();
+function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle('rez-admin',a);
+  var b=document.getElementById('rezMenuBtn'); if(b){ b.style.display=a?'':'none'; b.onclick=rezPanel; } }
+/* odkaz na režim (zachová cestu appky, zahodí ostatní parametry) */
+function rezUrl(r,svazek){ var u=location.origin+location.pathname;
+  if(r==='H') return u+'?rezim=H'; if(r==='M') return u+'?nahled='+encodeURIComponent(svazek||''); return u; }
+function rezPanel(){
+  var old=document.getElementById('rezOv'); if(old){ old.remove(); return; }
+  var owners=Array.from(new Set(HYDRANTY.map(function(h){ return h.vlastnik; }).filter(Boolean))).sort(function(a,b){ return a.localeCompare(b,'cs'); });
+  var curOwn=(typeof selectedOwners!=='undefined'&&selectedOwners.size===1)?[...selectedOwners][0]:'';
+  var ov=document.createElement('div'); ov.id='rezOv'; ov.className='rez-ov';
+  ov.innerHTML='<div class="rez-box" role="dialog" aria-modal="true"><div class="rez-hd"><b>👁️ Zobrazit appku jako…</b><button type="button" class="near-x" data-r="x" aria-label="Zavřít">✕</button></div>'+
+    ['P','M','H'].map(function(r){ return '<button type="button" class="rez-opt rez-o'+r+(r===FL_REZIM?' cur':'')+'" data-r="'+r+'"><b>'+REZ_INFO[r].t+(r===FL_REZIM?' ✓':'')+'</b><span>'+REZ_INFO[r].d+'</span></button>'+
+      (r==='M'?'<select class="rez-sel" id="rezOwn"><option value="">– vyber svazek / vlastníka –</option>'+owners.map(function(o){ return '<option'+(o===curOwn?' selected':'')+'>'+esc(o)+'</option>'; }).join('')+'</select>':''); }).join('')+
+    '<button type="button" class="rez-link" data-r="linkH">📋 Zkopírovat odkaz pro hasiče</button>'+
+    '<div class="rez-note">Přepnutí jen změní, co je vidět – přihlášení zůstává. Zpět na plnou verzi přes štítek v hlavičce nebo tady (P). Odkazy pro obce jsou v menu „Náhledy pro obce".</div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(ev){
+    if(ev.target===ov){ ov.remove(); return; }
+    var b=ev.target.closest('[data-r]'); if(!b) return; var r=b.getAttribute('data-r');
+    if(r==='x'){ ov.remove(); return; }
+    if(r==='linkH'){ var u=rezUrl('H'); try{ navigator.clipboard.writeText(u).then(function(){ flToast('📋 Odkaz pro hasiče zkopírován'); },function(){ window.prompt('Zkopíruj odkaz:',u); }); }catch(e){ window.prompt('Zkopíruj odkaz:',u); } return; }
+    var sv=''; if(r==='M'){ sv=(ov.querySelector('#rezOwn')||{}).value||''; if(!sv){ flToast('Nejdřív vyber svazek / vlastníka'); ov.querySelector('#rezOwn').focus(); return; } }
+    location.href=rezUrl(r,sv);
+  });
+}
 /* zásahový režim „🚒 Nejbližší voda": jedním klepnutím poloha + navigace + rovnou rozbalené
    nejbližší hydranty; velké písmo a tlačítka (rukavice, tma), bez legend navíc.
    Základ budoucí varianty appky pro hasiče. Končí vypnutím polohy. */
@@ -2583,8 +2658,8 @@ function nearWarn(h){ var w=[];
 /* nejvydatnější z nabídnutých (nejvyšší naměřený průtok) */
 function nearBest(hs){ var b=null,bq=0; hs.forEach(function(h){ var n=parseNum(candVal(h,'prutok')); if(n!=null && n>bq){ bq=n; b=h; } }); return b; }
 function nearValsLine(h,best){ var v=nearVals(h);
-  var w=nearWarn(h);
-  return '<span class="near-v'+(best?' best':'')+'"><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
+  var w=nearWarn(h), nad=h.typ==='nadzemní';
+  return '<span class="near-v'+(best?' best':'')+'"><span class="ntyp'+(nad?' nad':'')+'">'+(nad?'nadz.':'podz.')+'</span><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
     (w.length?'<span class="near-w">⚠️ '+w.join(' · ')+'</span>':''); }
 /* rychlý přehled hydrantu uprostřed displeje (místo celé karty) */
 const nearInfo=document.getElementById('nearInfo');
@@ -2596,6 +2671,8 @@ function nearInfoOpen(h){
     '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
       '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
     nearInfoWarn(h)+
+    (h.typ==='nadzemní'?'<div class="ni-typ nad">▲ Nadzemní – dobře vidět a přístupný</div>'
+      :'<div class="ni-typ">⚠️ Podzemní – poklop může zakrývat zaparkované auto nebo sníh</div>')+
     '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+prutokM3h(PRUTOK_MIN)+' m³/h':'')+'</i>':'')+'</div>'+
     '<div class="ni-m'+(v.stBad?' bad':'')+'"><span>Statický tlak</span><b>'+v.st+(v.st!=='—'?' <small>MPa</small>':'')+'</b>'+(v.st.charAt(0)==='≈'?'<i>dopočet z vodojemu</i>':(v.stBad?'<i>pod min. '+String(TLAK_STAT_MIN).replace('.',',')+' MPa</i>':''))+'</div>'+
     '<div class="ni-m"><span>Dynamický tlak</span><b>'+v.dy+(v.dy!=='—'?' <small>MPa</small>':'')+'</b></div>'+
@@ -2747,7 +2824,9 @@ function openCard(h){
     ['Vlastník', txt(h.vlastnik)],
     ['ID (GIS OBJECTID)', txt(String(h.id||''))],
     ['Poznámka', txt(candVal(h,'poznamka'))],
-  ];
+  ].filter(function(r){ // poznámky jsou jen pro provoz; hasičům stačí obec, voda a potrubí
+    if(FL_REZIM==='P') return true; if(r[0]==='Poznámka') return false;
+    return FL_REZIM!=='H' || ['Obec / město','Druh vody','DN hydrantu','Osazen na potrubí DN'].indexOf(r[0])>=0; });
   const ph = cloudPhotos[h.id] || photoData[h.id];
   // tlak i průtok: naměřená hodnota rozhoduje (tlak ≥0,2 MPa, průtok ≥ PRUTOK_MIN l/s);
   // když neměřeno, respektuj ruční splnuje* z dat
@@ -2765,7 +2844,7 @@ function openCard(h){
     '<div class="chips">'+
       '<span class="chip '+(nad?'type-nad':'type-pod')+'">'+(nad?'Nadzemní':'Podzemní')+'</span>'+
       '<span class="chip ok">'+esc(txt(h.etapa))+'</span>'+
-      '<span class="chip" style="background:'+(csnOk?'#e8f5e9;color:#1b5e20':'#fdecea;color:#b71c1c')+'">ČSN 73 0873: '+(csnOk?'vyhovuje ✓':'nevyhovuje ✗')+'</span>'+
+      '<span class="chip chip-csn" style="background:'+(csnOk?'#e8f5e9;color:#1b5e20':'#fdecea;color:#b71c1c')+'">ČSN 73 0873: '+(csnOk?'vyhovuje ✓':'nevyhovuje ✗')+'</span>'+
       cisloHChip(h)+
       nearestHChip(h)+
     '</div>'+
@@ -4126,7 +4205,7 @@ function ukolOver(t){ if(t.hotovo)return false; var iso=_cz2iso(t.termin); retur
 function hasOpenUkol(id){ if(!ukoly) return false; var o=ukoly[id]||{}; return Object.keys(o).some(function(tid){ return !o[tid].hotovo; }); }
 function pracOf(h){ return OBEC_PRAC[h.obec] || h.provozniStredisko || ''; }
 function ukolySekce(h){
-  if(document.body.classList.contains('starosta')) return ''; // úkoly externím uživatelům (obce/starostové) neukazuj
+  if(document.body.classList.contains('starosta') || FL_REZIM!=='P') return ''; // úkoly jen provozu (ne vlastníkům ani hasičům)
   var list=ukolyArr(h.id);
   var rows=list.length ? list.map(function(t){ var over=ukolOver(t); var kc=t.komentare?Object.keys(t.komentare).length:0;
     return '<div class="uk-item" data-tid="'+esc(t._id)+'"><div class="uk-txt">'+esc(t.text||'(bez popisu)')+'</div><div class="uk-meta">'+
@@ -4416,7 +4495,7 @@ function flApplyMyPracDefault(){
   applyFilter();
 }
 // ---- Tým + Sdílet appku: jen pro admina ----
-function flApplyAdminUI(){ var a=!!window._FL_ADMIN; ['lideBtn','shareBtn','promoBtn','revUploadBtn','qrPairBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
+function flApplyAdminUI(){ var a=!!window._FL_ADMIN; try{ rezAdminUI(); }catch(_){} ['lideBtn','shareBtn','promoBtn','revUploadBtn','qrPairBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
 
 // ---- QR párování: správce vybere e-mail povoleného uživatele -> server vyrobí přihlašovací odkaz -> QR -> uživatel sejme tabletem ----
 function flQrPairClose(){ var ov=document.getElementById('qpOv'); if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }

@@ -1,11 +1,30 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.227**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.228**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Tři režimy appky: P provoz / M vlastník / H hasiči** (v1.228)
+   - Jedna appka, režim podle odkazu (`FL_REZIM`, třída `body.rez-P|M|H`, nastaví se hned po `<body>`):
+     **P** = bez parametru (plná verze), **M** = `?nahled=<svazek>` (dosavadní náhled pro obec),
+     **H** = `?rezim=H`. Štítek v hlavičce „P · Provoz / M · Vlastník / H · Hasiči", barva hlavičky
+     modrá / zelená / červená.
+   - **Přepínač pro správce** (`_FL_ADMIN`): klepnutí na štítek v hlavičce nebo „👁️ Zobrazit jako…"
+     dole v menu → volba P / M (s výběrem svazku) / H, „📋 Zkopírovat odkaz pro hasiče". Přepnutí =
+     načtení odkazu daného režimu (přihlášení zůstává) → správce vidí přesně to, co adresát.
+   - **M a H:** bez poznámek (přepínač Poznámky, Info, odznak „i", řádek Poznámka v kartě), bez úkolů
+     (`ukolySekce` jen v P), bez správcovských tlačítek (revize do cloudu, tým, sdílení, QR).
+   - **H:** menu jen Foto, Čísla, Satelit, Vše, Obce (+ přepínač pro správce); pryč pokrytí, vodovod,
+     tisky, protokoly, revize. Karta: bez revize, ČSN štítku, nahrávání fotek a tlačítek; údaje jen obec,
+     druh vody, DN hydrantu, DN potrubí. Větší tlačítko 🚒 Nejbližší voda.
+   - **Typ hydrantu** v nabídce nejbližších (štítek nadz./podz.) a v přehledu: „▲ Nadzemní – dobře
+     vidět" / „⚠️ Podzemní – poklop může zakrývat zaparkované auto nebo sníh" (všechny režimy).
+   - ⚠️ **Režim jen schovává ovládání.** Úkoly/poznámky se do prohlížeče načítají všem přihlášeným –
+     před rozesláním M/H odkazů omezit ve Firebase pravidlech (`mojebudky/database.rules.json`).
+     Hasiči i vlastníci se zatím musí přihlásit (e-mail v „Přístup (e-maily)").
 
 **Zásahový režim, semafor výdatnosti, upozornění** (v1.225)
    - **🚒 Nejbližší voda** (červené tlačítko nad 📍, jen když poloha neběží): jedním klepnutím zapne
