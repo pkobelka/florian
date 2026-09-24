@@ -1,11 +1,30 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 10. 9. 2026 · verze aplikace **1.215**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.223**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
 
 ## 🆕 Hotovo v této větvi (čeká na merge do `main`)
+
+**Navigace: mapa po směru jízdy + nejbližší hydrant** (v1.223)
+   - Po zapnutí 📍 polohy se mapa **otáčí po směru jízdy** (směr nahoru, jako navigace). Směr z GPS
+     (> ~5 km/h), jinak dopočet z posunu ≥ 10 m. U tečky polohy je modrý kužel směru.
+   - Nad tlačítkem polohy je **kompas** (střelka = sever): přepíná „po směru jízdy" ↔ „sever nahoru"
+     (pamatuje se v `localStorage` `fl_navUp`).
+   - Technicky: Leaflet otáčení neumí → otáčí se celý `#map` CSS transformací; po dobu sledování je
+     kontejner zvětšený na úhlopříčku obrazovky (bez prázdných rohů). Značky a ovládání Leafletu se
+     otáčí zpět (CSS `rotate` + `--nav-unrot`). Klepnutí se přepočítávají (`mouseEventToContainerPoint`),
+     zoom jde kolem středu. Tažení prstem = pozastavení sledování a mapa se srovná severem nahoru.
+     Tisk mapy sledování vypne. Fce: `navApply`, `navSize`, `navUpdHeading`, `navMeDir`.
+   - **Proužek „🚒 ➤ 142 m"** vlevo od tlačítka polohy = nejbližší požární hydrant (vzdušně, šipka
+     ukazuje směr na obrazovce). Klepnutí → 3 nejbližší H a tlačítka **Ukázat** (mapa + karta),
+     **Vést sem** (čárkovaná čára + kroužek, proužek pak ukazuje 🎯 vzdálenost k cíli),
+     **Mapy.com / Google** (navigace po silnici). Náhled pro obec bere jen hydranty z výběru.
+     Fce: `nearRender`, `nearList`, `navSetTarget`.
+   - Výpadek GPS za jízdy už sledování nevypíná (končí jen při zakázané poloze).
+   - Ověřeno v headless Chromiu se simulovanou jízdou (otočení, proužek, vedení, tažení, vypnutí).
+     ⚠️ Na skutečném telefonu za jízdy ještě neotestováno.
 
 **Export do GISu: „Název" = holé číslo H** (v1.215)
    - Nález při zkušebním importu jednoho hydrantu (HN25 Staré Město 111, OBJECTID 3765): do sloupce
