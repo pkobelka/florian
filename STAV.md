@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.235**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.236**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -22,7 +22,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
      načtení odkazu daného režimu (přihlášení zůstává) → správce vidí přesně to, co adresát.
    - **M a H:** bez poznámek (přepínač Poznámky, Info, odznak „i", řádek Poznámka v kartě), bez úkolů
      (`ukolySekce` jen v P), bez správcovských tlačítek (revize do cloudu, tým, sdílení, QR).
-   - **H:** menu pod sebou jen Foto, Satelit, Vše, Obce (v1.231 bez Čísel; v1.233 velká tlačítka i hamburger); pryč pokrytí, vodovod,
+   - **H:** menu pod sebou jen Foto, Satelit, Vše, Obce (v1.231 bez Čísel; v1.233 velká tlačítka i hamburger; v1.236 na PC/tabletu naležato ještě větší – 20 px); pryč pokrytí, vodovod,
      tisky, protokoly, revize. Karta: bez revize, ČSN štítku, nahrávání fotek a tlačítek; údaje jen obec,
      druh vody, DN hydrantu, DN potrubí. Větší tlačítko 🚒 Nejbližší voda.
    - **Typ hydrantu** v nabídce nejbližších (štítek nadz./podz.) a v přehledu: „▲ Nadzemní – dobře
