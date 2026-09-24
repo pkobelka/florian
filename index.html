@@ -935,7 +935,11 @@ body.rez-H .statusbar{background:#8e0000}
 .rez-opt span{display:block;font-size:12.5px;color:#607d8b;margin-top:2px}
 .rez-oP b{color:#0d47a1} .rez-oM b{color:#1b5e20} .rez-oH b{color:#b71c1c}
 .rez-opt.cur{border-color:#90a4ae;background:#f5f7f9}
-.rez-sel{width:100%;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px}
+.rez-owns{display:none;margin:4px 0 0 10px;padding-left:8px;border-left:3px solid #a5d6a7}
+.rez-owns.open{display:block}
+.rez-oh{font-size:12.5px;color:#607d8b;margin:6px 0 2px}
+.rez-own{display:block;width:100%;text-align:left;border:1px solid #c8e6c9;background:#f1f8e9;color:#1b5e20;border-radius:9px;padding:9px 10px;margin-top:5px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.rez-own.cur{border-color:#2e7d32;background:#c8e6c9}
 .rez-link{width:100%;margin-top:12px;border:1px dashed #b71c1c;background:#fff5f5;color:#b71c1c;border-radius:10px;padding:9px;font-family:inherit;font-weight:700;cursor:pointer}
 .rez-note{margin-top:10px;font-size:12px;color:#78909c;line-height:1.4}
 /* M a H: správcovská provozní tlačítka pryč (zůstává jen přepínač „Zobrazit jako…") – ať náhled odpovídá tomu, co uvidí oni */
@@ -1475,7 +1479,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.228';
+const APP_VERSION = '1.229';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2623,7 +2627,7 @@ function rezPanel(){
   var ov=document.createElement('div'); ov.id='rezOv'; ov.className='rez-ov';
   ov.innerHTML='<div class="rez-box" role="dialog" aria-modal="true"><div class="rez-hd"><b>👁️ Zobrazit appku jako…</b><button type="button" class="near-x" data-r="x" aria-label="Zavřít">✕</button></div>'+
     ['P','M','H'].map(function(r){ return '<button type="button" class="rez-opt rez-o'+r+(r===FL_REZIM?' cur':'')+'" data-r="'+r+'"><b>'+REZ_INFO[r].t+(r===FL_REZIM?' ✓':'')+'</b><span>'+REZ_INFO[r].d+'</span></button>'+
-      (r==='M'?'<select class="rez-sel" id="rezOwn"><option value="">– vyber svazek / vlastníka –</option>'+owners.map(function(o){ return '<option'+(o===curOwn?' selected':'')+'>'+esc(o)+'</option>'; }).join('')+'</select>':''); }).join('')+
+      (r==='M'?'<div class="rez-owns" id="rezOwns"><div class="rez-oh">Vyber svazek / vlastníka:</div>'+owners.map(function(o){ return '<button type="button" class="rez-own'+(o===curOwn?' cur':'')+'" data-r="own" data-o="'+esc(o)+'">'+esc(o)+'</button>'; }).join('')+'</div>':''); }).join('')+
     '<button type="button" class="rez-link" data-r="linkH">📋 Zkopírovat odkaz pro hasiče</button>'+
     '<div class="rez-note">Přepnutí jen změní, co je vidět – přihlášení zůstává. Zpět na plnou verzi přes štítek v hlavičce nebo tady (P). Odkazy pro obce jsou v menu „Náhledy pro obce".</div></div>';
   document.body.appendChild(ov);
@@ -2632,8 +2636,9 @@ function rezPanel(){
     var b=ev.target.closest('[data-r]'); if(!b) return; var r=b.getAttribute('data-r');
     if(r==='x'){ ov.remove(); return; }
     if(r==='linkH'){ var u=rezUrl('H'); try{ navigator.clipboard.writeText(u).then(function(){ flToast('📋 Odkaz pro hasiče zkopírován'); },function(){ window.prompt('Zkopíruj odkaz:',u); }); }catch(e){ window.prompt('Zkopíruj odkaz:',u); } return; }
-    var sv=''; if(r==='M'){ sv=(ov.querySelector('#rezOwn')||{}).value||''; if(!sv){ flToast('Nejdřív vyber svazek / vlastníka'); ov.querySelector('#rezOwn').focus(); return; } }
-    location.href=rezUrl(r,sv);
+    if(r==='M'){ var ow=ov.querySelector('#rezOwns'); ow.classList.toggle('open'); if(ow.classList.contains('open')) ow.scrollIntoView({block:'nearest'}); return; } // rozbal svazky
+    if(r==='own'){ location.href=rezUrl('M',b.getAttribute('data-o')); return; }
+    location.href=rezUrl(r);
   });
 }
 /* zásahový režim „🚒 Nejbližší voda": jedním klepnutím poloha + navigace + rovnou rozbalené
