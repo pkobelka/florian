@@ -947,6 +947,12 @@ body.rez-H .uk-badge, body.rez-H .vodleg,
 body.rez-H .card .revbig, body.rez-H .card .chip-csn, body.rez-H .card .pbtns, body.rez-H .card .ptip,
 body.rez-H .card .actions{display:none!important}
 body.rez-H .zasah-btn{font-size:17px;padding:12px 18px}
+/* H menu: pod sebou Foto, Satelit, Vše, Obce – každé přes celou šířku (čísla H hasiči nepotřebují) */
+body.rez-H #cisloToggle{display:none!important}
+body.rez-H .ctrl .ctrl-row>button, body.rez-H #allBtn{flex:1 1 100%}
+/* prázdné (schované) řádky menu nesmí dělat mezery → odstupy dávají až viditelná tlačítka */
+body.rez-H .ctrl, body.rez-H .ctrl .ctrl-row{gap:0}
+body.rez-H .ctrl .btn-toggle{margin-bottom:5px}
 /* typ hydrantu v nabídce nejbližších */
 .ntyp{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;background:#eceff1;color:#455a64;vertical-align:1px}
 .ntyp.nad{background:#e3f2fd;color:#0d47a1}
@@ -1428,7 +1434,6 @@ document.body.classList.add('rez-'+FL_REZIM);
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share op-only" id="promoBtn" style="display:none" title="Otevřít promo video Florián 2.0">🎬 Promo video</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
-  <button class="btn-toggle rez-adm" id="rezMenuBtn" style="display:none" title="Přepnout, jak appku vidí provoz / vlastník / hasiči (jen pro správce)">👁️ Zobrazit jako… (P / M / H)</button>
   <button class="btn-toggle btn-share op-only" id="qrPairBtn" style="display:none" title="Vyrobí QR s přihlašovacím odkazem pro přihlášení dalšího zařízení (tabletu) – naskenuješ ho fotoaparátem na tabletu">🔳 Přihlásit tablet (QR)</button>
 </div>
 
@@ -1481,7 +1486,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.230';
+const APP_VERSION = '1.231';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -2618,7 +2623,7 @@ function nearAction(act,h){
 const REZ_INFO={P:{t:'P · Provoz',d:'plná verze pro provozovatele (VHOS)'},M:{t:'M · Vlastník',d:'náhled pro obec / svazek – prohlížení bez provozních věcí'},H:{t:'H · Hasiči',d:'mapa, nejbližší voda, průtok, typ a fotka – nic navíc'}};
 (function(){ var c=document.getElementById('rezChip'); if(c){ c.textContent=REZ_INFO[FL_REZIM].t; c.onclick=function(){ if(window._FL_ADMIN) rezPanel(); }; } })();
 function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle('rez-admin',a);
-  var b=document.getElementById('rezMenuBtn'); if(b){ b.style.display=a?'':'none'; b.onclick=rezPanel; } }
+}
 /* odkaz na režim (zachová cestu appky, zahodí ostatní parametry) */
 function rezUrl(r,svazek){ var u=location.origin+location.pathname;
   if(r==='H') return u+'?rezim=H'; if(r==='M') return u+'?nahled='+encodeURIComponent(svazek||''); return u; }
