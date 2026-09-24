@@ -910,7 +910,10 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .ni-acts button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 6px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;color:var(--blue-dark)}
 .ni-acts button.pri{grid-column:1/-1;background:var(--blue);color:#fff;border-color:var(--blue)}
 .ni-acts button.ni-x{grid-column:2}
-.card.full{max-height:100dvh}  /* smí až přes celou výšku, ale jen podle obsahu – žádná prázdná bílá plocha */
+/* celá karta z rychlého přehledu = okno uprostřed obrazovky (výška podle obsahu) */
+.card.full{top:50%;bottom:auto;left:10px;right:10px;max-height:calc(100dvh - 24px);border-radius:18px;
+  transform:translateY(-50%) scale(.96);opacity:0;transition:transform .2s ease,opacity .2s ease}
+.card.full.open{transform:translateY(-50%);opacity:1}
 /* ---- režimy P / M / H ---- */
 .rez-chip{display:inline-block;vertical-align:2px;margin-left:6px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.18);color:#fff;
   font-family:inherit;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.2px;cursor:default}
@@ -1370,6 +1373,8 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   .ni-v span, .ni-v i{font-size:12.5px}
   .ni-typ{font-size:15px}
   .ni-acts button{font-size:17px;padding:13px 6px}
+  /* celá karta uprostřed na velké obrazovce o pětinu větší (čitelnost na PC/tabletu) */
+  .card.full{zoom:1.2;max-height:calc((100dvh - 24px) / 1.2)}
   /* menu hasičů (jen 4 tlačítka) – velké, ať se trefí prstem i na tabletu */
   body.rez-H .ctrl{width:250px;top:calc(env(safe-area-inset-top) + 96px)}
   body.rez-H .ctrl .btn-toggle{font-size:20px!important;padding:15px 18px!important;border-radius:13px!important;margin-bottom:9px}
@@ -1514,7 +1519,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.237';
+const APP_VERSION = '1.238';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
