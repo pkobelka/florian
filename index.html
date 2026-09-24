@@ -1373,8 +1373,8 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   .ni-v span, .ni-v i{font-size:12.5px}
   .ni-typ{font-size:15px}
   .ni-acts button{font-size:17px;padding:13px 6px}
-  /* celá karta uprostřed na velké obrazovce o pětinu větší (čitelnost na PC/tabletu) */
-  .card.full{zoom:1.2;max-height:calc((100dvh - 24px) / 1.2)}
+  /* celá karta uprostřed na velké obrazovce o polovinu větší (čitelnost na PC/tabletu) */
+  .card.full{zoom:1.5;max-height:calc((100dvh - 24px) / 1.5);width:min(760px,calc((100vw - 24px) / 1.5));left:0;right:0;margin:0 auto}
   /* menu hasičů (jen 4 tlačítka) – velké, ať se trefí prstem i na tabletu */
   body.rez-H .ctrl{width:250px;top:calc(env(safe-area-inset-top) + 96px)}
   body.rez-H .ctrl .btn-toggle{font-size:20px!important;padding:15px 18px!important;border-radius:13px!important;margin-bottom:9px}
@@ -1519,7 +1519,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.238';
+const APP_VERSION = '1.239';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
