@@ -952,7 +952,13 @@ body.rez-H #cisloToggle{display:none!important}
 body.rez-H .ctrl .ctrl-row>button, body.rez-H #allBtn{flex:1 1 100%}
 /* prázdné (schované) řádky menu nesmí dělat mezery → odstupy dávají až viditelná tlačítka */
 body.rez-H .ctrl, body.rez-H .ctrl .ctrl-row{gap:0}
-body.rez-H .ctrl .btn-toggle{margin-bottom:5px}
+body.rez-H .ctrl .btn-toggle{margin-bottom:6px}
+/* jen 4 tlačítka → můžou být velká (i přes zmenšení menu na užších obrazovkách) */
+@media (max-width:1024px), (max-height:480px){
+  body.rez-H .ctrl-burger{width:46px;height:46px;font-size:23px;border-radius:12px}
+  body.rez-H .ctrl{top:calc(env(safe-area-inset-top) + 114px);width:250px}
+}
+body.rez-H .ctrl .btn-toggle{font-size:16px!important;padding:11px 16px!important;border-radius:11px!important;min-width:180px;gap:7px!important}
 /* typ hydrantu v nabídce nejbližších */
 .ntyp{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;background:#eceff1;color:#455a64;vertical-align:1px}
 .ntyp.nad{background:#e3f2fd;color:#0d47a1}
@@ -1486,7 +1492,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.232';
+const APP_VERSION = '1.233';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
