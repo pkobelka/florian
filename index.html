@@ -918,6 +918,29 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .ni-acts button.pri{grid-column:1/-1;background:var(--blue);color:#fff;border-color:var(--blue)}
 .ni-acts button.ni-x{grid-column:2}
 .card.full{max-height:none;height:100dvh;border-radius:0}
+.fdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0;flex:none}
+.near-w{font-size:11.5px;color:#b71c1c;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.near-leg{margin-top:6px;font-size:11px;color:#607d8b;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px}
+.ni-warn{background:#fdecea;border:1px solid #f5c2c0;color:#b71c1c;border-radius:10px;padding:7px 10px;margin:4px 0 2px;font-size:13px}
+/* tlačítko zásahu – nad tlačítkem polohy, na místě kompasu (ten je jen při sledování polohy) */
+.zasah-btn{position:absolute;z-index:899;right:12px;bottom:calc(env(safe-area-inset-bottom) + 100px);border:0;border-radius:999px;
+  background:#c62828;color:#fff;font-family:inherit;font-weight:800;font-size:15px;padding:9px 15px;box-shadow:var(--shadow);cursor:pointer}
+/* zásahový režim – velké, kontrastní, bez zbytečností */
+body.zasah .legend, body.zasah .vodleg{display:none!important}
+body.zasah .near-pill{font-size:21px;padding:11px 18px;background:#b71c1c}
+body.zasah .near-h.open{left:8px;right:64px;width:auto;font-size:16px;color:#000;border:2px solid #b71c1c;max-height:calc(100dvh - 190px);overflow:auto}
+body.zasah .near-hd{font-size:17px}
+body.zasah .near-row{padding:9px 6px;border-bottom:1px solid #e0e0e0}
+body.zasah .near-row b.near-d{font-size:20px;min-width:72px}
+body.zasah .near-n{color:#000;font-weight:700}
+body.zasah .near-v, body.zasah .near-w{font-size:14.5px;color:#000;white-space:normal}
+body.zasah .near-v.best{color:#1b5e20}
+body.zasah .near-w{font-size:13.5px;color:#b71c1c}
+body.zasah .fdot{width:12px;height:12px}
+body.zasah .near-acts button{min-height:50px;font-size:16px}
+body.zasah .ni-box{max-width:380px}
+body.zasah .ni-m b{font-size:28px}
+body.zasah .ni-acts button{min-height:52px;font-size:16px}
 .legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
   color:#111;font-size:11px;line-height:1.5;font-weight:600}
 .legend .credit b{display:inline;color:#111;font-weight:800;margin:0;gap:0}
@@ -1120,7 +1143,7 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
   body.mapprint #map, body.mapprint #map *{visibility:visible}
   body.mapprint #map{top:13mm!important;left:0!important;right:auto!important;bottom:auto!important}
   body.mapprint .leaflet-control-container,
-  body.mapprint .topbar, body.mapprint .ctrl, body.mapprint .locate, body.mapprint .near-h{display:none!important}
+  body.mapprint .topbar, body.mapprint .ctrl, body.mapprint .locate, body.mapprint .near-h, body.mapprint .zasah-btn{display:none!important}
   body.mapprint .num-badge{display:block!important}   /* číslo H vždy v tisku mapy */
   body.mapprint .pozn-badge{display:none!important}   /* poznámkové „i" v tisku mapy skrýt */
   body.mapprint .legend, body.mapprint .legend *{visibility:visible}
@@ -1367,6 +1390,7 @@ body.starosta .starosta-banner{display:block;position:fixed;left:50%;bottom:8px;
   <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2.5l4.6 9.5H7.4z" fill="#c62828"/><path d="M12 21.5L7.4 12h9.2z" fill="#90a4ae"/></svg>
 </button>
 <div class="near-h" id="nearH" style="display:none"></div>
+<button class="zasah-btn" id="zasahBtn" type="button" title="Zásah: zapne polohu a ukáže nejbližší hydranty s průtokem">🚒 Nejbližší voda</button>
 <div class="near-info" id="nearInfo"></div>
 
 <div class="backdrop" id="backdrop"></div>
@@ -1404,7 +1428,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.224';
+const APP_VERSION = '1.225';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -1479,6 +1503,13 @@ function revDaysText(h){ var dl=revDaysLeft(h); if(dl===null) return 'Chybí dat
 let revMode=false;
 let revStatusFilter=null; // aktivní filtr stavu revize (expired/soon/missing/ok) po kliknutí v semaforu
 function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" style="background:'+REV_COLOR[st]+'"></div>',iconSize:[20,20],iconAnchor:[10,10]}); }
+/* semafor výdatnosti – během navigace (sledování polohy) se značky obarví podle průtoku,
+   ať je na mapě hned vidět, kam pro vodu jet. Mimo navigaci zůstávají modré. */
+var flowMode=false;
+const FLOW_GOOD=6;   // l/s – od tohoto průtoku zeleně (4–6 oranžově = splní jen minimum ČSN)
+const FLOW_COLOR={good:'#2e7d32',mid:'#ef6c00',bad:'#d32f2f',none:'#78909c'};
+function flowClass(h){ var n=parseNum(candVal(h,'prutok')); if(n==null||n<=0) return 'none'; if(n<PRUTOK_MIN) return 'bad'; return n>=FLOW_GOOD?'good':'mid'; }
+function flowRefresh(on){ flowMode=on; try{ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); cluster.refreshClusters(); }catch(e){} }
 function iconForItem(h){
   var uk=(typeof hasOpenUkol==='function' && hasOpenUkol(h.id))?'<span class="uk-badge">🛠️</span>':'';
   var pz=(typeof hasPozn==='function' && hasPozn(h))?'<span class="pozn-badge" data-id="'+esc(String(h.id))+'" title="Má poznámku – najeď myší / klikni">i</span>':'';
@@ -1487,6 +1518,7 @@ function iconForItem(h){
   var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
   if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10],tooltipAnchor:[0,-13]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
+  if(flowMode) sym=sym.replace('fill="#1565c0"','fill="'+FLOW_COLOR[flowClass(h)]+'"');
   // tooltipAnchor nad vršek ikony, ať Info (poznámka/upřesnění) nepřekrývá číslo H vpravo (hlavně u nadzemních, ukotvených dole)
   return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10],tooltipAnchor:nad?[0,-39]:[0,-13]});
 }
@@ -1542,6 +1574,10 @@ const cluster = L.markerClusterGroup({
       let ord=dimOrder(); let worst=ord[ord.length-1];
       c.getAllChildMarkers().forEach(m=>{ const st=dimStatus(m._h); if(ord.indexOf(st)<ord.indexOf(worst)) worst=st; });
       bg=';background:'+dimColor()[worst];
+    } else if(flowMode){ // shluk = barva nejvydatnějšího hydrantu v něm
+      var fo=['good','mid','bad','none'], fb='none';
+      c.getAllChildMarkers().forEach(function(m){ var f=flowClass(m._h); if(fo.indexOf(f)<fo.indexOf(fb)) fb=f; });
+      bg=';background:'+FLOW_COLOR[fb];
     }
     // úkol: když má aspoň jeden hydrant ve sloučeném kolečku otevřený úkol, ukaž odznak 🛠️
     var uk=(typeof hasOpenUkol==='function' && c.getAllChildMarkers().some(function(m){ return m._h && hasOpenUkol(m._h.id); }))?'<span class="uk-badge">🛠️</span>':'';
@@ -2272,10 +2308,11 @@ function setLocState(){
   locBtn.classList.toggle('paused', watching && !follow);
   locBtn.title = !watching ? 'Moje poloha'
     : (follow ? 'Sleduji polohu při jízdě – klepni pro vypnutí' : 'Klepni pro vycentrování na moji polohu');
+  var zb=document.getElementById('zasahBtn'); if(zb) zb.style.display=watching?'none':'';
 }
 locBtn.onclick=()=>{
   if(!watching){                    // zapnout: GPS + sledování
-    watching=true; follow=true; firstFix=true; setLocState(); acquireWake(); navApply();
+    watching=true; follow=true; firstFix=true; setLocState(); acquireWake(); navApply(); flowRefresh(true);
     map.locate({watch:true, enableHighAccuracy:true, maximumAge:1000, timeout:20000});
     return;
   }
@@ -2295,7 +2332,8 @@ function stopLocate(){
   map.stopLocate();
   if(meMarker){ map.removeLayer(meMarker); meMarker=null; }
   if(meCircle){ map.removeLayer(meCircle); meCircle=null; }
-  navHeading=null; navPrev=null; navSetTarget(null); nearOpen=false; nearRender(null);
+  navHeading=null; navPrev=null; navSetTarget(null); nearOpen=false; nearRender(null); nearInfoClose();
+  zasahSet(false); flowRefresh(false);
   navApply(true);
 }
 map.on('locationfound', e=>{
@@ -2441,6 +2479,9 @@ function nearRender(ll){
   if(!watching || !ll){ nearEl.style.display='none'; nearEl.innerHTML=''; nearIds=''; nearLast=null; return; }
   var nd=nearInfoH&&document.getElementById('niDist'); if(nd) nd.textContent=nearDist(ll,nearInfoH);
   var list=nearList(ll,3); if(!list.length && !navTarget){ nearEl.style.display='none'; return; }
+  if(zasah){ // přidej nejvydatnější do 500 m, když mezi třemi nejbližšími chybí (klidně o kus dál)
+    var more=nearList(ll,12).filter(function(x){ return x.d<=500; }), bh=nearBest(more.map(function(x){ return x.h; }));
+    if(bh && !list.some(function(x){ return x.h===bh; })) list.push(more.filter(function(x){ return x.h===bh; })[0]); }
   nearEl.style.display='';
   if(navTarget) navDrawLine(ll);
   var main=navTarget||list[0].h;
@@ -2476,6 +2517,7 @@ function nearRender(ll){
       '<button type="button" data-act="lead" data-id="'+esc(s.id)+'">🎯 Vést sem</button>'+
       '<button type="button" data-act="mapy" title="Navigace po silnici v Mapy.com" data-id="'+esc(s.id)+'">🚗 Mapy.com</button>'+
       '<button type="button" data-act="google" title="Navigace po silnici v Google Mapách" data-id="'+esc(s.id)+'">🚗 Google</button></div>';
+  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+FLOW_GOOD+' l/s <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+PRUTOK_MIN+'–'+FLOW_GOOD+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+PRUTOK_MIN+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
   nearEl.innerHTML=html;
 }
 /* čára od mé polohy k cílovému hydrantu + kroužek kolem něj */
@@ -2496,14 +2538,15 @@ if(nearEl) nearEl.addEventListener('click', function(ev){
   if(!b){ if(ev.target.closest('.near-pill')){ nearOpen=true; nearSel=null; nearRender(); } return; }
   var act=b.getAttribute('data-act'), h=nearById(b.getAttribute('data-id'));
   if(act==='close'){ nearOpen=false; nearRender(); return; }
-  if(act==='sel'){ nearSel=h; nearIds=''; nearRender(); return; }
+  if(act==='sel'){ nearSel=h; nearIds=''; nearRender(); nearAction('show',h); return; }
   if(act==='stop'){ navSetTarget(null); nearRender(); return; }
   nearAction(act,h);
 });
 function nearAction(act,h){
   if(!h) return;
   if(act==='show'){                 // pozastav sledování, ať mapu hned neodtáhne zpátky k poloze
-    nearOpen=false; if(follow){ follow=false; setLocState(); navApply(true); }
+    // nabídka nejbližších zůstane otevřená pod přehledem – po Zavřít se vybírá dál z ní
+    if(follow){ follow=false; setLocState(); navApply(true); }
     nearRender(); map.setView([h.lat,h.lon],17); nearInfoOpen(h); return; }
   if(act==='card'){ nearInfoClose(); openCard(h); card.classList.add('full'); return; }
   if(act==='lead'){ nearInfoClose();
@@ -2515,15 +2558,31 @@ function nearAction(act,h){
     : 'https://www.google.com/maps/dir/?api=1&destination='+h.lat.toFixed(6)+','+h.lon.toFixed(6)+'&travelmode=driving&dir_action=navigate';
   window.open(url,'_blank','noopener');
 }
+/* zásahový režim „🚒 Nejbližší voda": jedním klepnutím poloha + navigace + rovnou rozbalené
+   nejbližší hydranty; velké písmo a tlačítka (rukavice, tma), bez legend navíc.
+   Základ budoucí varianty appky pro hasiče. Končí vypnutím polohy. */
+var zasah=false;
+function zasahSet(on){ zasah=on; document.body.classList.toggle('zasah', on); nearIds=''; }
+(function(){ var zb=document.getElementById('zasahBtn'); if(!zb) return;
+  zb.onclick=function(){ zasahSet(true); nearOpen=true; nearSel=null;
+    if(!watching) locBtn.click(); else { if(!follow) navResume(); nearRender(); } };
+})();
 /* hodnoty pro rozhodnutí „ke kterému jet": průtok m³/h, statický a dynamický tlak (MPa) */
 function nearVals(h){
   var q=prutokM3h(candVal(h,'prutok')), st=candVal(h,'tlakStat'), dy=candVal(h,'tlakDyn');
   var stD=hasVal(st)?meas(st):tlakStatDisp(h); if(!hasVal(st) && stD!=='—') stD='≈'+stD; // dopočet z vodojemu
   return {q:q||'—', ls:meas(candVal(h,'prutok')), st:stD, dy:meas(dy), qBad:prutokStav(candVal(h,'prutok'))==='bad', stBad:tlakStatStav(st)==='bad'}; }
+/* upozornění v nabídce nejbližších – jen to, co se týká vody. Úkoly, poznámky a termíny revizí
+   jsou provozní věc a sem nepatří (nefunkční hydrant provoz z mapy rovnou vyřadí – isNeniPozarni). */
+function nearWarn(h){ var w=[];
+  if(csnStatus(h)==='csnbad') w.push('✗ nevyhovuje ČSN');
+  return w; }
 /* nejvydatnější z nabídnutých (nejvyšší naměřený průtok) */
 function nearBest(hs){ var b=null,bq=0; hs.forEach(function(h){ var n=parseNum(candVal(h,'prutok')); if(n!=null && n>bq){ bq=n; b=h; } }); return b; }
 function nearValsLine(h,best){ var v=nearVals(h);
-  return '<span class="near-v'+(best?' best':'')+'">💧 '+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'; }
+  var w=nearWarn(h);
+  return '<span class="near-v'+(best?' best':'')+'"><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
+    (w.length?'<span class="near-w">⚠️ '+w.join(' · ')+'</span>':''); }
 /* rychlý přehled hydrantu uprostřed displeje (místo celé karty) */
 const nearInfo=document.getElementById('nearInfo');
 var nearInfoH=null;
@@ -2533,6 +2592,7 @@ function nearInfoOpen(h){
   nearInfo.innerHTML='<div class="ni-box" role="dialog" aria-modal="true">'+
     '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
       '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
+    nearInfoWarn(h)+
     '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+PRUTOK_MIN+' l/s':'')+'</i>':'')+'</div>'+
     '<div class="ni-m'+(v.stBad?' bad':'')+'"><span>Statický tlak</span><b>'+v.st+(v.st!=='—'?' <small>MPa</small>':'')+'</b>'+(v.st.charAt(0)==='≈'?'<i>dopočet z vodojemu</i>':(v.stBad?'<i>pod min. '+String(TLAK_STAT_MIN).replace('.',',')+' MPa</i>':''))+'</div>'+
     '<div class="ni-m"><span>Dynamický tlak</span><b>'+v.dy+(v.dy!=='—'?' <small>MPa</small>':'')+'</b></div>'+
@@ -2544,6 +2604,8 @@ function nearInfoOpen(h){
       '<button type="button" data-qa="close" class="ni-x">✕ Zavřít</button></div></div>';
   nearInfo.classList.add('open');
 }
+function nearInfoWarn(h){ var w=nearWarn(h); if(!w.length) return '';
+  return '<div class="ni-warn"><b>⚠️ '+w.join(' · ')+'</b></div>'; }
 function nearInfoClose(){ if(nearInfo){ nearInfo.classList.remove('open'); nearInfo.innerHTML=''; } nearInfoH=null; }
 if(nearInfo) nearInfo.addEventListener('click', function(ev){
   if(ev.target===nearInfo){ nearInfoClose(); return; }          // klepnutí vedle = zavřít
