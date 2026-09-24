@@ -78,7 +78,8 @@ video{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; displ
   // padalo na CORS a fungovalo by jen na github.io
   var MP4  = new URL('florian-promo.mp4', location.href).href;
   var TITLE= 'Florián 2.0 — požární hydranty pod kontrolou';
-  var TEXT = 'Florián 2.0 – mapa požárních hydrantů, pokrytí dle ČSN 73 0873, karta hydrantu i protokol o revizi. Zdarma, bez instalace: https://pkobelka.github.io/florian/';
+  // sdílí se jen odkaz na promo video (PAGE) – přímý odkaz na appku ne (appka je za přihlášením)
+  var TEXT = 'Florián 2.0 – mapa požárních hydrantů, pokrytí dle ČSN 73 0873, karta hydrantu i protokol o revizi. Podívejte se na video:';
   var msg=document.getElementById('msg');
   function say(t){ msg.textContent=t||''; }
 
@@ -108,7 +109,7 @@ video{ width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; displ
     fetch(MP4).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){
       var f=new File([b],'florian-promo.mp4',{type:'video/mp4'});
       if(!navigator.canShare({files:[f]})) throw 0;
-      return navigator.share({files:[f], title:TITLE, text:TEXT});
+      return navigator.share({files:[f], title:TITLE, text:TEXT+' '+PAGE});
     }).then(function(){ bShare.disabled=false; say(''); })
      .catch(function(e){
         bShare.disabled=false; say('');
