@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.231**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.232**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -35,7 +35,7 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
    - **🚒 Nejbližší voda** (červené tlačítko nad 📍, jen když poloha neběží): jedním klepnutím zapne
      polohu + navigaci a rovnou rozbalí nejbližší hydranty. Velké písmo/tlačítka, kontrast, bez legend
      (`body.zasah`, `zasahSet`). K 3 nejbližším přidá i **nejvydatnější do 500 m**, když mezi nimi není.
-     Končí vypnutím polohy. Základ budoucí **varianty pro hasiče** (plán: 3 náhledy – provozovatel /
+     Končí vypnutím polohy (v1.232: na PC/tabletu panel max 420 px vpravo, ne přes celou šířku). Základ budoucí **varianty pro hasiče** (plán: 3 náhledy – provozovatel /
      vlastník / hasiči).
    - **Semafor výdatnosti** během sledování polohy: značky (i shluky = nejlepší v nich) se obarví podle
      průtoku – **v1.227: zelená ≥ 40 m³/h, oranžová 20–40, červená < 20**, šedá neměřeno (`FLOW_GOOD`,
