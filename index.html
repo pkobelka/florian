@@ -1428,7 +1428,7 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.225';
+const APP_VERSION = '1.226';
 const APP_YEAR = 2026;
 const APP_UPDATED = '24. 9. 2026';
 
@@ -1506,7 +1506,7 @@ function revDot(st){ return L.divIcon({className:'',html:'<div class="revmk" sty
 /* semafor výdatnosti – během navigace (sledování polohy) se značky obarví podle průtoku,
    ať je na mapě hned vidět, kam pro vodu jet. Mimo navigaci zůstávají modré. */
 var flowMode=false;
-const FLOW_GOOD=6;   // l/s – od tohoto průtoku zeleně (4–6 oranžově = splní jen minimum ČSN)
+const FLOW_GOOD=6;   // l/s (= 21,6 m³/h) – od tohoto průtoku zeleně (4–6 l/s = 14,4–21,6 m³/h oranžově = splní jen minimum ČSN); hasičům se ukazuje v m³/h
 const FLOW_COLOR={good:'#2e7d32',mid:'#ef6c00',bad:'#d32f2f',none:'#78909c'};
 function flowClass(h){ var n=parseNum(candVal(h,'prutok')); if(n==null||n<=0) return 'none'; if(n<PRUTOK_MIN) return 'bad'; return n>=FLOW_GOOD?'good':'mid'; }
 function flowRefresh(on){ flowMode=on; try{ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); cluster.refreshClusters(); }catch(e){} }
@@ -2517,7 +2517,7 @@ function nearRender(ll){
       '<button type="button" data-act="lead" data-id="'+esc(s.id)+'">🎯 Vést sem</button>'+
       '<button type="button" data-act="mapy" title="Navigace po silnici v Mapy.com" data-id="'+esc(s.id)+'">🚗 Mapy.com</button>'+
       '<button type="button" data-act="google" title="Navigace po silnici v Google Mapách" data-id="'+esc(s.id)+'">🚗 Google</button></div>';
-  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+FLOW_GOOD+' l/s <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+PRUTOK_MIN+'–'+FLOW_GOOD+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+PRUTOK_MIN+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
+  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+prutokM3h(FLOW_GOOD)+' m³/h <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+prutokM3h(PRUTOK_MIN)+'–'+prutokM3h(FLOW_GOOD)+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+prutokM3h(PRUTOK_MIN)+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
   nearEl.innerHTML=html;
 }
 /* čára od mé polohy k cílovému hydrantu + kroužek kolem něj */
@@ -2593,7 +2593,7 @@ function nearInfoOpen(h){
     '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
       '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
     nearInfoWarn(h)+
-    '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+PRUTOK_MIN+' l/s':'')+'</i>':'')+'</div>'+
+    '<div class="ni-m'+(v.qBad?' bad':'')+'"><span>Průtok</span><b>'+v.q+(v.q!=='—'?' <small>m³/h</small>':'')+'</b>'+(v.ls!=='—'?'<i>'+v.ls+' l/s'+(v.qBad?' · pod min. '+prutokM3h(PRUTOK_MIN)+' m³/h':'')+'</i>':'')+'</div>'+
     '<div class="ni-m'+(v.stBad?' bad':'')+'"><span>Statický tlak</span><b>'+v.st+(v.st!=='—'?' <small>MPa</small>':'')+'</b>'+(v.st.charAt(0)==='≈'?'<i>dopočet z vodojemu</i>':(v.stBad?'<i>pod min. '+String(TLAK_STAT_MIN).replace('.',',')+' MPa</i>':''))+'</div>'+
     '<div class="ni-m"><span>Dynamický tlak</span><b>'+v.dy+(v.dy!=='—'?' <small>MPa</small>':'')+'</b></div>'+
     '<div class="ni-acts">'+

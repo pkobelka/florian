@@ -1,6 +1,6 @@
 # Florián – stav práce a co dál
 
-_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.225**._
+_Poslední aktualizace: 24. 9. 2026 · verze aplikace **1.226**._
 _Pracovní větev: `claude/vodojem-vodovod-assignment-ir9o9s`._
 
 Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čím pokračovat.
@@ -14,7 +14,8 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
      Končí vypnutím polohy. Základ budoucí **varianty pro hasiče** (plán: 3 náhledy – provozovatel /
      vlastník / hasiči).
    - **Semafor výdatnosti** během sledování polohy: značky (i shluky = nejlepší v nich) se obarví podle
-     průtoku – zelená ≥ 6 l/s, oranžová 4–6, červená < 4, šedá neměřeno (`flowMode`, `flowClass`,
+     průtoku – zelená ≥ 21,6 m³/h (6 l/s), oranžová 14,4–21,6, červená < 14,4 (4 l/s), šedá neměřeno;
+     **v1.226: legenda i hlášky v m³/h** (pro hasiče vypovídající), prahy uvnitř dál v l/s (`flowMode`, `flowClass`,
      `FLOW_GOOD`). Mimo navigaci zůstávají modré. Legenda barev dole v nabídce nejbližších.
    - **Upozornění** v seznamu i přehledu: jen ✗ nevyhovuje ČSN (`nearWarn`). **Úkoly, poznámky
      a termíny revizí se hasičům ani vlastníkům neukazují** – jsou jen pro provoz (nefunkční H provoz
