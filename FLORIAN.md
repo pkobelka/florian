@@ -13,6 +13,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   (nadzemní: kolečko s vývody po stranách + vřeteno s příčkou, **červený** kotouč `#c62828`;
   podzemní: přeškrtnuté kolečko + vřeteno, **modrý** kotouč `#1565c0`). Obě 26×26, kotva ve středu.
   Režim průtoku přebarví kotouč regexem na obě barvy. Platí pro mapu, legendu i hlavičku karty.
+- Odznak úkolu 🛠️ (`.uk-badge`) je nově **žlutý** (`#fbc02d`) – červená patří nadzemním H.
 - **Nejbližší hydrant:** v hlavičce symbol vedle názvu (`.ni-title`/`.ni-sym`); průtok velký v l/min,
   malý v m³/h; v seznamu nejbližších průtok v l/min.
 - Karta hydrantu (dlaždice `prutokLminTile`, dřív `prutokLsTile`), rychlý přehled „Nejbližší hydrant"
