@@ -905,6 +905,9 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .ni-box{background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.35);width:100%;max-width:300px;max-height:calc(100dvh - 32px);overflow:auto;padding:14px}
 .ni-hd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-bottom:8px}
 .ni-hd b{font-size:17px}
+.ni-title{display:flex;align-items:center;justify-content:center;gap:8px}
+.ni-sym{flex:0 0 auto;display:grid}
+.ni-sym svg{width:30px;height:30px}
 .ni-t{font-size:12.5px;color:#607d8b}
 .ni-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
 .ni-acts button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 6px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;color:var(--blue-dark)}
@@ -1528,8 +1531,10 @@ const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
 // ---- ikony ----
-const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
-const SVG_POD = '<svg viewBox="0 0 28 22" width="26" height="20"><ellipse cx="14" cy="11" rx="13" ry="10" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><ellipse cx="14" cy="11" rx="8.5" ry="6" fill="none" stroke="#cfe3fb" stroke-width="1.6"/><circle cx="14" cy="11" r="2.7" fill="#cfe3fb"/></svg>';
+// oficiální značky požárních hydrantů (tenké čáry) v kolečku: nadzemní červeně, podzemní modře.
+// Kotouč nese fill barvy (#c62828 / #1565c0) – režim průtoku ho přebarví (viz iconForItem).
+const SVG_NAD = '<svg viewBox="0 0 32 32" width="26" height="26"><circle cx="16" cy="16" r="15" fill="#c62828" stroke="#fff" stroke-width="1.6"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="16" cy="19" r="5.6"/><path d="M16 13.4V7.6M11.6 7.6h8.8M10.4 19H7.8M7.8 16.9v4.2M21.6 19h2.6M24.2 16.9v4.2"/></g></svg>';
+const SVG_POD = '<svg viewBox="0 0 32 32" width="26" height="26"><circle cx="16" cy="16" r="15" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><circle cx="16" cy="19" r="5.6"/><path d="M16 13.4V7.6M11.6 7.6h8.8M12 23l8-8"/></g></svg>';
 
 function iconFor(typ,h){
   const nad = typ === 'nadzemní';
@@ -1537,8 +1542,8 @@ function iconFor(typ,h){
   if(h) nb=numBadgeHtml(h); // číslo H i u povýšeného kandidáta (červeně při duplicitě v obci)
   return L.divIcon({
     className:'', html:'<div class="mk" style="position:relative">'+(nad?SVG_NAD:SVG_POD)+nb+'</div>',
-    iconSize: nad?[28,37]:[26,20],
-    iconAnchor: nad?[14,36]:[13,10],
+    iconSize: [26,26],
+    iconAnchor: [13,13],
   });
 }
 
@@ -1616,9 +1621,9 @@ function iconForItem(h){
   var fb=''; try{ var _fs=(cloudPhotos&&cloudPhotos[h.id])||(photoData&&photoData[h.id]); if(_fs) fb='<span class="foto-badge" data-id="'+esc(String(h.id))+'" title="Má fotku – klikni pro zvětšení"><img src="'+_fs+'" alt=""></span>'; }catch(e){}
   if(revMode){ var st=dimStatus(h); return L.divIcon({className:'',html:'<div class="revmk" style="position:relative;background:'+dimColor()[st]+'">'+uk+pz+nb+fb+'</div>',iconSize:[20,20],iconAnchor:[10,10],tooltipAnchor:[0,-13]}); }
   var nad=h.typ==='nadzemní'; var sym=nad?SVG_NAD:SVG_POD;
-  if(flowMode) sym=sym.replace('fill="#1565c0"','fill="'+FLOW_COLOR[flowClass(h)]+'"');
-  // tooltipAnchor nad vršek ikony, ať Info (poznámka/upřesnění) nepřekrývá číslo H vpravo (hlavně u nadzemních, ukotvených dole)
-  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:nad?[28,37]:[26,20],iconAnchor:nad?[14,36]:[13,10],tooltipAnchor:nad?[0,-39]:[0,-13]});
+  if(flowMode) sym=sym.replace(/fill="#(1565c0|c62828)"/,'fill="'+FLOW_COLOR[flowClass(h)]+'"');
+  // tooltipAnchor nad vršek ikony, ať Info (poznámka/upřesnění) nepřekrývá číslo H vpravo
+  return L.divIcon({className:'',html:'<div class="mk" style="position:relative">'+sym+uk+pz+nb+fb+'</div>',iconSize:[26,26],iconAnchor:[13,13],tooltipAnchor:[0,-15]});
 }
 function rebuildMarkersBadges(){ try{ _flDupCis=null; /* přepočítej duplicity čísel při každém překreslení */ if(typeof allItems!=='undefined'){ allItems.forEach(function(it){ it.m.setIcon(iconForItem(it.h)); }); if(typeof cluster!=='undefined')cluster.refreshClusters(); } if(typeof applyPoznTooltips==='function')applyPoznTooltips(); if(typeof candOn!=='undefined'&&candOn&&typeof renderCand==='function')renderCand(); else if(typeof renderMarked==='function')renderMarked(); /* překresli i „k doměření" cluster (odznak úkolu) když je vrstva kandidátů vyplá */ }catch(e){} }
 
@@ -2694,7 +2699,7 @@ function zasahSet(on){ zasah=on; document.body.classList.toggle('zasah', on); ne
   zb.onclick=function(){ zasahSet(true); nearOpen=true; nearSel=null;
     if(!watching) locBtn.click(); else { if(!follow) navResume(); nearRender(); } };
 })();
-/* hodnoty pro rozhodnutí „ke kterému jet": průtok m³/h, statický a dynamický tlak (MPa) */
+/* hodnoty pro rozhodnutí „ke kterému jet": průtok (l/min + m³/h), statický a dynamický tlak (MPa) */
 function nearVals(h){
   var q=prutokM3h(candVal(h,'prutok')), st=candVal(h,'tlakStat'), dy=candVal(h,'tlakDyn');
   var stD=hasVal(st)?meas(st):tlakStatDisp(h); if(!hasVal(st) && stD!=='—') stD='≈'+stD; // dopočet z vodojemu
@@ -2708,7 +2713,7 @@ function nearWarn(h){ var w=[];
 function nearBest(hs){ var b=null,bq=0; hs.forEach(function(h){ var n=parseNum(candVal(h,'prutok')); if(n!=null && n>bq){ bq=n; b=h; } }); return b; }
 function nearValsLine(h,best){ var v=nearVals(h);
   var w=nearWarn(h), nad=h.typ==='nadzemní';
-  return '<span class="near-v'+(best?' best':'')+'"><span class="ntyp'+(nad?' nad':'')+'">'+(nad?'nadz.':'podz.')+'</span><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+v.q+(v.q!=='—'?' m³/h':'')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
+  return '<span class="near-v'+(best?' best':'')+'"><span class="ntyp'+(nad?' nad':'')+'">'+(nad?'nadz.':'podz.')+'</span><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+(v.lmin?v.lmin+' l/min':'—')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
     (w.length?'<span class="near-w">⚠️ '+w.join(' · ')+'</span>':''); }
 /* rychlý přehled hydrantu uprostřed displeje (místo celé karty) */
 const nearInfo=document.getElementById('nearInfo');
@@ -2717,12 +2722,12 @@ function nearInfoOpen(h){
   if(!nearInfo) return; nearInfoH=h; var v=nearVals(h), c=cisloLabel(h), t=filterTown(h);
   var ll=nearLast||(meMarker&&meMarker.getLatLng());
   nearInfo.innerHTML='<div class="ni-box" role="dialog" aria-modal="true">'+
-    '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<b>'+esc(label(h))+'</b>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
+    '<div class="ni-hd">'+(c?'<span class="h2num">'+esc(c)+'</span>':'')+'<div class="ni-title"><span class="ni-sym">'+(h.typ==='nadzemní'?SVG_NAD:SVG_POD)+'</span><b>'+esc(label(h))+'</b></div>'+(t&&label(h).indexOf(t)<0?'<span class="ni-t">'+esc(t)+'</span>':'')+
       '<span class="ni-t">'+esc(h.typ||'')+(ll?' · <span id="niDist">'+nearDist(ll,h)+'</span> vzdušně':'')+'</span></div>'+
     nearInfoPhoto(h)+
     nearInfoWarn(h)+
     '<div class="ni-vals">'+
-      '<div class="ni-v'+(v.qBad?' bad':'')+'"><b>'+v.q+'</b><span>m³/h průtok</span>'+(v.lmin?'<i>'+v.lmin+' l/min</i>':'')+'</div>'+
+      '<div class="ni-v'+(v.qBad?' bad':'')+'"><b>'+(v.lmin||'—')+'</b><span>l/min průtok</span>'+(v.q!=='—'?'<i>'+v.q+' m³/h</i>':'')+'</div>'+
       '<div class="ni-v'+(v.stBad?' bad':'')+'"><b>'+v.st+'</b><span>MPa statický</span>'+(v.st.charAt(0)==='≈'?'<i>z vodojemu</i>':(v.stBad?'<i>pod 0,2</i>':''))+'</div>'+
       '<div class="ni-v"><b>'+v.dy+'</b><span>MPa dynamický</span></div>'+
     '</div>'+
