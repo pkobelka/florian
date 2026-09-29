@@ -8,6 +8,17 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.250 — Přihlášení pro obce (vidí jen svou lokalitu)
+- Správce v Týmu → „🔒 Přístup (povolené e-maily)“ u každého e-mailu vybere rozsah: Plný přístup
+  (VHOS) / svazek (vlastník) celý / jen jedna obec svazku. Uloženo v `florian_config/obce_pristup/<klíč
+  e-mailu>` = `{vlastnik, obec, ts}` (config: čtení přihlášení, zápis admin). Zrušení přístupu smaže i rozsah.
+- Po přihlášení (ne admin) se rozsah načte → `flApplyObecScope()`: režim M (zelená verze), `body.starosta`,
+  `selectedOwners`/`selectedTowns` dle rozsahu, lišta 🏘️ s názvem. Tvrdý filtr `flScopeOk(h)` v `matches`,
+  `buildTownFilter` a `protokolObce` → ani „Vše“, ani seznam obcí nepustí mimo lokalitu; nejbližší hydrant taky.
+- **Omezení je v aplikaci, ne na serveru:** `HYDRANTY` jsou přímo v `index.html` a data ve Firebase čte každý
+  přihlášený. Skutečné vynucení = pravidla v repu `pkobelka/mojebudky` + data hydrantů do DB (fáze 2).
+  Cache `florian-v253`.
+
 ## Hotovo v1.249 — Přepnutí režimu (admin) drží mapu a výběr
 - Přepnutí P / M / H v `rezPanel` načte stránku znovu → dřív skok na výchozí mapu. Nově
   `flKeepViewSave()` uloží do `sessionStorage` (`fl_keep`) střed, zoom, obce, pracoviště a svazek;

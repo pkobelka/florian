@@ -1543,7 +1543,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.249';
+const APP_VERSION = '1.250';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -1726,7 +1726,15 @@ let selectedTowns = new Set();  // prázdné = všechny obce
 let selectedOwners = new Set(); // prázdné = všechny svazky
 let selectedStrediska = new Set(); // prázdné = všechna pracoviště
 let typeOff = {nad:false, pod:false}; // vyplé typy z legendy (klik na symbol vlevo dole)
+/* přihlášení pro obce: e-mail s nastaveným rozsahem (florian_config/obce_pristup) vidí jen svůj
+   svazek / vlastníka, případně jen jednu obec. null = bez omezení (VHOS, hasiči, admin). */
+var FL_OBEC_SCOPE=null;
+function flScopeOk(h){ var sc=FL_OBEC_SCOPE; if(!sc) return true;
+  if(sc.vlastnik && h.vlastnik!==sc.vlastnik) return false;
+  if(sc.obec && filterTown(h)!==sc.obec) return false;
+  return true; }
 function matches(h){
+  if(!flScopeOk(h)) return false; // mimo lokalitu přihlášené obce
   const okStred = selectedStrediska.size===0 || selectedStrediska.has(h.provozniStredisko);
   const okOwner = selectedOwners.size===0 || selectedOwners.has(h.vlastnik);
   const okTown  = selectedTowns.size===0  || selectedTowns.has(filterTown(h));
@@ -1963,6 +1971,7 @@ function buildTownFilter(){
   // obce jen z vybraných skupin (nebo ze všech, když žádná není vybraná)
   const counts={};
   HYDRANTY.forEach(h=>{
+    if(!flScopeOk(h)) return; // přihlášená obec: jen její obce
     if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return;
     if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return;
     const t=filterTown(h); if(t) counts[t]=(counts[t]||0)+1;
@@ -2685,6 +2694,20 @@ const REZ_INFO={P:{t:'P · Provoz',d:'plná verze pro provozovatele (VHOS)'},M:{
 (function(){ var c=document.getElementById('rezChip'); if(c){ c.textContent=REZ_INFO[FL_REZIM].t; c.onclick=function(){ if(window._FL_ADMIN) rezPanel(); }; } })();
 function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle('rez-admin',a);
 }
+/* přihlášená obec → režim M (zelená verze pro obec) omezený na její lokalitu; přepínač režimů jen admin */
+function flApplyObecScope(sc){
+  if(!sc || !sc.vlastnik) return;
+  FL_OBEC_SCOPE={vlastnik:String(sc.vlastnik), obec:sc.obec?String(sc.obec):''};
+  FL_REZIM='M';
+  document.body.classList.remove('rez-P','rez-H'); document.body.classList.add('rez-M','starosta');
+  var c=document.getElementById('rezChip'); if(c) c.textContent=REZ_INFO.M.t;
+  selectedStrediska=new Set(); selectedOwners=new Set([FL_OBEC_SCOPE.vlastnik]);
+  selectedTowns=FL_OBEC_SCOPE.obec?new Set([FL_OBEC_SCOPE.obec]):new Set();
+  flPracDefaulted=true;
+  var bn=document.getElementById('starostaBanner'); if(bn) bn.textContent='🏘️ '+(FL_OBEC_SCOPE.obec||FL_OBEC_SCOPE.vlastnik);
+  try{ pracLbl(); ownerLbl(); buildStrediskoFilter(); buildOwnerFilter(); buildTownFilter(); buildCovPanel(); if(typeof renderLegend==='function') renderLegend(); }catch(e){}
+  try{ applyFilter(); if(typeof renderMarked==='function') renderMarked(); }catch(e){}
+}
 /* odkaz na režim (zachová cestu appky, zahodí ostatní parametry) */
 function rezUrl(r,svazek){ var u=location.origin+location.pathname;
   if(r==='H') return u+'?rezim=H'; if(r==='M') return u+'?nahled='+encodeURIComponent(svazek||''); return u; }
@@ -3145,6 +3168,7 @@ function cleanupCardPrint(){
 // obce dostupné ve výběru (pracoviště/svazek); ignoruje filtr obcí
 function protokolObce(){
   var m={}; allItems.forEach(function(it){ var h=it.h;
+    if(!flScopeOk(h)) return; // přihlášená obec: jen její obce
     if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return;
     if(selectedOwners.size && !selectedOwners.has(h.vlastnik)) return;
     var t=filterTown(h); if(t) m[t]=(m[t]||0)+1;
@@ -4531,21 +4555,40 @@ function flAccessAdd(email){
   if(!window._FDB){ alert('Offline – nelze uložit.'); return; }
   _FDB.ref('florian_login_email/'+_flAccKey(email)).set(email).then(flRenderAccess).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); });
 }
-function flAccessDel(key){ if(!window._FDB) return; _FDB.ref('florian_login_email/'+key).remove().then(flRenderAccess).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); }); }
+function flAccessDel(key){ if(!window._FDB) return; _FDB.ref('florian_config/obce_pristup/'+key).remove().catch(function(){}); _FDB.ref('florian_login_email/'+key).remove().then(flRenderAccess).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); }); }
+/* rozsah přístupu obce: '' = plný (VHOS), 'vlastník|' = celý svazek, 'vlastník|obec' = jedna obec */
+function _flScopeOpts(cur){
+  var vl={}; HYDRANTY.forEach(function(h){ if(!h.vlastnik) return; var t=filterTown(h); (vl[h.vlastnik]||(vl[h.vlastnik]={}))[t||'']=1; });
+  var o='<option value="">Plný přístup (VHOS)</option>';
+  Object.keys(vl).sort(function(a,b){return a.localeCompare(b,'cs');}).forEach(function(v){
+    var val=v+'|'; o+='<option value="'+esc(val)+'"'+(cur===val?' selected':'')+'>🏘️ '+esc(v)+' – celý</option>';
+    var ts=Object.keys(vl[v]).filter(Boolean).sort(function(a,b){return a.localeCompare(b,'cs');});
+    if(ts.length>1) ts.forEach(function(t){ var tv=v+'|'+t; o+='<option value="'+esc(tv)+'"'+(cur===tv?' selected':'')+'>\u00a0\u00a0\u00a0↳ jen '+esc(t)+'</option>'; });
+  });
+  return o; }
+function flScopeSet(key,val){ if(!window._FDB) return; var ref=_FDB.ref('florian_config/obce_pristup/'+key);
+  var i=val.indexOf('|'); var p=(i<0)?null:ref.set({vlastnik:val.slice(0,i),obec:val.slice(i+1),ts:Date.now()});
+  (p||ref.remove()).then(function(){ flToast(val?'🏘️ Přístup omezen na '+val.replace('|',' ').trim():'✓ Plný přístup'); }).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); }); }
 function flRenderAccess(){
   var box=document.getElementById('flAccessBox'); if(!box||!window._FDB) return;
-  _FDB.ref('florian_login_email').get().then(function(sn){
+  Promise.all([_FDB.ref('florian_login_email').get(),_FDB.ref('florian_config/obce_pristup').get().catch(function(){ return null; })]).then(function(res){
+    var sn=res[0], sc=(res[1]&&res[1].val())||{};
     var v=sn.val()||{}; var keys=Object.keys(v).sort();
     var rows=keys.length? keys.map(function(k){ var em=(typeof v[k]==='string'&&v[k].indexOf('@')>0)?v[k]:k.replace(/,/g,'.');
-      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f0f3f7">'+
+      var cur=sc[k]&&sc[k].vlastnik?(sc[k].vlastnik+'|'+(sc[k].obec||'')):'';
+      return '<div style="padding:6px 0;border-bottom:1px solid #f0f3f7">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
         '<span style="font-size:14px;color:#26333f;word-break:break-all">'+esc(em)+'</span>'+
-        '<button class="acc-del" data-k="'+esc(k)+'" title="Zrušit přístup" style="border:0;background:#fde8e8;color:#c0392b;border-radius:7px;padding:4px 9px;cursor:pointer;font-weight:700">✕</button></div>';
+        '<button class="acc-del" data-k="'+esc(k)+'" data-em="'+esc(em)+'" title="Zrušit přístup" style="border:0;background:#fde8e8;color:#c0392b;border-radius:7px;padding:4px 9px;cursor:pointer;font-weight:700">✕</button></div>'+
+        '<select class="acc-scope" data-k="'+esc(k)+'" title="Co uvidí: plný přístup, nebo jen svazek / obec" style="margin-top:4px;width:100%;font:inherit;font-size:12.5px;padding:3px 5px;border:1px solid #cdd6e0;border-radius:6px;background:'+(cur?'#e8f5e9':'#fff')+'">'+_flScopeOpts(cur)+'</select></div>';
     }).join('') : '<div class="tp-empty">Zatím žádné povolené e-maily.</div>';
-    box.innerHTML='<div class="tp-sub" style="display:flex;align-items:center;gap:6px">🔒 Přístup (povolené e-maily) · jen správce</div>'+rows+
+    box.innerHTML='<div class="tp-sub" style="display:flex;align-items:center;gap:6px">🔒 Přístup (povolené e-maily) · jen správce</div>'+
+      '<div style="font-size:11.5px;color:#607d8b;margin:2px 0 4px">Pod e-mailem vyber, co uvidí: plný přístup, nebo jen svazek / jednu obec (zelená verze pro obec).</div>'+rows+
       '<div class="ld-add"><input id="accNew" type="email" placeholder="email@firma.cz" autocomplete="off"><button id="accAddBtn">➕ Povolit</button></div>';
     box.querySelector('#accAddBtn').onclick=function(){ var inp=document.getElementById('accNew'); flAccessAdd(inp.value); };
     box.querySelector('#accNew').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); flAccessAdd(this.value); } });
-    Array.prototype.forEach.call(box.querySelectorAll('.acc-del'),function(b){ b.onclick=function(){ var em=b.previousSibling&&b.previousSibling.textContent||''; if(confirm('Zrušit přístup pro '+em+'?')) flAccessDel(b.getAttribute('data-k')); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('.acc-del'),function(b){ b.onclick=function(){ var em=b.getAttribute('data-em')||''; if(confirm('Zrušit přístup pro '+em+'?')) flAccessDel(b.getAttribute('data-k')); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('.acc-scope'),function(sel){ sel.onchange=function(){ sel.style.background=sel.value?'#e8f5e9':'#fff'; flScopeSet(sel.getAttribute('data-k'),sel.value); }; });
   }).catch(function(){ box.innerHTML='<div class="tp-empty">Přístup se nepodařilo načíst (jsi přihlášený jako správce?).</div>'; });
 }
 function lideAdd(jmeno){ if(window._FDB){ var r=_FDB.ref('florian_lide').push(); r.set({jmeno:jmeno,role:'Technik',pracoviste:'',ts:Date.now()}); } else { var pid='loc'+Date.now(); lide[pid]={jmeno:jmeno,role:'Technik',pracoviste:'',ts:Date.now()}; buildLidePanel(); } }
@@ -5148,6 +5191,11 @@ function flImport(files){ if(!files||!files.length) return;
       }).then(function(ok){
         if(ok){
           flLoginClose();
+          // obec / svazek: rozsah přístupu (nastavuje správce u e-mailu); admin vidí vše
+          if(!window._FL_ADMIN){
+            _FDB.ref('florian_config/obce_pristup/'+_flLeKey(user.email)).get().then(function(s){
+              if(s.exists()) flApplyObecScope(s.val()); }).catch(function(){});
+          }
           flStartData();
           try{ var lp=document.getElementById('lidePanel'); if(lp&&lp.classList.contains('open')&&typeof buildLidePanel==='function') buildLidePanel(); }catch(_){}
         } else {
