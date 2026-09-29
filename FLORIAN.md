@@ -8,6 +8,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.242 — Průtok na obrazovce v l/min místo l/s (přání hasičů)
+- Karta hydrantu (dlaždice `prutokLminTile`, dřív `prutokLsTile`), rychlý přehled „Nejbližší hydrant"
+  (`nearVals().lmin`) a editace (dopočet + „Vyhovuje ≥ 240 l/min") ukazují **l/min**; m³/h zůstává.
+- Helper `prutokLmin()` (×60, celé číslo), konstanta `PRUTOK_MIN_LMIN` (= 240).
+- **Beze změny (ČSN / GIS):** data se dál ukládají v l/s; tisková sestava (`doPrint`), protokol
+  o revizi a CSV export pro GIS zůstávají v l/s. Cache `florian-v245`.
+
 ## Hotovo v1.241 — Tlačítko „📲 Nainstalovat na plochu"
 - Nový řádek `installRow`/`installBtn` v ovládacím panelu (pod 🚰 Vodovod), pro všechny role.
   Skryje se, když appka už běží nainstalovaná (`display-mode: standalone` / `navigator.standalone`).
