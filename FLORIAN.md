@@ -8,6 +8,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.246 — Hasiči nevidí hydranty „k doměření"
+- Režim H (hasiči) se u zelených „k doměření" chová jako náhled pro obec: `renderMarked` je nekreslí
+  (jen povýšené na požární), `flMarkedCount` vrací 0 (horní počítadlo bez 🟢) – i pro starostu.
+  Cache `florian-v249`.
+
 ## Hotovo v1.245 — Menší legenda vlevo dole
 - Přepínače typu: „nadz." / „podz." (místo celých slov), menší okraje a mezery (`.legend`, `.symfilt`).
 - Patička: „Apk **Florián 2.0** · rok · Petr Kobelka" a „verze X · akt. datum". Cache `florian-v248`.

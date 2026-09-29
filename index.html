@@ -1532,7 +1532,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.245';
+const APP_VERSION = '1.246';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -1872,6 +1872,7 @@ function candShownCount(){ if(typeof KAND==='undefined'||!KAND) return 0; var os
 // počet vybraných „k doměření" (🟢) v aktuálním výběru – bez povýšených a reklasifikovaných
 function flMarkedCount(){ try{
   if(typeof kandMarked==='undefined'||!kandMarked) return 0;
+  if(document.body.classList.contains('starosta') || FL_REZIM==='H') return 0; // obec i hasiči „k doměření" nevidí (renderMarked)
   // počítej jen když se zelené vážně kreslí (stejné podmínky jako renderMarked/renderCand)
   if(typeof revStatusFilter!=='undefined' && revStatusFilter) return 0;                 // semafor = zelené pryč
   if(!(typeof candOn!=='undefined'&&candOn) && typeof markedShownOn!=='undefined' && !markedShownOn) return 0; // vrstva 🟢 schovaná
@@ -3989,7 +3990,7 @@ function renderMarked(){
   if(!markedShownOn) return; // vrstva Vybraných schovaná (mřížka „vidět" u 🟢 Vybr.)
   if(revStatusFilter) return; // filtr stavu revize = jen požární daného stavu, „k doměření" pryč
   if(candOn) return; // v režimu kandidátů je vykresluje renderCand()
-  var _star=document.body.classList.contains('starosta'); // náhled pro obec = jen požární, žádné provozní „k doměření"
+  var _star=document.body.classList.contains('starosta') || FL_REZIM==='H'; // náhled pro obec i hasiči = jen požární, žádné provozní „k doměření"
   var obecSet=visibleObecSet();
   Object.keys(kandMarked).forEach(function(id){ var m=kandMarked[id]; if(!m||m.lat==null) return;
     if(FIRE_IDS.has(id)) return; // už je to reálný požární hydrant (reklasifikováno v datech) → kreslí hlavní vrstva, ne tady
