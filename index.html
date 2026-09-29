@@ -1613,6 +1613,7 @@ var flowMode=false;
 // hranice v m³/h (hasiči počítají v kubících): zelená ≥ 40, oranžová 20–40, červená < 20.
 // Nastaveno podle naměřených průtoků (medián ~36 m³/h), ať semafor opravdu odliší nejvydatnější.
 const FLOW_GOOD=40, FLOW_MID=20;
+const FLOW_GOOD_LMIN=Math.round(FLOW_GOOD*1000/60), FLOW_MID_LMIN=Math.round(FLOW_MID*1000/60); // totéž v l/min (667 / 333) – legenda nejbližších
 const FLOW_COLOR={good:'#2e7d32',mid:'#ef6c00',bad:'#d32f2f',none:'#78909c'};
 function flowClass(h){ var n=parseNum(candVal(h,'prutok')); if(n==null||n<=0) return 'none'; var q=n*3.6; // l/s → m³/h
   if(q<FLOW_MID) return 'bad'; return q>=FLOW_GOOD?'good':'mid'; }
@@ -2624,7 +2625,7 @@ function nearRender(ll){
       '<button type="button" data-act="lead" data-id="'+esc(s.id)+'">🎯 Vést sem</button>'+
       '<button type="button" data-act="mapy" title="Navigace po silnici v Mapy.com" data-id="'+esc(s.id)+'">🚗 Mapy.com</button>'+
       '<button type="button" data-act="google" title="Navigace po silnici v Google Mapách" data-id="'+esc(s.id)+'">🚗 Google</button></div>';
-  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+FLOW_GOOD+' m³/h <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+FLOW_MID+'–'+FLOW_GOOD+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+FLOW_MID+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
+  html+='<div class="near-leg"><i class="fdot" style="background:'+FLOW_COLOR.good+'"></i>≥ '+FLOW_GOOD_LMIN+' l/min <i class="fdot" style="background:'+FLOW_COLOR.mid+'"></i>'+FLOW_MID_LMIN+'–'+FLOW_GOOD_LMIN+' <i class="fdot" style="background:'+FLOW_COLOR.bad+'"></i>&lt; '+FLOW_MID_LMIN+' <i class="fdot" style="background:'+FLOW_COLOR.none+'"></i>neměřeno</div>';
   nearEl.innerHTML=html;
 }
 /* čára od mé polohy k cílovému hydrantu + kroužek kolem něj */

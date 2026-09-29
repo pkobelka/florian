@@ -11,7 +11,8 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 ## Hotovo v1.243 — Symboly H i v seznamu nejbližších a v řádku typu
 - Seznam nejbližších: štítek `ntyp` má malou značku (nadz. červeně, podz. modře – barvy štítků
   sladěné se značkami). Okno Nejbližší hydrant: řádek „Nadzemní/Podzemní" (`ni-typ`) začíná
-  značkou místo ▲. Cache `florian-v246`.
+  značkou místo ▲. Legenda barev v panelu nejbližších v l/min (`FLOW_GOOD_LMIN`/`FLOW_MID_LMIN` = 667 / 333,
+  přepočet stávajících hranic 40 / 20 m³/h – obarvení se nemění). Cache `florian-v246`.
 
 ## Hotovo v1.242 — Oficiální značky hydrantů + průtok v l/min (přání hasičů)
 - **Značky:** `SVG_NAD`/`SVG_POD` = oficiální značky požárních hydrantů tenkou bílou čarou v kolečku
