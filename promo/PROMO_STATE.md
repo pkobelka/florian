@@ -40,6 +40,10 @@ pomaleji než reálný čas → časování srovnáno po úsecích (`setpts` s k
 detekce přechodů z rozdílu snímků). Hudba = zvuk z v1 MP4 prodloužený o 12 s smyčkou z detailové
 scény (G), střihy **na dobách** (mřížka 0,3 s, takt 2,4 s, fáze x.09) a prolnutí qsin 1,2 s –
 střihy mimo dobu „sekaly“. Scéna vložená do hudby musí mít délku násobku 2,4 s.
+Každá scéna v hudbě v1 končí „dozněním“ (decrescendo před další scénou) – proto se konec scény
+Hodnota (F) nesmí hrát před hasiči (znělo to jako závěr). Skladba v2: 0–49,79 originál →
+střed Hodnoty (46,19–49,79) → 3× smyčka G z Detailu (29,39 / 29,09 / 28,79) → od 51,3 originál
+(doznění + závěr). Doznění jen před závěrem.
 
 Zdroje jsou v session scratchpadu (ne v repu): `build.py` (generuje HTML z `assets.json`),
 `record.js` (nahraje HTML `?auto=1` přes Playwright → webm), `music_only.py` (hudba),
