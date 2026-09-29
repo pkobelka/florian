@@ -1,9 +1,9 @@
 # Promo Florián 2.0 — stav projektu (pro pokračování)
 
-Krátký přehled, ať se dá příště rychle navázat. Poslední aktualizace: srpen 2026.
+Krátký přehled, ať se dá příště rychle navázat. Poslední aktualizace: 29. 9. 2026 (v2 – nové značky hydrantů, scéna Pro hasiče).
 
 ## Co je hotovo a nasazeno
-- **Promo video** (~59 s, 1280×720, H.264+AAC, jen hudba, bez mluveného slova):
+- **Promo video** (70 s, 1280×720, H.264+AAC, jen hudba, bez mluveného slova):
   `promo/florian-promo.mp4`
 - **Přehrávač** (soběstačné HTML, hudba vložená jako MP3, before/after pokrytí):
   `promo/florian-promo.html`
@@ -19,17 +19,28 @@ Krátký přehled, ať se dá příště rychle navázat. Poslední aktualizace:
 - **V appce**: tlačítko **🎬 Promo video** vedle „📤 Sdílet appku“ (admin-only,
   `promoBtn` v `index.html`, řízeno `flApplyAdminUI`) – otevírá `promo/video.html`.
 
-## Scény promo (7)
-1. Hook — foto hydrantu, „Když hoří, počítá se každá minuta.“
-2. Přehled — reálná mapa regionu s clustery (screen z mobilu).
-3. Pokrytí (hero) — Staré Město **before/after** (bez pokrytí → s kruhy 200 m), ČSN 73 0873.
-4. Detail — reálná karta hydrantu Linhartice se skutečnou fotkou.
-5. Protokol — **reálný úřední protokol VHOS** (PDF vzor od uživatele), štítek „↓ .doc“ + Word.
-6. Hodnota — „Aplikace zdarma · Bez instalace · Mobil, tablet i PC“.
-7. Závěr — „Vaše hydranty pod kontrolou.“, odkaz, „…sesterská appka k AQUACtrl“.
-- Trvalý branding v každé scéně: logo **Florián + VHOS** (vlevo nahoře), na úvodu „APLIKACE OD [VHOS]“.
+## Scény promo (8) – verze 2 (29. 9. 2026)
+1. Hook — foto hydrantu, „Když hoří, počítá se každá minuta.“ (7 s)
+2. Přehled — mapa regionu s clustery, nová legenda nadz./podz. (9 s), 775 hydrantů.
+3. Pokrytí (hero) — **Biskupice** před/po (bez pokrytí → kruhy 200 m); vybráno z dat tak,
+   aby kruhy nesplývaly do jednoho fleku (medián vzdálenosti sousedů ~190 m). (10,5 s)
+4. Detail — karta Jevíčko HN6 s fotkou, štítek „1189 l/min · 71,3 m³/h“. (9 s)
+5. Protokol — reálný protokol VHOS, „↓ .doc“ + Word. (8 s)
+6. Hodnota — „Aplikace zdarma · Bez instalace · Mobil, tablet i PC“. (7 s)
+7. **Pro hasiče** — „Při zásahu. Nejbližší hydrant za pár vteřin.“ Telefon střídá 4 obrazovky
+   (seznam nejbližších → okno HN1 → trasa Mapy.com → navigace), 12 s = 5 taktů hudby.
+8. Závěr — „Vaše hydranty pod kontrolou.“, „…pro obce, svazky i jednotky hasičů“.
+- Všechny screenshoty v2 jsou z mobilu uživatele (nové kruhové značky dle normy).
+- Pořadí dle uživatele: provoz → majitel → hasiči → závěr.
 
 ## Jak se promo staví (pipeline, vše v scratchpadu session)
+**v2 (29. 9. 2026):** skripty `build.py` (nahradí data-URI obrázků/zvuku v HTML v1 + přidá scénu
+a texty), `record.js` (Playwright recordVideo `?auto=1`). Nahrávka z headless Chromia běží ~13 %
+pomaleji než reálný čas → časování srovnáno po úsecích (`setpts` s kotvami na přechodech scén,
+detekce přechodů z rozdílu snímků). Hudba = zvuk z v1 MP4 prodloužený o 12 s smyčkou z detailové
+scény (G), střihy **na dobách** (mřížka 0,3 s, takt 2,4 s, fáze x.09) a prolnutí qsin 1,2 s –
+střihy mimo dobu „sekaly“. Scéna vložená do hudby musí mít délku násobku 2,4 s.
+
 Zdroje jsou v session scratchpadu (ne v repu): `build.py` (generuje HTML z `assets.json`),
 `record.js` (nahraje HTML `?auto=1` přes Playwright → webm), `music_only.py` (hudba),
 `build_audio.py` (verze s VO – nepoužitá). ffmpeg = imageio-ffmpeg (libx264/aac).
