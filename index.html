@@ -917,6 +917,15 @@ html.navbig #map > .leaflet-control-container{position:absolute;left:var(--nav-p
 .card.full{top:50%;bottom:auto;left:10px;right:10px;max-height:calc(100dvh - 24px);border-radius:18px;
   transform:translateY(-50%) scale(.96);opacity:0;transition:transform .2s ease,opacity .2s ease}
 .card.full.open{transform:translateY(-50%);opacity:1}
+/* PC (široké okno): karta vždy jako okno uprostřed – dole na širokém monitoru vypadala useknutá
+   a v náhledu pro obec ji překrývala spodní lišta. Zavřená je schovaná (visibility), ne jen průhledná.
+   „body“ v selektoru = přebije pozdější základní .card / .card.open (spodní vysouvací karta). */
+@media (min-width:1025px) and (min-height:560px){
+  body .card{top:50%;bottom:auto;left:10px;right:10px;max-height:calc(100dvh - 24px);border-radius:18px;
+    transform:translateY(-50%) scale(.96);opacity:0;visibility:hidden;
+    transition:transform .2s ease,opacity .2s ease,visibility 0s linear .2s}
+  body .card.open{transform:translateY(-50%);opacity:1;visibility:visible;transition-delay:0s}
+}
 /* ---- režimy P / M / H ---- */
 .rez-chip{display:inline-block;vertical-align:2px;margin-left:6px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.18);color:#fff;
   font-family:inherit;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.2px;cursor:default}
@@ -1534,7 +1543,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.247';
+const APP_VERSION = '1.248';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
