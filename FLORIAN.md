@@ -8,6 +8,13 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.241 — Tlačítko „📲 Nainstalovat na plochu"
+- Nový řádek `installRow`/`installBtn` v ovládacím panelu (pod 🚰 Vodovod), pro všechny role.
+  Skryje se, když appka už běží nainstalovaná (`display-mode: standalone` / `navigator.standalone`).
+- Chrome/Edge/Samsung: odchytí `beforeinstallprompt` a na klik vyvolá nativní dialog instalace.
+- iPad/iPhone (Safari API nemá) a když prompt není k dispozici: `alert` s návodem pro daný
+  prohlížeč (Sdílet → Přidat na plochu; menu ⋮ → Nainstalovat aplikaci…). Cache `florian-v244`.
+
 ## Hotovo v1.152 (tato session) — Protokol: výběr více obcí + Word ke stažení
 - Klik na **📄 Protokol o revizi** → panel `protokolPanel` se **seznamem obcí (zaškrtávátka)**
   v rámci vybraného pracoviště/svazku (`protokolObce`, `buildProtokolPanel`, reuse tp-item/tp-c).
