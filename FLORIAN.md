@@ -10,7 +10,7 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 
 ## Hotovo v1.242 — Oficiální značky hydrantů + průtok v l/min (přání hasičů)
 - **Značky:** `SVG_NAD`/`SVG_POD` = oficiální značky požárních hydrantů tenkou bílou čarou v kolečku
-  (nadzemní: kolečko s vývody po stranách + vřeteno s příčkou, **červený** kotouč `#c62828`;
+  (nadzemní: kolečko + vřeteno s příčkou, bez vývodů, **červený** kotouč `#c62828`;
   podzemní: přeškrtnuté kolečko + vřeteno, **modrý** kotouč `#1565c0`). Obě 26×26, kotva ve středu.
   Režim průtoku přebarví kotouč regexem na obě barvy. Platí pro mapu, legendu i hlavičku karty.
 - Odznak úkolu 🛠️ (`.uk-badge`) je nově **žlutý** (`#fbc02d`) – červená patří nadzemním H.
