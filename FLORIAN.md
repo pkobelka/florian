@@ -8,6 +8,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.243 — Symboly H i v seznamu nejbližších a v řádku typu
+- Seznam nejbližších: štítek `ntyp` má malou značku (nadz. červeně, podz. modře – barvy štítků
+  sladěné se značkami). Okno Nejbližší hydrant: řádek „Nadzemní/Podzemní" (`ni-typ`) začíná
+  značkou místo ▲. Cache `florian-v246`.
+
 ## Hotovo v1.242 — Oficiální značky hydrantů + průtok v l/min (přání hasičů)
 - **Značky:** `SVG_NAD`/`SVG_POD` = oficiální značky požárních hydrantů tenkou bílou čarou v kolečku
   (nadzemní: kolečko + vřeteno s příčkou, bez vývodů, **červený** kotouč `#c62828`;
