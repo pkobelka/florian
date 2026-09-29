@@ -952,6 +952,8 @@ body.rez-H .op-only, body.rez-H #covMatrix, body.rez-H #vodToggle, body.rez-H #s
 body.rez-H .uk-badge, body.rez-H .vodleg,
 body.rez-H .card .revbig, body.rez-H .card .chip-csn, body.rez-H .card .pbtns, body.rez-H .card .ptip,
 body.rez-H .card .actions{display:none!important}
+/* bez tlačítek dole by karta končila těsně u okraje a vypadala useknutá → odsazení pod obsahem */
+body.rez-H .card{padding-bottom:calc(env(safe-area-inset-bottom) + 18px)}
 body.rez-H .zasah-btn{font-size:17px;padding:12px 18px}
 /* H menu: pod sebou Foto, Satelit, Vše, Obce – každé přes celou šířku (čísla H hasiči nepotřebují) */
 body.rez-H #cisloToggle{display:none!important}
@@ -1532,7 +1534,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.246';
+const APP_VERSION = '1.247';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
