@@ -840,7 +840,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .btn-all{justify-content:center;font-weight:800;color:var(--blue)}
 #allBtn{flex:0 0 auto;padding-left:13px;padding-right:13px}
 .legend{position:absolute;z-index:900;left:10px;bottom:14px;background:#fff;border-radius:10px;
-  padding:8px 11px;font-size:12.5px;box-shadow:var(--shadow);line-height:1.7}
+  padding:6px 8px;font-size:11.5px;box-shadow:var(--shadow);line-height:1.5}
 .legend b{display:inline-flex;align-items:center;gap:6px;font-weight:600;margin-right:10px}
 .legend .sym{width:18px;height:18px;display:inline-grid;place-items:center;vertical-align:-4px;flex:0 0 auto}
 .legend .sym svg{width:100%;height:100%;object-fit:contain;display:block}
@@ -1007,8 +1007,8 @@ body.zasah .near-acts button{min-height:44px}
 body.zasah .ni-box{max-width:380px}
 body.zasah .ni-v b{font-size:23px}
 body.zasah .ni-acts button{min-height:52px;font-size:16px}
-.legend .credit{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);
-  color:#111;font-size:11px;line-height:1.5;font-weight:600}
+.legend .credit{display:block;margin-top:4px;padding-top:4px;border-top:1px solid var(--line);
+  color:#111;font-size:10px;line-height:1.4;font-weight:600}
 .legend .credit b{display:inline;color:#111;font-weight:800;margin:0;gap:0}
 .legend .revwarn{display:block;margin-top:7px;padding-top:6px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);font-weight:700}
 .legend .revwarn select{font-size:12px;padding:2px 5px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:inherit;font-weight:700;color:var(--ink)}
@@ -1017,7 +1017,7 @@ body.zasah .ni-acts button{min-height:52px;font-size:16px}
 .legend .revfilt.on{border-color:#1565c0;background:#e3f0ff}
 .legend .revfilt .revcnt{font-weight:800;color:#111}
 /* klikací filtr typu (nadzemní/podzemní) – stejná pilulka jako revfilt, vyplý = bledší */
-.legend .symfilt{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:inherit;font-family:inherit;color:#0d3c73;background:#dbeafe;border:1.5px solid #1565c0;border-radius:999px;padding:3px 9px;margin:0 6px 5px 0;cursor:pointer;line-height:1.2;transition:background .12s,opacity .12s,border-color .12s}
+.legend .symfilt{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:inherit;font-family:inherit;color:#0d3c73;background:#dbeafe;border:1.5px solid #1565c0;border-radius:999px;padding:2px 7px 2px 4px;margin:0 4px 3px 0;cursor:pointer;line-height:1.2;transition:background .12s,opacity .12s,border-color .12s}
 .legend .symfilt:hover{background:#c6ddff}
 .legend .symfilt.off{opacity:.55;color:var(--muted);background:#e7eaee;border-color:transparent;text-decoration:line-through;text-decoration-color:rgba(0,0,0,.45)}
 .legend .symfilt.off .sym{filter:grayscale(1)}
@@ -1532,7 +1532,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.244';
+const APP_VERSION = '1.245';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -1799,8 +1799,8 @@ buildOwnerFilter();
 buildTownFilter();
 
 function renderLegend(){
-  const credit='<div class="credit">Aplikace <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka<br>'+
-    'verze '+APP_VERSION+' · aktualizace '+APP_UPDATED+'</div>';
+  const credit='<div class="credit">Apk <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka<br>'+
+    'verze '+APP_VERSION+' · akt. '+APP_UPDATED+'</div>';
   if(revMode){
     // spočítej stavy jen z aktuálně zobrazených (dle filtru), dle zvoleného rozměru (termín/ČSN)
     var _ord=dimOrder(), _col=dimColor(), _lbl=dimLabel();
@@ -1816,8 +1816,8 @@ function renderLegend(){
     var _ws=document.getElementById('revWarnSel'); if(_ws) _ws.onchange=function(){ REV_WARN_DAYS=parseInt(this.value)||30; try{ localStorage.setItem('florian_rev_warn',String(REV_WARN_DAYS)); }catch(e){} if(window._FL_ADMIN&&window._FDB){ try{ _FDB.ref('florian_config/rev_warn').set(REV_WARN_DAYS); }catch(e){} } if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); renderLegend(); };
   } else {
     document.getElementById('legend').innerHTML =
-      '<button type="button" class="symfilt'+(typeOff.nad?' off':'')+'" data-t="nad" title="Klikni pro skrytí / zobrazení nadzemních"><span class="sym">'+SVG_NAD+'</span>nadzemní</button>'+
-      '<button type="button" class="symfilt'+(typeOff.pod?' off':'')+'" data-t="pod" title="Klikni pro skrytí / zobrazení podzemních"><span class="sym">'+SVG_POD+'</span>podzemní</button>'+credit;
+      '<button type="button" class="symfilt'+(typeOff.nad?' off':'')+'" data-t="nad" title="Klikni pro skrytí / zobrazení nadzemních"><span class="sym">'+SVG_NAD+'</span>nadz.</button>'+
+      '<button type="button" class="symfilt'+(typeOff.pod?' off':'')+'" data-t="pod" title="Klikni pro skrytí / zobrazení podzemních"><span class="sym">'+SVG_POD+'</span>podz.</button>'+credit;
     document.getElementById('legend').querySelectorAll('.symfilt').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var t=b.getAttribute('data-t'); typeOff[t]=!typeOff[t]; renderLegend(); applyFilter(); }; });
   }
 }

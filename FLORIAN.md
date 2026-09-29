@@ -8,6 +8,10 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.245 — Menší legenda vlevo dole
+- Přepínače typu: „nadz." / „podz." (místo celých slov), menší okraje a mezery (`.legend`, `.symfilt`).
+- Patička: „Apk **Florián 2.0** · rok · Petr Kobelka" a „verze X · akt. datum". Cache `florian-v248`.
+
 ## Hotovo v1.244 — Velká značka H pod vzdáleností v seznamu nejbližších
 - `nearDistSym()`: levý sloupec řádku = vzdálenost a pod ní značka 34 px (`.near-dc`/`.near-sym`),
   i u řádku „Vedu k hydrantu". Malá značka ze štítku `ntyp` zrušena (zůstává barevný text).
