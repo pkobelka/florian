@@ -40,6 +40,12 @@ pomaleji než reálný čas → časování srovnáno po úsecích (`setpts` s k
 detekce přechodů z rozdílu snímků). Hudba = zvuk z v1 MP4 prodloužený o 12 s smyčkou z detailové
 scény (G), střihy **na dobách** (mřížka 0,3 s, takt 2,4 s, fáze x.09) a prolnutí qsin 1,2 s –
 střihy mimo dobu „sekaly“. Scéna vložená do hudby musí mít délku násobku 2,4 s.
+**Hudba v2 = nově generovaná** (`promo/music_v2.py`, numpy → WAV): stříhání hudby v1 vždy
+zanechalo slyšitelné přeskoky (každá scéna v1 má vlastní frázi a doznění). v2: souvislé arpeggio
+(krok 0,3 s, takt 2,4 s), pad + basa, akord na scénu (Em, C, G, D, Em, C, D, G), hranice scén v `B`
+(čas videa, scény od 1,05 s). Závěrečný akord a doznění jen v závěru. Hlasitost ≈ v1 (−15 LUFS).
+Při změně délek scén upravit `B` a znovu vygenerovat. Do HTML přehrávače jde stopa od 1,05 s
+(tam hudba startuje s první scénou).
 
 Zdroje jsou v session scratchpadu (ne v repu): `build.py` (generuje HTML z `assets.json`),
 `record.js` (nahraje HTML `?auto=1` přes Playwright → webm), `music_only.py` (hudba),
