@@ -8,6 +8,16 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.248 — Karta hydrantu na PC uprostřed obrazovky
+- `@media (min-width:1025px) and (min-height:560px)`: `.card` je okno uprostřed (jako `.card.full`),
+  zavřené schované přes `visibility` (ne jen průhledné – jinak by blokovalo kliky do mapy).
+  Selektor `body .card` kvůli pořadí v CSS (základní `.card`/`.card.open` jsou níž). Mobil/tablet
+  beze změny (vysouvací karta zespodu). Řeší i překrytí tlačítek lištou „Náhled pro obec“. Cache `florian-v251`.
+
+## Hotovo v1.247 — Karta v režimu Hasiči nekončí useknutá
+- V H jsou schovaná tlačítka dole (`.card .actions`), karta tak končila těsně u okraje obrazovky
+  a vypadala useknutá (hlášeno z PC). `body.rez-H .card{padding-bottom:…+18px}`. Cache `florian-v250`.
+
 ## Hotovo v1.246 — Hasiči nevidí hydranty „k doměření"
 - Režim H (hasiči) se u zelených „k doměření" chová jako náhled pro obec: `renderMarked` je nekreslí
   (jen povýšené na požární), `flMarkedCount` vrací 0 (horní počítadlo bez 🟢) – i pro starostu.
