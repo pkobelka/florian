@@ -1424,6 +1424,9 @@ document.body.classList.add('rez-'+FL_REZIM);
   <div class="ctrl-row">
     <button class="btn-toggle" id="vodToggle" title="Zobrazit schéma vodovodních řadů (trasy potrubí) a vodojem. Zatím dostupné pro oblast Staré Město / Radišov / Dětřichov.">🚰 Vodovod</button>
   </div>
+  <div class="ctrl-row" id="installRow" style="display:none">
+    <button class="btn-toggle" id="installBtn" title="Nainstalovat Floriána jako aplikaci – ikona na ploše, spouští se přes celou obrazovku">📲 Nainstalovat na plochu</button>
+  </div>
   <div class="ctrl-row op-only">
     <button class="btn-toggle" id="menuBtn">📋 Změřit <span id="domCount"></span></button>
     <button class="btn-toggle" id="ukolBtn">🛠️ Úkoly <span id="ukolCount"></span></button>
@@ -1519,9 +1522,9 @@ const HYDRANTY = [{"id":"18","icme":"BEZICME","nazev":"5","typ":"podzemní","fun
 let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektorem 150/200/250/300)
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.240';
+const APP_VERSION = '1.241';
 const APP_YEAR = 2026;
-const APP_UPDATED = '24. 9. 2026';
+const APP_UPDATED = '29. 9. 2026';
 
 // ---- ikony ----
 const SVG_NAD = '<svg viewBox="0 0 24 32" width="28" height="37"><path d="M12 0C6 0 1 4.7 1 11c0 7.6 11 21 11 21s11-13.4 11-21C23 4.7 18 0 12 0z" fill="#1565c0" stroke="#fff" stroke-width="1.6"/><text x="12" y="15.9" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="800" fill="#fff">H</text></svg>';
@@ -5143,6 +5146,40 @@ function flImport(files){ if(!files||!files.length) return;
 })();
 
 // ---- PWA ----
+// Tlačítko „📲 Nainstalovat na plochu" – ukáže se, jen když appka NEběží nainstalovaná.
+// Chrome/Edge/Samsung (Android, Windows): nativní dialog přes beforeinstallprompt.
+// iPad/iPhone (Safari nemá API) a ostatní: návod, jak přidat na plochu ručně z menu prohlížeče.
+(function(){
+  var row=document.getElementById('installRow'), btn=document.getElementById('installBtn');
+  if(!row||!btn) return;
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+  if(standalone) return;
+  var deferred=null;
+  var ua=navigator.userAgent||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); // iPadOS se hlásí jako Mac
+  row.style.display='';
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; });
+  window.addEventListener('appinstalled', function(){ deferred=null; row.style.display='none'; });
+  btn.onclick=function(e){
+    e.stopPropagation();
+    if(deferred){
+      deferred.prompt();
+      deferred.userChoice.then(function(c){ if(c&&c.outcome==='accepted') row.style.display='none'; deferred=null; }).catch(function(){ deferred=null; });
+      return;
+    }
+    var msg;
+    if(isIOS){
+      msg='Instalace na iPadu / iPhonu:\n\n1. Otevři Floriána v Safari (v Chrome na iPadu jde taky přes ikonu Sdílet).\n2. Ťukni na ikonu Sdílet (čtvereček se šipkou nahoru) – na iPadu vpravo nahoře vedle adresy.\n3. Vyber „Přidat na plochu“ (případně sjeď níž).\n4. Potvrď „Přidat“.';
+    } else if(/SamsungBrowser/.test(ua)){
+      msg='Instalace v Samsung Internetu:\n\n1. Ťukni na menu ☰ (dole vpravo).\n2. Vyber „Přidat stránku do“ → „Domovská obrazovka“.';
+    } else if(/Firefox/.test(ua)){
+      msg='Instalace ve Firefoxu:\n\n1. Ťukni na menu ⋮.\n2. Vyber „Nainstalovat“ nebo „Přidat na plochu“.\n\nKdyž tam volba není, otevři Floriána v Chrome – tam instalace funguje nejspolehlivěji.';
+    } else {
+      msg='Instalace v Chrome:\n\n1. Ťukni na menu ⋮ (vpravo nahoře vedle adresy).\n2. Vyber „Nainstalovat aplikaci“ nebo „Přidat na plochu“.\n\nKdyž tam volba není: stránku jednou obnov (tažením dolů), chvíli počkej a zkus to znovu. Pokud je Florián už nainstalovaný, najdeš ho v seznamu aplikací.';
+    }
+    alert(msg);
+  };
+})();
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     var hadController = !!navigator.serviceWorker.controller; // false = úplně první instalace (nereloaduj)
