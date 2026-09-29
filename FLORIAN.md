@@ -8,6 +8,12 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.249 — Přepnutí režimu (admin) drží mapu a výběr
+- Přepnutí P / M / H v `rezPanel` načte stránku znovu → dřív skok na výchozí mapu. Nově
+  `flKeepViewSave()` uloží do `sessionStorage` (`fl_keep`) střed, zoom, obce, pracoviště a svazek;
+  po načtení je obnoví IIFE za náhledem pro obec (platnost 2 min, `flPracDefaulted=true`, aby výběr
+  nepřepsalo výchozí pracoviště). V náhledu pro obec (M) se svazek z odkazu nepřepisuje. Cache `florian-v252`.
+
 ## Hotovo v1.248 — Karta hydrantu na PC uprostřed obrazovky
 - `@media (min-width:1025px) and (min-height:560px)`: `.card` je okno uprostřed (jako `.card.full`),
   zavřené schované přes `visibility` (ne jen průhledné – jinak by blokovalo kliky do mapy).

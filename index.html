@@ -1543,7 +1543,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.248';
+const APP_VERSION = '1.249';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -2688,6 +2688,11 @@ function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle(
 /* odkaz na režim (zachová cestu appky, zahodí ostatní parametry) */
 function rezUrl(r,svazek){ var u=location.origin+location.pathname;
   if(r==='H') return u+'?rezim=H'; if(r==='M') return u+'?nahled='+encodeURIComponent(svazek||''); return u; }
+/* přepnutí režimu = nové načtení stránky → výřez mapy a filtry (pracoviště, svazek, obce) se předají
+   přes sessionStorage a po načtení obnoví (platí 2 min, jen pro tuto kartu prohlížeče) */
+function flKeepViewSave(){ try{ var c=map.getCenter();
+  sessionStorage.setItem('fl_keep',JSON.stringify({t:Date.now(),lat:c.lat,lng:c.lng,z:map.getZoom(),
+    towns:Array.from(selectedTowns),strediska:Array.from(selectedStrediska),owners:Array.from(selectedOwners)})); }catch(e){} }
 function rezPanel(){
   var old=document.getElementById('rezOv'); if(old){ old.remove(); return; }
   var owners=Array.from(new Set(HYDRANTY.map(function(h){ return h.vlastnik; }).filter(Boolean))).sort(function(a,b){ return a.localeCompare(b,'cs'); });
@@ -2705,6 +2710,7 @@ function rezPanel(){
     if(r==='x'){ ov.remove(); return; }
     if(r==='linkH'){ var u=rezUrl('H'); try{ navigator.clipboard.writeText(u).then(function(){ flToast('📋 Odkaz pro hasiče zkopírován'); },function(){ window.prompt('Zkopíruj odkaz:',u); }); }catch(e){ window.prompt('Zkopíruj odkaz:',u); } return; }
     if(r==='M'){ var ow=ov.querySelector('#rezOwns'); ow.classList.toggle('open'); if(ow.classList.contains('open')) ow.scrollIntoView({block:'nearest'}); return; } // rozbal svazky
+    flKeepViewSave(); // po přepnutí režimu zůstane stejná mapa a výběr (např. obec Křenov)
     if(r==='own'){ location.href=rezUrl('M',b.getAttribute('data-o')); return; }
     location.href=rezUrl(r);
   });
@@ -5173,6 +5179,20 @@ function flImport(files){ if(!files||!files.length) return;
     if(typeof buildCovPanel==='function') buildCovPanel(); // přebuduj „Zobrazení a pokrytí" bez Vybrané/Ostatní
     if(typeof applyFilter==='function') applyFilter();
   }catch(e){ try{console.warn('nahled',e);}catch(_){ } }
+})();
+// ---- obnovení mapy a výběru po přepnutí režimu (P / M / H) – viz flKeepViewSave ----
+(function(){
+  try{
+    var k=JSON.parse(sessionStorage.getItem('fl_keep')||'null'); sessionStorage.removeItem('fl_keep');
+    if(!k || !(Date.now()-k.t<120000)) return;
+    var star=document.body.classList.contains('starosta'); // náhled pro obec má svazek z odkazu – ten nepřepisovat
+    if(!star){ selectedOwners=new Set(k.owners||[]); selectedStrediska=new Set(k.strediska||[]); }
+    selectedTowns=new Set(k.towns||[]);
+    flPracDefaulted=true; // nepřepsat výběr výchozím pracovištěm přihlášeného
+    pracLbl(); ownerLbl(); buildStrediskoFilter(); buildOwnerFilter(); buildTownFilter();
+    applyFilter(true);
+    if(isFinite(k.lat) && isFinite(k.lng) && isFinite(k.z)) map.setView([k.lat,k.lng],k.z,{animate:false});
+  }catch(e){ try{console.warn('keep',e);}catch(_){ } }
 })();
 
 // ---- PWA ----
