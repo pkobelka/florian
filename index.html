@@ -969,7 +969,9 @@ body.rez-H .ctrl .btn-toggle{font-size:16px!important;padding:11px 16px!importan
 .ntyp{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:0 4px;margin-right:5px;background:#eceff1;color:#455a64;vertical-align:1px}
 .ntyp{background:#e3f2fd;color:#0d47a1}  /* podzemní = modrá jako značka */
 .ntyp.nad{background:#ffebee;color:#b71c1c}  /* nadzemní = červená jako značka */
-.ntyp svg{width:13px;height:13px;vertical-align:-2.5px;margin-right:3px}
+.near-dc{display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto}
+.near-sym{display:grid}
+.near-sym svg{width:34px;height:34px}
 .ni-ph{position:relative;height:180px;margin:4px -4px 6px;border-radius:12px;overflow:hidden;background:#eceff1;cursor:zoom-in}
 .ni-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .ni-noph{margin:4px 0 6px;border:1px dashed #cfd8dc;border-radius:10px;padding:6px;text-align:center;font-size:12.5px;color:#90a4ae}
@@ -1530,7 +1532,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.243';
+const APP_VERSION = '1.244';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -2611,13 +2613,13 @@ function nearRender(ll){
   nearIds=ids; nearEl.classList.add('open');
   var html='<div class="near-hd"><span>'+(navTarget?'🎯 Vedu k hydrantu':'🚒 Nejbližší hydranty')+'</span><button type="button" class="near-x" data-act="close" aria-label="Sbalit">✕</button></div>';
   if(navTarget){
-    html+='<div class="near-row near-tg" data-live="'+esc(navTarget.id)+'">'+nearArrow(ll,navTarget)+'<b class="near-d">'+nearDist(ll,navTarget)+'</b><span class="near-c"><span class="near-n">'+esc(nearName(navTarget))+'</span>'+nearValsLine(navTarget,false)+'</span></div>'+
+    html+='<div class="near-row near-tg" data-live="'+esc(navTarget.id)+'">'+nearArrow(ll,navTarget)+nearDistSym(ll,navTarget)+'<span class="near-c"><span class="near-n">'+esc(nearName(navTarget))+'</span>'+nearValsLine(navTarget,false)+'</span></div>'+
       '<div class="near-acts"><button type="button" data-act="show" data-id="'+esc(navTarget.id)+'">📍 Ukázat</button><button type="button" data-act="stop">✕ Zrušit vedení</button></div>'+
       '<div class="near-sub">Další v okolí</div>';
   }
   var best=nearBest(list.map(function(x){ return x.h; }));
   list.forEach(function(x){ if(navTarget && x.h===navTarget) return;
-    html+='<div class="near-row'+(!navTarget&&x.h===nearSel?' sel':'')+'" data-act="sel" data-id="'+esc(x.h.id)+'" data-live="'+esc(x.h.id)+'">'+nearArrow(ll,x.h)+'<b class="near-d">'+nearDist(ll,x.h)+'</b>'+
+    html+='<div class="near-row'+(!navTarget&&x.h===nearSel?' sel':'')+'" data-act="sel" data-id="'+esc(x.h.id)+'" data-live="'+esc(x.h.id)+'">'+nearArrow(ll,x.h)+nearDistSym(ll,x.h)+
       '<span class="near-c"><span class="near-n">'+esc(nearName(x.h))+'</span>'+nearValsLine(x.h,x.h===best)+'</span></div>'; });
   var s=navTarget?null:nearSel;
   if(s) html+='<div class="near-acts">'+
@@ -2716,9 +2718,11 @@ function nearWarn(h){ var w=[];
   return w; }
 /* nejvydatnější z nabídnutých (nejvyšší naměřený průtok) */
 function nearBest(hs){ var b=null,bq=0; hs.forEach(function(h){ var n=parseNum(candVal(h,'prutok')); if(n!=null && n>bq){ bq=n; b=h; } }); return b; }
+/* levý sloupec řádku nejbližších: vzdálenost a pod ní velká značka hydrantu (nadzemní / podzemní) */
+function nearDistSym(ll,h){ return '<span class="near-dc"><b class="near-d">'+nearDist(ll,h)+'</b><span class="near-sym">'+(h.typ==='nadzemní'?SVG_NAD:SVG_POD)+'</span></span>'; }
 function nearValsLine(h,best){ var v=nearVals(h);
   var w=nearWarn(h), nad=h.typ==='nadzemní';
-  return '<span class="near-v'+(best?' best':'')+'"><span class="ntyp'+(nad?' nad':'')+'">'+(nad?SVG_NAD:SVG_POD)+(nad?'nadz.':'podz.')+'</span><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+(v.lmin?v.lmin+' l/min':'—')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
+  return '<span class="near-v'+(best?' best':'')+'"><span class="ntyp'+(nad?' nad':'')+'">'+(nad?'nadz.':'podz.')+'</span><i class="fdot" style="background:'+FLOW_COLOR[flowClass(h)]+'"></i>'+(v.lmin?v.lmin+' l/min':'—')+' · '+v.st+' / '+v.dy+' MPa'+(best?' · nejvíc vody':'')+'</span>'+
     (w.length?'<span class="near-w">⚠️ '+w.join(' · ')+'</span>':''); }
 /* rychlý přehled hydrantu uprostřed displeje (místo celé karty) */
 const nearInfo=document.getElementById('nearInfo');
