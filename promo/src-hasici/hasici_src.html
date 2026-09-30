@@ -163,26 +163,26 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 <div id="fit"><div class="stage" id="stage">
 
   <!-- 0 ÚVOD: hoří → poplach → otázky → „Neboj, máme Floriána – náš patron“ → náraz s logem -->
-  <section class="scene intro" data-d="14.4" data-nohud="1">
+  <section class="scene intro" data-d="16.8" data-nohud="1">
     <div class="beacon bl"></div><div class="beacon br"></div>
     <div class="strobe"></div>
     <div class="slam red xl" data-in="0.6" data-out="1.8" style="font-size:430px">HOŘÍ!</div>
     <div class="slam md" data-in="1.8" data-out="3.0">RYCHLE, KLUCI,<br>JEDEM!</div>
-    <div class="slam xl" data-in="3.0" data-out="4.2">KDE?</div>
-    <div class="slam sm" data-in="4.2" data-out="5.7">Kde najdem<br><span class="red">hydranty?</span></div>
-    <div class="slam sm" data-in="5.7" data-out="7.2">Kde budem<br><span class="red">brát vodu?</span></div>
+    <div class="slam sm" data-in="3.0" data-out="4.5">Kde najdem<br><span class="red">hydranty?</span></div>
+    <div class="slam sm" data-in="4.5" data-out="6.0">Kde budem<br><span class="red">brát vodu?</span></div>
+    <div class="slam sm" data-in="6.0" data-out="7.2">Který nám dá<br><span class="red">nejvíc?!</span></div>
     <div class="calm">
-      <div class="c1 rv" data-in="7.4" data-out="9.45">Neboj, žádnej problém.</div>
-      <div class="c2 rv" data-in="8.3" data-out="9.45">Máme na to našeho <b>Floriána.</b></div>
+      <div class="c1 rv" data-in="7.4" data-out="11.85">Neboj, žádnej problém.</div>
+      <div class="c2 rv" data-in="8.3" data-out="11.85">Máme přece našeho <b>Floriánka.</b></div>
     </div>
     <div class="ic">
       <div class="iglow"></div>
-      <img class="ilogo" data-hit="9.6" src="__IMG_logo__" alt="Florián 2.0">
-      <div class="iname" data-hit="9.6">FLORIÁN</div>
-      <div class="itape" data-hit="9.75"><span>PRO HASIČE</span></div>
-      <p class="itag rv" data-in="10.2">Náš patron. <b>Ten nám poradí.</b></p>
+      <img class="ilogo" data-hit="12.0" src="__IMG_logo__" alt="Florián 2.0">
+      <div class="iname" data-hit="12.0">FLORIÁN</div>
+      <div class="itape" data-hit="12.15"><span>PRO HASIČE</span></div>
+      <p class="itag rv" data-in="12.6">Náš patron. <b>Ten nám poradí.</b></p>
     </div>
-    <div class="icred rv" data-in="10.7">autor <b>Petr Kobelka</b><i></i>data <span><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
+    <div class="icred rv" data-in="13.1">autor <b>Petr Kobelka</b><i></i>data <span><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
     <div class="flash"></div>
   </section>
 
@@ -319,7 +319,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
     document.querySelector('.mode').style.setProperty('--blink',(Math.floor(t/0.6)%2)?.25:1);
   }
   /* úvod: majáky, stroboskop, slova „dopadají“ do rytmu (doba 0,3 s, takt 2,4 s), náraz s logem */
-  var HITS=[[0.6,.4],[1.8,.35],[3.0,.35],[4.2,.3],[5.7,.3],[9.6,1]], DROP=9.6, CALM=7.2;
+  var HITS=[[0.6,.4],[1.8,.35],[3.0,.3],[4.5,.3],[6.0,.35],[12.0,1]], DROP=12.0, CALM=7.2;
   function intro(s,lt){
     var shake=0, fl=0;
     HITS.forEach(function(h){ if(lt>=h[0]){ var e=Math.exp(-(lt-h[0])/0.11); fl+=h[1]*e; shake+=h[1]*e; } });
