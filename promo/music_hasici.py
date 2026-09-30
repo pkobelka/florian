@@ -3,7 +3,7 @@
 import sys
 import numpy as np, wave
 SR=44100
-DUR=[float(x) for x in sys.argv[1:]] or [9.6,9.6,7.2,7.2,9.6,9.6]
+DUR=[float(x) for x in sys.argv[1:]] or [14.4,9.6,7.2,7.2,9.6,9.6]
 B=[0.0]
 for d in DUR: B.append(round(B[-1]+d,3))
 TOTAL=B[-1]
@@ -37,7 +37,7 @@ def chord_at(x):
         if B[i]<=x<B[i+1]: return i
     return len(B)-2
 step=0.3; t0=0.09
-DROP=7.2   # v úvodu hraje jen podkres a údery; arpeggio a basa nastoupí s logem („drop“)
+DROP=9.6   # v úvodu hraje jen podkres a údery; arpeggio a basa nastoupí s logem („drop“)
 k=0
 while True:
     ts=t0+k*step
@@ -65,7 +65,7 @@ while True:
     s=(np.sin(2*np.pi*f*tt)+0.3*np.sin(4*np.pi*f*tt))*env*(1.0 if k%2==0 else 0.7)
     L[a:b]+=0.11*s; R[a:b]+=0.11*s
     k+=1
-# úvod: údery na dopad slov, tikání v panice, ztišení („Neboj…“), náběh šumu a velký náraz s logem (7,2 s)
+# úvod: údery na dopad slov, tikání v panice, ztišení („Neboj…“), náběh šumu a velký náraz s logem (9,6 s)
 rng=np.random.default_rng(7)
 def hit(at,g,big=False):
     a=int(at*SR); d=1.6 if big else 0.7; b=min(len(t),a+int(d*SR)); tt=t[a:b]-at
@@ -76,9 +76,9 @@ def hit(at,g,big=False):
     snap=nz*np.exp(-tt/(0.5 if big else 0.06))*(0.5 if big else 0.8)
     x=g*(1.0*boom+0.35*snap)
     L[a:b]+=x; R[a:b]+=x
-for at,g in ((0.6,.30),(1.2,.36),(1.8,.30),(2.4,.26),(3.6,.26)): hit(at,g)
+for at,g in ((0.6,.30),(1.8,.36),(3.0,.30),(4.2,.26),(5.7,.26)): hit(at,g)
 hit(DROP,.52,True)
-for k2 in range(2,16):                                             # tikání po dobách (0,6–4,8 s) – spěch
+for k2 in range(2,24):                                             # tikání po dobách (0,6–7,2 s) – spěch
     at=k2*0.3; a=int(at*SR); b=a+int(0.05*SR); tt=t[a:b]-at
     c=rng.standard_normal(b-a); c=c-np.convolve(c,np.ones(4)/4,'same')
     x=0.05*c*np.exp(-tt/0.012)*(1.3 if k2%2==0 else 0.8); L[a:b]+=x; R[a:b]+=x
