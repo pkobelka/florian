@@ -56,6 +56,23 @@ HTML má vloženou stopu `html_audio.mp3` (data-URI) přes placeholder `__AUDIO_
 Assety (obrázky, logo, VHOS, protokol, audio) jsou base64 v `assets.json`.
 > Pozn.: scratchpad je dočasný. Pro plnou reprodukci případně znovu vytvořit z těchto poznámek.
 
+## Promo „Florián pro hasiče“ (30. 9. 2026)
+- **Video** 48 s, 1920×1080 (16:9 – hasiči mají tablet na šířku), jen hudba: `promo/florian-hasici.mp4`
+- **Přehrávač** (soběstačné HTML, hudba vložená): `promo/florian-hasici.html`
+- **Stránka pro sdílení**: `promo/video-hasici.html` (kopie `video.html` s texty pro hasiče)
+- Scény: Hook „Kde je nejbližší hydrant?“ (4,8) → Nejbližší hydranty na tabletu (9,6) → rychlá karta HN6
+  (7,2) → celá karta (7,2) → navigace (9,6) → závěr + odkaz `?rezim=H` (9,6). Délky = násobky taktu 2,4 s.
+- Screenshoty: tablet v režimu H (Jevíčko, HN6); navigace zatím z mobilu (Mapy.com). Připraveno i na
+  tabletové screeny `t4` (trasa Mapy.com), `t5` (satelit + „Vést sem“) a `t6` (Foto na satelitu) –
+  `build.py` je použije, když jsou v `assets/`, a přidá scénu „Poznáte ho i v noci“.
+- **Pipeline (nová, deterministická)**: zdroje v `promo/src-hasici/` (šablona `hasici_src.html`,
+  `build.py`, `render.js`). Animace řídí JS funkce `render(t)` (žádné CSS animace) → `render.js`
+  vykreslí snímek po snímku (30 fps) přes Playwright a pošle do ffmpeg – žádné dorovnávání časování.
+  Hudba `promo/music_hasici.py <délky scén>` (odvozeno z music_v2.py). Přehrávač bere čas ze zvukové stopy.
+  Postup: assety (a10 logo, a12 VHOS, a08/a09 navigace z v1 HTML, t1–t3 screeny, hydrant.jpg) do
+  `assets/` → `python3 build.py` → `python3 music_hasici.py $(cat durs.txt)` → wav → mp3 `html_audio.mp3`
+  → `python3 build.py` → `node render.js video_noaudio.mp4 <ffmpeg>` → mux s wav (crf 24, fade out).
+
 ## Prostředí / omezení
 - Proxy blokuje externí web (OSM dlaždice, HuggingFace, mojebudky.cz, github.io → 403 zevnitř).
   Proto: reálné mapy = screeny z mobilu; neuronové TTS nedostupné (jen offline espeak/MBROLA → zahozeno).

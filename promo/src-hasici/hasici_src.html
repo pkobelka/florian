@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="cs">
+<meta charset="utf-8">
+<title>Florián pro hasiče</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --ink:#f4f7fb; --muted:#b3bfcd; --line:rgba(200,210,225,.22);
+  --blue:#2f8fe0; --red:#e5382c; --redHi:#ff5a4c; --green:#33d98a; --amber:#f7b23b;
+  --disp:800 1em/1.02 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;
+  --body:500 1em/1.5 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;
+  --mono:700 1em/1 "Liberation Mono",Consolas,ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#050608;overflow:hidden}
+body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
+#fit{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+.stage{position:absolute;inset:0;overflow:hidden;background:
+  radial-gradient(90% 80% at 85% -10%, rgba(229,56,44,.34) 0%, transparent 55%),
+  radial-gradient(90% 90% at -5% 115%, rgba(120,20,16,.45) 0%, transparent 60%),
+  linear-gradient(160deg,#1a0d0e,#0a0b10 60%,#07080c)}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px) 0 0/100% 60px,
+             linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px) 0 0/60px 100%;
+  mask:radial-gradient(120% 120% at 50% 40%,#000 50%,transparent 100%)}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 220px 40px rgba(0,0,0,.6)}
+
+/* HUD */
+.hud{position:absolute;inset:0;z-index:6;pointer-events:none}
+.brand{position:absolute;top:44px;left:64px;display:flex;align-items:center;gap:16px}
+.brand .fl{height:72px;border-radius:15px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.brand .vh{background:#fff;border-radius:13px;padding:10px 18px;display:flex;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.brand .vh img{height:42px}
+.mode{position:absolute;top:58px;right:64px;font:var(--mono);font-size:19px;letter-spacing:.18em;
+  padding:13px 20px;border-radius:999px;background:linear-gradient(180deg,#d8322a,#a61d17);color:#fff;
+  box-shadow:0 6px 20px rgba(229,56,44,.35);display:flex;align-items:center;gap:12px}
+.mode i{width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff;opacity:var(--blink,1)}
+.progress{position:absolute;left:0;bottom:0;height:6px;width:100%;background:rgba(255,255,255,.07);z-index:7}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),#ff8a6e);box-shadow:0 0 14px rgba(229,56,44,.8)}
+
+/* scenes */
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden;z-index:3}
+.copy{position:absolute;left:110px;top:0;bottom:0;width:560px;display:flex;flex-direction:column;justify-content:center;padding-top:40px}
+.center .copy{left:0;right:0;width:auto;align-items:center;text-align:center}
+.kick{font:var(--mono);font-size:19px;letter-spacing:.26em;text-transform:uppercase;color:var(--redHi);
+  margin-bottom:26px;display:flex;align-items:center;gap:14px}
+.kick::before{content:"";width:34px;height:3px;background:var(--redHi)}
+.center .kick::before{display:none}
+.head{font:var(--disp);font-size:70px;letter-spacing:-.025em;text-wrap:balance;text-shadow:0 3px 34px rgba(0,0,0,.5)}
+.head .red{color:var(--redHi)} .head .hi{color:#7fc0ff}
+.sub{margin-top:28px;color:var(--muted);font-size:25px;line-height:1.5;max-width:30ch}
+.center .sub{max-width:44ch}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.center .chips{justify-content:center}
+.chip{font:var(--mono);font-size:19px;letter-spacing:.03em;padding:12px 17px;border-radius:999px;
+  border:1.5px solid var(--line);background:rgba(255,255,255,.05);white-space:nowrap}
+.chip.r{color:#ffb0a8;border-color:rgba(229,56,44,.6);background:rgba(229,56,44,.14)}
+.chip.g{color:var(--green);border-color:rgba(51,217,138,.5);background:rgba(51,217,138,.1)}
+.chip.b{color:#9ccfff;border-color:rgba(47,143,224,.55);background:rgba(47,143,224,.12)}
+.chip.a{color:var(--amber);border-color:rgba(247,178,59,.5);background:rgba(247,178,59,.1)}
+
+/* animované vlastnosti řídí JS přes --p (0..1) */
+.rv{opacity:var(--p,0);translate:0 calc((1 - var(--p,0)) * 22px)}
+.pop{opacity:var(--p,0);scale:calc(.8 + .2 * var(--p,0))}
+.fd{opacity:var(--p,0)}
+
+/* tablet */
+.tablet{position:absolute;left:712px;top:270px;width:1150px;padding:24px;border-radius:40px;
+  background:linear-gradient(155deg,#2c2f36,#121418);translate:0 var(--fy,0px);
+  box-shadow:0 0 0 2px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.08),0 60px 120px -30px rgba(0,0,0,.85),0 0 90px -20px rgba(229,56,44,.25)}
+.tablet::before{content:"";position:absolute;left:50%;top:9px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#050608}
+.screen{position:relative;width:100%;aspect-ratio:1910/990;border-radius:14px;overflow:hidden;background:#ddd}
+.cam{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0}
+.cam img{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* phone */
+.phone{position:absolute;left:1180px;top:130px;height:840px;aspect-ratio:720/1401;padding:18px;border-radius:52px;
+  background:linear-gradient(160deg,#2c2f36,#111317);translate:0 var(--fy,0px);
+  box-shadow:0 0 0 2px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.08),0 60px 120px -30px rgba(0,0,0,.85)}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#222}
+.phone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* ťuknutí */
+.tap{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border:4px solid #fff;
+  box-shadow:0 0 0 3px rgba(229,56,44,.8),0 0 30px rgba(255,255,255,.6);opacity:calc(var(--p,0) * (1 - var(--q,0)));
+  scale:calc(.4 + var(--q,0) * 1.2);pointer-events:none;z-index:5}
+/* hook */
+.hero{position:absolute;right:170px;top:190px;height:760px;aspect-ratio:512/664;border-radius:22px;overflow:hidden;
+  background:#fff;padding:18px 18px 60px;rotate:-2.5deg;translate:0 var(--fy,0px);
+  box-shadow:0 60px 120px -30px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.1)}
+.hero img{width:100%;border-radius:10px;display:block}
+.hero figcaption{position:absolute;left:0;right:0;bottom:20px;text-align:center;font:var(--mono);font-size:17px;letter-spacing:.14em;color:#6a2a24}
+.glow{position:absolute;right:120px;top:180px;width:760px;height:760px;border-radius:50%;
+  background:radial-gradient(circle,rgba(229,56,44,.5),transparent 62%);filter:blur(30px)}
+.siren{position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 60% at 50% 0%,rgba(229,56,44,.35),transparent 70%);opacity:var(--s,0)}
+/* CTA */
+.logo{width:150px;border-radius:32px;box-shadow:0 24px 60px -12px rgba(0,0,0,.8);margin-bottom:26px}
+.url{font:var(--mono);font-size:27px;letter-spacing:.06em;color:#fff;margin-top:34px;padding:16px 26px;border-radius:14px;
+  background:linear-gradient(180deg,#d8322a,#a61d17);box-shadow:0 14px 40px -10px rgba(229,56,44,.7)}
+.foot{font:var(--mono);font-size:17px;letter-spacing:.2em;color:var(--muted);margin-top:26px;text-transform:uppercase}
+.vals{display:flex;gap:56px;margin-top:40px;justify-content:center}
+.val{display:grid;justify-items:center;gap:12px;min-width:210px}
+.val svg{width:62px;height:62px;stroke:var(--redHi);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.val b{font:var(--disp);font-size:29px}
+.val span{font:var(--mono);font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* cover (jen přehrávač) */
+.cover{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;
+  background:radial-gradient(110% 100% at 50% 10%,#5a1512,#0a0b10 72%);transition:opacity .5s}
+.cover.hide{opacity:0;pointer-events:none}
+.cover .in{display:grid;justify-items:center}
+.cover h1{font:var(--disp);font-size:104px;letter-spacing:-.03em}
+.cover h1 span{color:var(--redHi)}
+.cover p{margin-top:18px;color:var(--muted);font-size:30px}
+.cover button{margin-top:44px;display:inline-flex;align-items:center;gap:16px;cursor:pointer;border:0;
+  font:var(--mono);font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(180deg,#e0382f,#b01f18);padding:26px 46px;border-radius:999px;box-shadow:0 20px 50px -12px rgba(229,56,44,.8)}
+.cover button svg{width:26px;height:26px;fill:currentColor}
+.cover .meta{position:absolute;bottom:50px;font:var(--mono);font-size:17px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.ctrl{position:absolute;right:56px;bottom:40px;z-index:8;display:flex;gap:14px}
+.ctrl button{width:62px;height:62px;border-radius:50%;border:1.5px solid var(--line);background:rgba(10,11,16,.7);color:#fff;cursor:pointer;display:grid;place-items:center}
+.ctrl svg{width:28px;height:28px;fill:currentColor}
+.rec .cover,.rec .ctrl{display:none}
+</style>
+
+<div id="fit"><div class="stage" id="stage">
+
+  <!-- 1 HOOK -->
+  <section class="scene" data-d="4.8">
+    <div class="siren"></div>
+    <div class="glow"></div>
+    <figure class="hero rv" data-in="0.35"><img src="__IMG_hydrant__" alt="Nadzemní požární hydrant"><figcaption>775 HYDRANTŮ · VHOS</figcaption></figure>
+    <div class="copy">
+      <div class="kick rv" data-in="0.1">Výjezd</div>
+      <h1 class="head rv" data-in="0.25">Kde je<br><span class="red">nejbližší hydrant?</span></h1>
+      <p class="sub rv" data-in="0.6">Florián to ví dřív, než vyjedete ze zbrojnice.</p>
+    </div>
+  </section>
+
+  <!-- 2 NEJBLIŽŠÍ -->
+  <section class="scene" data-d="9.6">
+    <div class="tablet rv" data-in="0"><div class="screen"><div class="cam" data-k="0,.5,.5,1; 2.2,.5,.5,1; 4.2,.887,.8,2.15"><img src="__IMG_t1__" alt="Nejbližší hydranty na tabletu"></div></div></div>
+    <div class="copy">
+      <div class="kick rv" data-in="0.1">🚒 Nejbližší hydrant</div>
+      <h1 class="head rv" data-in="0.25">Jedno klepnutí.<br><span class="red">Seřazeno</span> podle vzdálenosti.</h1>
+      <div class="chips">
+        <span class="chip r pop" data-in="4.6">25 m · HN7 · 1170 l/min</span>
+        <span class="chip g pop" data-in="5.4">HN8 · nejvíc vody 1284 l/min</span>
+        <span class="chip pop" data-in="6.2">směr · průtok · tlak</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 RYCHLÁ KARTA -->
+  <section class="scene" data-d="7.2">
+    <div class="tablet"><div class="screen"><div class="cam" data-k="0,.5,.5,1; 1.3,.499,.505,1.8; 7.2,.499,.505,1.95"><img src="__IMG_t2__" alt="Rychlá karta hydrantu"></div></div></div>
+    <div class="copy">
+      <div class="kick rv" data-in="0.1">Karta hydrantu</div>
+      <h1 class="head rv" data-in="0.25">Ťuknete.<br>A víte, <span class="red">kolik dá vody.</span></h1>
+      <div class="chips">
+        <span class="chip b pop" data-in="2.0">1189 l/min · 71,3 m³/h</span>
+        <span class="chip pop" data-in="2.7">0,47 / 0,23 MPa</span>
+        <span class="chip g pop" data-in="3.4">fotka místa</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 CELÁ KARTA -->
+  <section class="scene" data-d="7.2">
+    <div class="tablet"><div class="screen"><div class="cam" data-k="0,.5,.5,1; 1.3,.5,.506,1.85; 7.2,.5,.506,1.95"><img src="__IMG_t3__" alt="Celá karta hydrantu"></div></div></div>
+    <div class="copy">
+      <div class="kick rv" data-in="0.1">Celá karta</div>
+      <h1 class="head rv" data-in="0.25">Všechny údaje.<br><span class="hi">Když na nich záleží.</span></h1>
+      <div class="chips">
+        <span class="chip pop" data-in="2.0">DN 80</span>
+        <span class="chip pop" data-in="2.4">pitná voda</span>
+        <span class="chip pop" data-in="2.8">GPS</span>
+        <span class="chip pop" data-in="3.2">≈ 361 m n. m.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 NAVIGACE -->
+  <section class="scene" data-d="9.6">
+    __NAV__
+  </section>
+
+  <!-- 6 FOTO -->
+  __FOTO__
+
+  <!-- 7 CTA -->
+  <section class="scene center" data-d="9.6">
+    <div class="siren" style="--s:.6"></div>
+    <div class="copy">
+      <img class="logo rv" data-in="0.1" src="__IMG_logo__" alt="Florián 2.0">
+      <h1 class="head rv" data-in="0.25">Každý hydrant. <span class="red">Za pár vteřin.</span></h1>
+      <div class="vals">
+        <div class="val rv" data-in="0.8"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="13" rx="2"/><path d="M11 15.5h2"/></svg><b>Tablet v autě</b><span>i mobil v kapse</span></div>
+        <div class="val rv" data-in="1.0"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/></svg><b>Zdarma</b><span>bez instalace</span></div>
+        <div class="val rv" data-in="1.2"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 6.5 6 10a6 6 0 01-12 0c0-3.5 3-6 6-10z"/></svg><b>Jen voda</b><span>nic navíc</span></div>
+      </div>
+      <div class="url rv" data-in="1.8">pkobelka.github.io/florian/?rezim=H</div>
+      <div class="foot rv" data-in="2.1">Florián 2.0 · VHOS, a.s. · pro jednotky požární ochrany</div>
+    </div>
+  </section>
+
+  <div class="hud">
+    <div class="brand"><img class="fl" src="__IMG_logo__" alt="Florián 2.0"><span class="vh"><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
+    <div class="mode"><i></i>H · HASIČI</div>
+  </div>
+  <div class="progress"><span id="bar"></span></div>
+  <audio id="track" preload="auto" src="__AUDIO__"></audio>
+
+  <div class="ctrl">
+    <button id="muteBtn" title="Ztlumit / zapnout hudbu"><svg id="mIcon" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a4 4 0 010 7" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    <button id="replayBtn" title="Přehrát znovu"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 11-5 5H5a7 7 0 107-7z"/></svg></button>
+  </div>
+  <div class="cover" id="cover"><div class="in">
+    <img class="logo" src="__IMG_logo__" alt="Florián 2.0">
+    <h1>Florián <span>pro hasiče</span></h1>
+    <p>Nejbližší hydrant, průtok a navigace. Na tabletu v autě.</p>
+    <button id="playBtn"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z"/></svg>Přehrát</button>
+  </div><div class="meta">se zvukem · ~__LEN__ s · VHOS, a.s.</div></div>
+</div></div>
+
+<script>
+(function(){
+  var scenes=[].slice.call(document.querySelectorAll('.scene'));
+  var ST=[],T=0; scenes.forEach(function(s){ ST.push(T); T+=+s.dataset.d; });
+  var TOTAL=T; window.TOTAL=TOTAL;
+  var XF=0.6; // prolnutí scén
+  function cl(x){ return x<0?0:x>1?1:x; }
+  function ez(x){ x=cl(x); return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2; }
+  function eo(x){ x=cl(x); return 1-Math.pow(1-x,3); }
+  // předzpracování kamer
+  scenes.forEach(function(s){ [].forEach.call(s.querySelectorAll('.cam'),function(c){
+    c._k=c.dataset.k.split(';').map(function(r){ return r.trim().split(',').map(Number); }); }); });
+  function cam(c,lt){
+    var k=c._k,a=k[0],b=k[k.length-1];
+    for(var i=0;i<k.length-1;i++){ if(lt>=k[i][0]&&lt<=k[i+1][0]){ a=k[i]; b=k[i+1]; break; } }
+    var p=lt<=k[0][0]?0:lt>=b[0]?1:ez((lt-a[0])/(b[0]-a[0]||1));
+    if(lt<k[0][0]){ b=a; }
+    var s=a[3]+(b[3]-a[3])*p, cx=a[1]+(b[1]-a[1])*p, cy=a[2]+(b[2]-a[2])*p;
+    var h=.5/s; cx=Math.min(Math.max(cx,h),1-h); cy=Math.min(Math.max(cy,h),1-h);
+    var W=c.offsetWidth,H=c.offsetHeight;
+    c.style.transform='translate('+(W/2-cx*W*s)+'px,'+(H/2-cy*H*s)+'px) scale('+s+')';
+  }
+  function render(t){
+    t=Math.max(0,Math.min(t,TOTAL));
+    scenes.forEach(function(s,i){
+      var a=ST[i], b=a+(+s.dataset.d), last=i===scenes.length-1;
+      var o=Math.min(i===0?1:cl((t-a+XF/2)/XF), last?1:cl((b+XF/2-t)/XF));
+      s.style.opacity=o; s.style.visibility=o>0?'visible':'hidden';
+      if(o<=0) return;
+      var lt=t-a;
+      [].forEach.call(s.querySelectorAll('[data-in]'),function(e){
+        var p=eo((lt-(+e.dataset.in))/0.7);
+        if(e.dataset.out) p*=1-cl((lt-(+e.dataset.out))/0.5);
+        e.style.setProperty('--p',p);
+        if(e.classList.contains('tap')) e.style.setProperty('--q',cl((lt-(+e.dataset.in))/0.9));
+      });
+      [].forEach.call(s.querySelectorAll('.cam'),function(c){ cam(c,lt); });
+      [].forEach.call(s.querySelectorAll('.tablet,.phone,.hero'),function(e){ e.style.setProperty('--fy',(Math.sin((t+i)*0.8)*7).toFixed(2)+'px'); });
+      [].forEach.call(s.querySelectorAll('.siren'),function(e){ if(i===0) e.style.setProperty('--s',(0.55+0.45*Math.sin(t*5.2)).toFixed(3)); });
+    });
+    document.getElementById('bar').style.width=(t/TOTAL*100)+'%';
+    document.querySelector('.mode').style.setProperty('--blink',(Math.floor(t/0.6)%2)?.25:1);
+  }
+  window.render=render;
+  function fit(){ var f=document.getElementById('fit'), k=Math.min(innerWidth/1920,innerHeight/1080);
+    f.style.transform='scale('+k+') translate(-50%,-50%)'; f.style.transformOrigin='0 0';
+    f.style.left='50%'; f.style.top='50%'; f.style.transform='translate(-50%,-50%) scale('+k+')'; f.style.transformOrigin='50% 50%'; }
+  addEventListener('resize',fit); fit();
+
+  if(/[?&]rec=1/.test(location.search)){ document.body.classList.add('rec'); render(0); return; }
+  render(0);
+  // přehrávač: hodiny = zvuková stopa (hudba sedí na střihy), záloha = performance.now
+  var track=document.getElementById('track'), muted=false, t0=0, run=false, useAudio=false;
+  function now(){ return useAudio && !track.paused ? track.currentTime : (performance.now()-t0)/1000; }
+  function loop(){ if(!run) return; var t=now(); render(t); if(t>=TOTAL){ run=false; return; } requestAnimationFrame(loop); }
+  function start(){ document.getElementById('cover').classList.add('hide'); t0=performance.now(); useAudio=false;
+    try{ track.currentTime=0; track.muted=muted; var p=track.play(); if(p&&p.then) p.then(function(){ useAudio=true; },function(){}); }catch(e){}
+    run=true; requestAnimationFrame(loop); }
+  document.getElementById('playBtn').onclick=start;
+  document.getElementById('replayBtn').onclick=start;
+  document.getElementById('muteBtn').onclick=function(){ muted=!muted; track.muted=muted; this.style.color=muted?'#e5382c':''; };
+  document.addEventListener('keydown',function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); start(); } });
+})();
+</script>
+</html>
