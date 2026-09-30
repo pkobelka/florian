@@ -57,8 +57,9 @@ Assety (obrázky, logo, VHOS, protokol, audio) jsou base64 v `assets.json`.
 > Pozn.: scratchpad je dočasný. Pro plnou reprodukci případně znovu vytvořit z těchto poznámek.
 
 ## Promo „Florián pro hasiče“ (30. 9. 2026)
-- **Video** 48 s, 1920×1080 (16:9 – hasiči mají tablet na šířku), jen hudba: `promo/florian-hasici.mp4`
+- **Video** 53 s (s úvodním titulkem 4,8 s), 1920×1080 (16:9 – hasiči mají tablet na šířku), jen hudba: `promo/florian-hasici.mp4`
 - **Přehrávač** (soběstačné HTML, hudba vložená): `promo/florian-hasici.html`
+- **Značení**: „autor Petr Kobelka · data VHOS, a.s.“ (úvod, lišta vlevo nahoře, závěr, přehrávač, stránka).
 - **Stránka pro sdílení**: `promo/video-hasici.html` (kopie `video.html` s texty pro hasiče)
 - Scény: Hook „Kde je nejbližší hydrant?“ (4,8) → Nejbližší hydranty na tabletu (9,6) → rychlá karta HN6
   (7,2) → celá karta (7,2) → navigace (9,6) → závěr + odkaz `?rezim=H` (9,6). Délky = násobky taktu 2,4 s.

@@ -3,14 +3,14 @@
 import sys
 import numpy as np, wave
 SR=44100
-DUR=[float(x) for x in sys.argv[1:]] or [4.8,9.6,7.2,7.2,9.6,7.2,9.6]
+DUR=[float(x) for x in sys.argv[1:]] or [4.8,4.8,9.6,7.2,7.2,9.6,9.6]
 B=[0.0]
 for d in DUR: B.append(round(B[-1]+d,3))
 TOTAL=B[-1]
 def n(m): return 440*2**((m-69)/12)
 # akordy (MIDI) – G dur: úvod Em, přehled C, pokrytí G, detail D, protokol Em, hodnota C, hasiči D→Dsus4, závěr G
-# hook Em, nejbližší C, karta G, celá karta D, navigace Em, foto C, … závěr vždy G
-POOL=[[52,59,64,67,71],[48,55,60,64,67],[43,55,59,62,67],[50,57,62,66,69],[52,59,64,67,71],[48,55,60,64,67],[50,57,62,66,69]]
+# úvod Em, hook Em, nejbližší C, karta G, celá karta D, navigace Em, foto C, … závěr vždy G
+POOL=[[52,59,64,67,71],[52,59,64,67,71],[48,55,60,64,67],[43,55,59,62,67],[50,57,62,66,69],[52,59,64,67,71],[48,55,60,64,67],[50,57,62,66,69]]
 CH=[POOL[i%len(POOL)] for i in range(len(DUR)-1)]+[[43,55,59,62,67]]
 t=np.arange(int(TOTAL*SR))/SR
 L=np.zeros_like(t); R=np.zeros_like(t)
@@ -48,7 +48,7 @@ while True:
     env=(1-np.exp(-tt/0.006))*np.exp(-tt/0.32)
     s=(np.sin(2*np.pi*f*tt)+0.35*np.sin(4*np.pi*f*tt)*np.exp(-tt/0.12)+0.12*np.sin(6*np.pi*f*tt)*np.exp(-tt/0.06))*env
     acc=1.0 if k%8==0 else (0.8 if k%2==0 else 0.62)
-    if i==0: acc*=1.12                      # hook: o chlup důraznější
+    if i==1: acc*=1.12                      # hook: o chlup důraznější
     pan=0.35+0.3*((k%4)/3)
     L[a:b]+=0.085*acc*s*(1-pan)*2; R[a:b]+=0.085*acc*s*pan*2
     k+=1
