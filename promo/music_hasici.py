@@ -76,7 +76,7 @@ def hit(at,g,big=False):
     snap=nz*np.exp(-tt/(0.5 if big else 0.06))*(0.5 if big else 0.8)
     x=g*(1.0*boom+0.35*snap)
     L[a:b]+=x; R[a:b]+=x
-for at,g in ((0.6,.30),(1.8,.36),(3.0,.30),(4.2,.26),(5.7,.26)): hit(at,g)
+for at,g in ((0.6,.36),(1.8,.30),(3.0,.30),(4.2,.26),(5.7,.26)): hit(at,g)
 hit(DROP,.52,True)
 for k2 in range(2,24):                                             # tikání po dobách (0,6–7,2 s) – spěch
     at=k2*0.3; a=int(at*SR); b=a+int(0.05*SR); tt=t[a:b]-at
