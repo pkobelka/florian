@@ -1189,6 +1189,9 @@ body.zasah .ni-acts button{min-height:52px;font-size:16px}
 .card .uk-item{padding:7px 10px;margin:5px 0}
 .card .uk-txt{font-size:13px}
 .card .actions{padding:10px 16px calc(env(safe-area-inset-bottom) + 14px)}
+.card .navacts{display:flex;gap:8px;padding:10px 16px 0}
+.card .navacts .btn[data-nav=lead]{flex:1.4}
+body.rez-H .card .navacts .btn{font-size:16px;padding:14px 10px}
 /* zvětšení fotky */
 #photoZoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1200;display:none;align-items:center;justify-content:center;padding:14px}
 #photoZoom.open{display:flex}
@@ -1543,7 +1546,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.250';
+const APP_VERSION = '1.251';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -2680,8 +2683,10 @@ function nearAction(act,h){
     if(follow){ follow=false; setLocState(); navApply(true); }
     nearRender(); map.setView([h.lat,h.lon],17); nearInfoOpen(h); return; }
   if(act==='card'){ nearInfoClose(); openCard(h); card.classList.add('full'); return; }
-  if(act==='lead'){ nearInfoClose();
-    navSetTarget(h); nearOpen=false; if(!follow) navResume(); nearRender();
+  if(act==='lead'){ nearInfoClose(); if(card.classList.contains('open')) closeCard();
+    navSetTarget(h); nearOpen=false;
+    if(!watching){ locBtn.click(); flToast('🎯 Vedu k '+(cisloLabel(h)||'hydrantu')+' – zjišťuji polohu…'); return; }
+    if(!follow) navResume(); nearRender();
     flToast('🎯 Vedu k '+(cisloLabel(h)||'hydrantu')+' – vzdálenost dole'); return; }
   var me=meMarker?meMarker.getLatLng():null;
   var url = act==='mapy'
@@ -2995,6 +3000,11 @@ function openCard(h){
         ukolySekce(h)+
       '</div>'+
     '</div>'+
+    '<div class="navacts">'+
+      '<button class="btn primary" data-nav="lead">🎯 Vést sem</button>'+
+      '<button class="btn line" data-nav="mapy" title="Navigace po silnici v Mapy.com">🚗 Mapy.com</button>'+
+      '<button class="btn line" data-nav="google" title="Navigace po silnici v Google Mapách">🚗 Google</button>'+
+    '</div>'+
     '<div class="actions">'+
       '<button class="btn line op-only" id="btnEdit">✏️ Upravit</button>'+
       '<button class="btn line op-only" id="btnReclass">'+(isNeniPozarni(h)?'↩︎ Vrátit mezi požární':'🚫 Zrušit jako požární')+'</button>'+
@@ -3007,6 +3017,8 @@ function openCard(h){
   requestAnimationFrame(()=> card.classList.add('open'));
   document.getElementById('cardX').onclick = closeCard;
   var _gps=document.getElementById('cardGps'); if(_gps) _gps.onclick=function(){ var t=h.lat.toFixed(6)+', '+h.lon.toFixed(6); try{ navigator.clipboard.writeText(t); var o=_gps.innerHTML; _gps.innerHTML='✓ zkopírováno'; setTimeout(function(){ _gps.innerHTML=o; },1200); }catch(e){} };
+  // navigace k libovolnému hydrantu (nejen k nejbližšímu) – stejné akce jako v nabídce nejbližších
+  cardBody.querySelectorAll('[data-nav]').forEach(function(b){ b.onclick=function(){ nearAction(b.getAttribute('data-nav'),h); }; });
   document.getElementById('btnEdit').onclick = ()=> openEditForm(h);
   var _brc=document.getElementById('btnReclass'); if(_brc) _brc.onclick = ()=> toggleNeniPozarni(h);
   wireUkoly(h);
