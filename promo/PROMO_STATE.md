@@ -61,7 +61,7 @@ Assety (obrázky, logo, VHOS, protokol, audio) jsou base64 v `assets.json`.
 - **Přehrávač** (soběstačné HTML, hudba vložená): `promo/florian-hasici.html`
 - **Značení**: „autor Petr Kobelka · data VHOS, a.s.“ (úvod, lišta vlevo nahoře, závěr, přehrávač, stránka).
 - **Stránka pro sdílení**: `promo/video-hasici.html` (kopie `video.html` s texty pro hasiče)
-- Scény: Úvod 9,6 s – „HOŘÍ! · RYCHLE, KLUCI, JEDEM! · Kde najdem hydranty? · Kde budem brát vodu? · Který nám dá nejvíc?!“ (majáky, údery do rytmu) → ztišení „Neboj, žádnej problém. Máme přece našeho Floriánka.“ → náraz s logem „FLORIÁN pro hasiče · Náš patron. Ten nám poradí.“ (drop hudby na 12,0 s) → Nejbližší hydranty na tabletu (9,6) → rychlá karta HN6
+- Scény: Úvod 9,6 s – „HOŘÍ! · RYCHLE, KLUCI, JEDEM! · Kde najdem hydranty? · Kde budem brát vodu? · Který nám dá nejvíc?!“ (majáky, údery do rytmu) → ztišení „Neboj, žádnej problém. Máme přece našeho Floriánka.“ se siluetou sv. Floriána (`src-hasici/florian_sv.png`, bílá s červenou září; zdroj obrázek od uživatele) → náraz s logem „FLORIÁN pro hasiče · Náš patron. Ten nám poradí.“ (drop hudby na 12,0 s) → Nejbližší hydranty na tabletu (9,6) → rychlá karta HN6
   (7,2) → celá karta (7,2) → navigace (9,6) → závěr + odkaz `?rezim=H` (9,6). Délky = násobky taktu 2,4 s.
 - Screenshoty: tablet v režimu H (Jevíčko, HN6); navigace zatím z mobilu (Mapy.com). Připraveno i na
   tabletové screeny `t4` (trasa Mapy.com), `t5` (satelit + „Vést sem“) a `t6` (Foto na satelitu) –
