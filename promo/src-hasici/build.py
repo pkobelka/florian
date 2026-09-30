@@ -49,7 +49,7 @@ if have('t6.jpg'):
   </section>'''
 h=h.replace('__FOTO__',foto)
 imgs={'hydrant':'hydrant.jpg','logo':'a10.png','vhos':'a12.jpg','t1':'t1.jpg','t2':'t2.jpg','t3':'t3.jpg',
-      't4':'t4.jpg','t5':'t5.jpg','t6':'t6.jpg','n1':'a08.jpg','n2':'a09.jpg'}
+      'sv':'florian_sv.png','t4':'t4.jpg','t5':'t5.jpg','t6':'t6.jpg','n1':'a08.jpg','n2':'a09.jpg'}
 for k,f in imgs.items():
     if '__IMG_%s__'%k in h: h=h.replace('__IMG_%s__'%k, uri(A+f))
 durs=[float(x) for x in re.findall(r'class="scene[^"]*" data-d="([\d.]+)"',h)]
