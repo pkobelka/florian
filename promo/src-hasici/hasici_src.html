@@ -31,6 +31,10 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 .brand .fl{height:72px;border-radius:15px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 .brand .vh{background:#fff;border-radius:13px;padding:10px 18px;display:flex;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 .brand .vh img{height:42px}
+.brand .auth{font-size:21px;color:var(--muted);margin-left:6px;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.brand .auth b{color:var(--ink);font-weight:800}
+.brand .dl{font:var(--mono);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-left:14px}
+.brand .vh{padding:7px 13px}.brand .vh img{height:32px}
 .mode{position:absolute;top:58px;right:64px;font:var(--mono);font-size:19px;letter-spacing:.18em;
   padding:13px 20px;border-radius:999px;background:linear-gradient(180deg,#d8322a,#a61d17);color:#fff;
   box-shadow:0 6px 20px rgba(229,56,44,.35);display:flex;align-items:center;gap:12px}
@@ -101,7 +105,9 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 .iline{height:4px;width:calc(var(--p,0) * 520px);margin-top:26px;border-radius:2px;
   background:linear-gradient(90deg,transparent,var(--redHi),transparent);box-shadow:0 0 18px rgba(229,56,44,.8)}
 .itag{margin-top:26px;font-size:32px;color:var(--ink);letter-spacing:.01em}
-.ivhos{margin-top:40px;display:flex;align-items:center;gap:16px}
+.iauth{margin-top:36px;font-size:30px;color:var(--muted)}
+.iauth b{color:var(--ink);font-weight:800}
+.ivhos{margin-top:20px;display:flex;align-items:center;gap:16px}
 .ivhos span{font:var(--mono);font-size:17px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
 .ivhos b{background:#fff;border-radius:12px;padding:9px 17px;display:flex}
 .ivhos img{height:40px}
@@ -150,7 +156,8 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
       <h1 class="ihead rv" data-in="0.95">pro <span>hasiče</span></h1>
       <div class="iline" data-in="1.4"></div>
       <p class="itag rv" data-in="1.7">Nejbližší hydrant · průtok · navigace</p>
-      <div class="ivhos rv" data-in="2.2"><span>aplikace od</span><b><img src="__IMG_vhos__" alt="VHOS, a.s."></b></div>
+      <div class="iauth rv" data-in="2.2">autor <b>Petr Kobelka</b></div>
+      <div class="ivhos rv" data-in="2.5"><span>data</span><b><img src="__IMG_vhos__" alt="VHOS, a.s."></b></div>
     </div>
   </section>
 
@@ -158,7 +165,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
   <section class="scene" data-d="4.8">
     <div class="siren"></div>
     <div class="glow"></div>
-    <figure class="hero rv" data-in="0.35"><img src="__IMG_hydrant__" alt="Nadzemní požární hydrant"><figcaption>775 HYDRANTŮ · VHOS</figcaption></figure>
+    <figure class="hero rv" data-in="0.35"><img src="__IMG_hydrant__" alt="Nadzemní požární hydrant"><figcaption>775 HYDRANTŮ · DATA VHOS</figcaption></figure>
     <div class="copy">
       <div class="kick rv" data-in="0.1">Výjezd</div>
       <h1 class="head rv" data-in="0.25">Kde je<br><span class="red">nejbližší hydrant?</span></h1>
@@ -229,12 +236,12 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
         <div class="val rv" data-in="1.2"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 6.5 6 10a6 6 0 01-12 0c0-3.5 3-6 6-10z"/></svg><b>Jen voda</b><span>nic navíc</span></div>
       </div>
       <div class="url rv" data-in="1.8">pkobelka.github.io/florian/?rezim=H</div>
-      <div class="foot rv" data-in="2.1">Florián 2.0 · VHOS, a.s. · pro jednotky požární ochrany</div>
+      <div class="foot rv" data-in="2.1">autor Petr Kobelka · data VHOS, a.s. · pro jednotky požární ochrany</div>
     </div>
   </section>
 
   <div class="hud">
-    <div class="brand"><img class="fl" src="__IMG_logo__" alt="Florián 2.0"><span class="vh"><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
+    <div class="brand"><img class="fl" src="__IMG_logo__" alt="Florián 2.0"><span class="auth">autor <b>Petr Kobelka</b></span><span class="dl">data</span><span class="vh"><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
     <div class="mode"><i></i>H · HASIČI</div>
   </div>
   <div class="progress"><span id="bar"></span></div>
@@ -249,7 +256,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
     <h1>Florián <span>pro hasiče</span></h1>
     <p>Nejbližší hydrant, průtok a navigace. Na tabletu v autě.</p>
     <button id="playBtn"><svg viewBox="0 0 24 24"><path d="M7 5v14l12-7z"/></svg>Přehrát</button>
-  </div><div class="meta">se zvukem · ~__LEN__ s · VHOS, a.s.</div></div>
+  </div><div class="meta">se zvukem · ~__LEN__ s · autor Petr Kobelka · data VHOS, a.s.</div></div>
 </div></div>
 
 <script>
