@@ -105,7 +105,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 .slam{position:absolute;left:0;right:0;top:50%;text-align:center;font:900 250px/1 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;
   letter-spacing:-.04em;color:#fff;font-style:italic;opacity:0;translate:0 -50%;text-shadow:0 10px 60px rgba(0,0,0,.8);white-space:nowrap}
 .slam.xl{font-size:330px}
-.slam.md{font-size:190px}
+.slam.md{font-size:190px;line-height:1.02}
 .slam.sm{font-size:170px;line-height:1.02}
 .slam .red{color:var(--redHi)}
 .calm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:26px}
@@ -162,12 +162,12 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 
 <div id="fit"><div class="stage" id="stage">
 
-  <!-- 0 ÚVOD: poplach → otázky → „Neboj, máme Floriána – náš patron“ → náraz s logem -->
+  <!-- 0 ÚVOD: hoří → poplach → otázky → „Neboj, máme Floriána – náš patron“ → náraz s logem -->
   <section class="scene intro" data-d="14.4" data-nohud="1">
     <div class="beacon bl"></div><div class="beacon br"></div>
     <div class="strobe"></div>
-    <div class="slam md" data-in="0.6" data-out="1.8">RYCHLE, JEDEM!</div>
-    <div class="slam red xl" data-in="1.8" data-out="3.0">HOŘÍ!</div>
+    <div class="slam red xl" data-in="0.6" data-out="1.8" style="font-size:430px">HOŘÍ!</div>
+    <div class="slam md" data-in="1.8" data-out="3.0">RYCHLE, KLUCI,<br>JEDEM!</div>
     <div class="slam xl" data-in="3.0" data-out="4.2">KDE?</div>
     <div class="slam sm" data-in="4.2" data-out="5.7">Kde najdem<br><span class="red">hydranty?</span></div>
     <div class="slam sm" data-in="5.7" data-out="7.2">Kde budem<br><span class="red">brát vodu?</span></div>
@@ -319,7 +319,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
     document.querySelector('.mode').style.setProperty('--blink',(Math.floor(t/0.6)%2)?.25:1);
   }
   /* úvod: majáky, stroboskop, slova „dopadají“ do rytmu (doba 0,3 s, takt 2,4 s), náraz s logem */
-  var HITS=[[0.6,.35],[1.8,.4],[3.0,.35],[4.2,.3],[5.7,.3],[9.6,1]], DROP=9.6, CALM=7.2;
+  var HITS=[[0.6,.4],[1.8,.35],[3.0,.35],[4.2,.3],[5.7,.3],[9.6,1]], DROP=9.6, CALM=7.2;
   function intro(s,lt){
     var shake=0, fl=0;
     HITS.forEach(function(h){ if(lt>=h[0]){ var e=Math.exp(-(lt-h[0])/0.11); fl+=h[1]*e; shake+=h[1]*e; } });
