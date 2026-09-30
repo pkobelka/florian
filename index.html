@@ -951,8 +951,8 @@ body.rez-H .statusbar{background:#8e0000}
 .rez-link{width:100%;margin-top:12px;border:1px dashed #b71c1c;background:#fff5f5;color:#b71c1c;border-radius:10px;padding:9px;font-family:inherit;font-weight:700;cursor:pointer}
 .rez-note{margin-top:10px;font-size:12px;color:#78909c;line-height:1.4}
 /* M a H: správcovská provozní tlačítka pryč (zůstává jen přepínač „Zobrazit jako…") – ať náhled odpovídá tomu, co uvidí oni */
-body.rez-M #revUploadBtn, body.rez-M #lideBtn, body.rez-M #shareBtn, body.rez-M #promoBtn, body.rez-M #qrPairBtn,
-body.rez-H #revUploadBtn, body.rez-H #lideBtn, body.rez-H #shareBtn, body.rez-H #promoBtn, body.rez-H #qrPairBtn{display:none!important}
+body.rez-M #revUploadBtn, body.rez-M #lideBtn, body.rez-M #shareBtn, body.rez-M #promoBtn, body.rez-M #promoHBtn, body.rez-M #qrPairBtn,
+body.rez-H #revUploadBtn, body.rez-H #lideBtn, body.rez-H #shareBtn, body.rez-H #promoBtn, body.rez-H #promoHBtn, body.rez-H #qrPairBtn{display:none!important}
 /* M a H: poznámky jsou jen pro provoz */
 body.rez-M #poznToggle, body.rez-M #infoBtn, body.rez-M .pozn-badge,
 body.rez-H #poznToggle, body.rez-H #infoBtn, body.rez-H .pozn-badge{display:none!important}
@@ -1492,6 +1492,7 @@ document.body.classList.add('rez-'+FL_REZIM);
   <div class="town-panel" id="nahledPanel"></div>
   <button class="btn-toggle btn-share op-only" id="shareBtn" style="display:none">📤 Sdílet appku</button>
   <button class="btn-toggle btn-share op-only" id="promoBtn" style="display:none" title="Otevřít promo video Florián 2.0">🎬 Promo video</button>
+  <button class="btn-toggle btn-share op-only" id="promoHBtn" style="display:none" title="Otevřít promo video Florián pro hasiče">🚒 Promo pro hasiče</button>
   <button class="btn-toggle btn-share" id="revUploadBtn" style="display:none" title="Nahraje datumy revizí do cloudu pro denní upozornění na blížící se konec revize. Použij, až budou revize aktuální (plán: po podzimních revizích, aktivace příští rok).">☁️ Nahrát revize do cloudu</button>
   <button class="btn-toggle btn-share op-only" id="qrPairBtn" style="display:none" title="Vyrobí QR s přihlašovacím odkazem pro přihlášení dalšího zařízení (tabletu) – naskenuješ ho fotoaparátem na tabletu">🔳 Přihlásit tablet (QR)</button>
 </div>
@@ -1546,7 +1547,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.251';
+const APP_VERSION = '1.252';
 const APP_YEAR = 2026;
 const APP_UPDATED = '29. 9. 2026';
 
@@ -2114,12 +2115,14 @@ document.getElementById('shareBtn').onclick=async()=>{
 // Otevírá se klikem na <a target=_blank>, ne window.open(): to v PWA (appka spuštěná z plochy)
 // i s blokovanými pop-upy často neudělá nic. Animovaná verze promo/florian-promo.html je jen
 // pro PC – na výšku je z 16:9 scény nečitelný proužek; na mobilu patří MP4.
-(function(){ var b=document.getElementById('promoBtn'); if(b) b.onclick=function(){
-  var u='https://pkobelka.github.io/florian/promo/video.html';
+function flOpenPromo(u){
   try{ var a=document.createElement('a'); a.href=u; a.target='_blank'; a.rel='noopener';
        document.body.appendChild(a); a.click(); document.body.removeChild(a); }
   catch(e){ location.href=u; }
-}; })();
+}
+(function(){ var b=document.getElementById('promoBtn'); if(b) b.onclick=function(){ flOpenPromo('https://pkobelka.github.io/florian/promo/video.html'); };
+  var bh=document.getElementById('promoHBtn'); if(bh) bh.onclick=function(){ flOpenPromo('https://pkobelka.github.io/florian/promo/video-hasici.html'); };
+})();
 
 // coverage toggle
 /* hamburger (mobil): sbalí/rozbalí ovládací panel */
@@ -4646,7 +4649,7 @@ function flApplyMyPracDefault(){
   applyFilter();
 }
 // ---- Tým + Sdílet appku: jen pro admina ----
-function flApplyAdminUI(){ var a=!!window._FL_ADMIN; try{ rezAdminUI(); }catch(_){} ['lideBtn','shareBtn','promoBtn','revUploadBtn','qrPairBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
+function flApplyAdminUI(){ var a=!!window._FL_ADMIN; try{ rezAdminUI(); }catch(_){} ['lideBtn','shareBtn','promoBtn','promoHBtn','revUploadBtn','qrPairBtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.style.display=a?'':'none'; }); if(!a){ var lp=document.getElementById('lidePanel'); if(lp) lp.classList.remove('open'); } if(typeof flApplyRoleUI==='function') flApplyRoleUI(); }
 
 // ---- QR párování: správce vybere e-mail povoleného uživatele -> server vyrobí přihlašovací odkaz -> QR -> uživatel sejme tabletem ----
 function flQrPairClose(){ var ov=document.getElementById('qpOv'); if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }
