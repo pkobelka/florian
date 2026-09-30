@@ -97,22 +97,38 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
   background:radial-gradient(circle,rgba(229,56,44,.5),transparent 62%);filter:blur(30px)}
 .siren{position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 60% at 50% 0%,rgba(229,56,44,.35),transparent 70%);opacity:var(--s,0)}
 /* úvod */
-.intro .ic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.ilogo{width:190px;border-radius:40px;box-shadow:0 30px 70px -14px rgba(0,0,0,.85),0 0 80px -10px rgba(229,56,44,.55)}
-.iname{margin-top:34px;font:var(--mono);font-size:26px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted)}
-.ihead{margin-top:10px;font:var(--disp);font-size:150px;letter-spacing:-.035em;text-shadow:0 6px 50px rgba(0,0,0,.6)}
-.ihead span{color:var(--redHi)}
-.iline{height:4px;width:calc(var(--p,0) * 520px);margin-top:26px;border-radius:2px;
-  background:linear-gradient(90deg,transparent,var(--redHi),transparent);box-shadow:0 0 18px rgba(229,56,44,.8)}
-.itag{margin-top:26px;font-size:32px;color:var(--ink);letter-spacing:.01em}
-.iauth{margin-top:36px;font-size:30px;color:var(--muted)}
-.iauth b{color:var(--ink);font-weight:800}
-.ivhos{margin-top:20px;display:flex;align-items:center;gap:16px}
-.ivhos span{font:var(--mono);font-size:17px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
-.ivhos b{background:#fff;border-radius:12px;padding:9px 17px;display:flex}
-.ivhos img{height:40px}
-.beam{position:absolute;top:0;bottom:0;width:38%;left:calc(-40% + var(--p,0) * 140%);pointer-events:none;
-  background:linear-gradient(100deg,transparent,rgba(255,120,100,.10) 45%,rgba(255,200,190,.16) 50%,rgba(255,120,100,.10) 55%,transparent);opacity:calc(1 - var(--p,0) * .6)}
+.intro{background:#030305}
+.beacon{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:var(--bo,.5)}
+.beacon.bl{background:conic-gradient(from var(--ra,0deg) at 6% -8%,transparent 0 40%,rgba(229,40,30,.6) 46%,transparent 52% 100%)}
+.beacon.br{background:conic-gradient(from var(--rb,0deg) at 94% -8%,transparent 0 40%,rgba(40,110,255,.55) 46%,transparent 52% 100%)}
+.strobe{position:absolute;inset:0;pointer-events:none;background:var(--sc,#e5382c);opacity:var(--so,0)}
+.slam{position:absolute;left:0;right:0;top:50%;text-align:center;font:900 250px/1 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;
+  letter-spacing:-.04em;color:#fff;font-style:italic;opacity:0;translate:0 -50%;text-shadow:0 10px 60px rgba(0,0,0,.8);white-space:nowrap}
+.slam.xl{font-size:330px}
+.slam.md{font-size:190px}
+.slam.sm{font-size:170px;line-height:1.02}
+.slam .red{color:var(--redHi)}
+.calm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:26px}
+.calm .c1{font:var(--disp);font-size:96px;letter-spacing:-.02em;color:var(--ink)}
+.calm .c2{font:var(--disp);font-size:78px;letter-spacing:-.02em;color:var(--muted)}
+.calm .c2 b{color:var(--redHi)}
+.itag b{color:var(--redHi);font-weight:800}
+.slam.red{color:var(--redHi);font-size:210px;text-shadow:0 0 80px rgba(229,56,44,.6),0 10px 60px rgba(0,0,0,.8)}
+.intro .ic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px}
+.iglow{position:absolute;left:50%;top:46%;width:1100px;height:1100px;margin:-550px 0 0 -550px;border-radius:50%;
+  background:radial-gradient(circle,rgba(229,56,44,.55),transparent 60%);filter:blur(20px);opacity:var(--g,0)}
+.ilogo{position:relative;width:170px;border-radius:36px;box-shadow:0 30px 70px -14px rgba(0,0,0,.85);opacity:0}
+.iname{position:relative;margin-top:20px;font:900 230px/0.9 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;letter-spacing:-.045em;color:#fff;
+  text-shadow:0 12px 70px rgba(0,0,0,.7);opacity:0}
+.itape{position:relative;margin-top:14px;background:linear-gradient(180deg,#e8382d,#b31d16);padding:14px 46px 16px;rotate:-3deg;
+  box-shadow:0 20px 50px -10px rgba(229,56,44,.75);opacity:0}
+.itape span{display:block;font:900 84px/1 "Helvetica Neue",Arial,"Liberation Sans",sans-serif;letter-spacing:.08em;color:#fff;font-style:italic}
+.itag{position:relative;margin-top:40px;font-size:44px;font-weight:700;color:var(--ink)}
+.icred{position:absolute;left:0;right:0;bottom:64px;display:flex;align-items:center;justify-content:center;gap:16px;font-size:24px;color:var(--muted)}
+.icred b{color:var(--ink);font-weight:800}
+.icred i{width:1px;height:28px;background:var(--line);margin:0 10px}
+.icred span{background:#fff;border-radius:10px;padding:7px 13px;display:flex}.icred img{height:30px}
+.flash{position:absolute;inset:0;background:#fff;pointer-events:none;opacity:var(--fo,0);z-index:9}
 
 /* CTA */
 .logo{width:150px;border-radius:32px;box-shadow:0 24px 60px -12px rgba(0,0,0,.8);margin-bottom:26px}
@@ -146,31 +162,28 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
 
 <div id="fit"><div class="stage" id="stage">
 
-  <!-- 0 ÚVOD -->
-  <section class="scene intro" data-d="4.8" data-nohud="1">
-    <div class="siren" style="--s:.8"></div>
-    <div class="beam" data-in="0"></div>
+  <!-- 0 ÚVOD: poplach → otázky → „Neboj, máme Floriána – náš patron“ → náraz s logem -->
+  <section class="scene intro" data-d="9.6" data-nohud="1">
+    <div class="beacon bl"></div><div class="beacon br"></div>
+    <div class="strobe"></div>
+    <div class="slam md" data-in="0.6" data-out="1.2">RYCHLE, JEDEM!</div>
+    <div class="slam red xl" data-in="1.2" data-out="1.8">HOŘÍ!</div>
+    <div class="slam xl" data-in="1.8" data-out="2.4">KDE?</div>
+    <div class="slam sm" data-in="2.4" data-out="3.6">Kde najdem<br><span class="red">hydranty?</span></div>
+    <div class="slam sm" data-in="3.6" data-out="4.8">Kde budem<br><span class="red">brát vodu?</span></div>
+    <div class="calm">
+      <div class="c1 rv" data-in="5.0" data-out="7.05">Neboj, žádnej problém.</div>
+      <div class="c2 rv" data-in="5.9" data-out="7.05">Máme na to našeho <b>Floriána.</b></div>
+    </div>
     <div class="ic">
-      <img class="ilogo pop" data-in="0.2" src="__IMG_logo__" alt="Florián 2.0">
-      <div class="iname rv" data-in="0.7">Florián 2.0</div>
-      <h1 class="ihead rv" data-in="0.95">pro <span>hasiče</span></h1>
-      <div class="iline" data-in="1.4"></div>
-      <p class="itag rv" data-in="1.7">Nejbližší hydrant · průtok · navigace</p>
-      <div class="iauth rv" data-in="2.2">autor <b>Petr Kobelka</b></div>
-      <div class="ivhos rv" data-in="2.5"><span>data</span><b><img src="__IMG_vhos__" alt="VHOS, a.s."></b></div>
+      <div class="iglow"></div>
+      <img class="ilogo" data-hit="7.2" src="__IMG_logo__" alt="Florián 2.0">
+      <div class="iname" data-hit="7.2">FLORIÁN</div>
+      <div class="itape" data-hit="7.35"><span>PRO HASIČE</span></div>
+      <p class="itag rv" data-in="7.8">Náš patron. <b>Ten nám poradí.</b></p>
     </div>
-  </section>
-
-  <!-- 1 HOOK -->
-  <section class="scene" data-d="4.8">
-    <div class="siren"></div>
-    <div class="glow"></div>
-    <figure class="hero rv" data-in="0.35"><img src="__IMG_hydrant__" alt="Nadzemní požární hydrant"><figcaption>775 HYDRANTŮ · DATA VHOS</figcaption></figure>
-    <div class="copy">
-      <div class="kick rv" data-in="0.1">Výjezd</div>
-      <h1 class="head rv" data-in="0.25">Kde je<br><span class="red">nejbližší hydrant?</span></h1>
-      <p class="sub rv" data-in="0.6">Florián to ví dřív, než vyjedete ze zbrojnice.</p>
-    </div>
+    <div class="icred rv" data-in="8.3">autor <b>Petr Kobelka</b><i></i>data <span><img src="__IMG_vhos__" alt="VHOS, a.s."></span></div>
+    <div class="flash"></div>
   </section>
 
   <!-- 2 NEJBLIŽŠÍ -->
@@ -296,6 +309,7 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
         if(e.classList.contains('tap')) e.style.setProperty('--q',cl((lt-(+e.dataset.in))/0.9));
       });
       [].forEach.call(s.querySelectorAll('.cam'),function(c){ cam(c,lt); });
+      if(s.classList.contains('intro')) intro(s,lt);
       [].forEach.call(s.querySelectorAll('.tablet,.phone,.hero'),function(e){ e.style.setProperty('--fy',(Math.sin((t+i)*0.8)*7).toFixed(2)+'px'); });
       [].forEach.call(s.querySelectorAll('.siren'),function(e){ if(i<=1) e.style.setProperty('--s',(0.55+0.45*Math.sin(t*5.2)).toFixed(3)); });
     });
@@ -303,6 +317,31 @@ body{color:var(--ink);font:var(--body);-webkit-font-smoothing:antialiased}
     document.querySelector('.hud').style.opacity=hudO;
     document.getElementById('bar').style.width=(t/TOTAL*100)+'%';
     document.querySelector('.mode').style.setProperty('--blink',(Math.floor(t/0.6)%2)?.25:1);
+  }
+  /* úvod: majáky, stroboskop, slova „dopadají“ do rytmu (doba 0,3 s, takt 2,4 s), náraz s logem */
+  var HITS=[[0.6,.35],[1.2,.4],[1.8,.35],[2.4,.3],[3.6,.3],[7.2,1]], DROP=7.2, CALM=4.8;
+  function intro(s,lt){
+    var shake=0, fl=0;
+    HITS.forEach(function(h){ if(lt>=h[0]){ var e=Math.exp(-(lt-h[0])/0.11); fl+=h[1]*e; shake+=h[1]*e; } });
+    s.querySelector('.flash').style.setProperty('--fo',Math.min(1,fl).toFixed(3));
+    // stroboskop jen na začátku: červená / modrá po 0,15 s
+    var st=s.querySelector('.strobe');
+    if(lt<0.6){ var k=Math.floor(lt/0.15), ph=lt-k*0.15; st.style.setProperty('--sc',k%2?'#2a6bff':'#e5382c'); st.style.setProperty('--so',(0.55*Math.exp(-ph/0.06)).toFixed(3)); }
+    else st.style.setProperty('--so',0);
+    s.querySelector('.bl').style.setProperty('--ra',(40+Math.sin(lt*2.6)*55)+'deg'); s.querySelector('.br').style.setProperty('--rb',(40-Math.sin(lt*2.6+1)*55)+'deg');
+    [].forEach.call(s.querySelectorAll('.beacon'),function(e){ e.style.setProperty('--bo',(lt<CALM?.75:lt<DROP?.75-0.62*cl((lt-CALM)/0.6):.13+0.3*cl((lt-DROP)/0.3)).toFixed(3)); });
+    var sx=(Math.sin(lt*97)*18*shake).toFixed(1), sy=(Math.cos(lt*83)*12*shake).toFixed(1);
+    [].forEach.call(s.querySelectorAll('.slam'),function(e){
+      var a=+e.dataset.in, o=+e.dataset.out, p=eo((lt-a)/0.16), q=cl((lt-o+0.04)/0.08);
+      var op=lt<a?0:p*(1-q), sc=(2.3-1.3*p)+0.05*cl((lt-a)/0.6);
+      e.style.opacity=op; e.style.transform='translate('+sx+'px,'+sy+'px) scale('+sc.toFixed(3)+') skewX(-6deg)';
+    });
+    [].forEach.call(s.querySelectorAll('[data-hit]'),function(e){
+      var a=+e.dataset.hit, p=eo((lt-a)/0.2);
+      e.style.opacity=lt<a?0:p; e.style.transform='scale('+(lt<a?2:(1.9-0.9*p)+0.03*cl((lt-a)/2.4)).toFixed(3)+')';
+    });
+    var ic=s.querySelector('.ic'); ic.style.transform='translate('+sx+'px,'+sy+'px)';
+    s.querySelector('.iglow').style.setProperty('--g',(lt<DROP?0:(0.7+0.3*Math.sin(lt*6))*cl((lt-DROP)/0.3)).toFixed(3));
   }
   window.render=render;
   function fit(){ var f=document.getElementById('fit'), k=Math.min(innerWidth/1920,innerHeight/1080);
