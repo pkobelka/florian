@@ -226,6 +226,13 @@ Tenhle soubor slouží jako paměť mezi sezeními – kde jsme skončili a čí
 
 ## ✅ Hotovo (nasazeno v main)
 
+**Instalace do telefonu – hezký návod (v1.253, 14. 10. 2026)**
+   - Tlačítko „📲 Nainstalovat na plochu" místo textového `alert` otevře okno z `instalace.js` (společný pomocník
+     VHOS aplikací, zdroj `pkobelka/konference/instalace.js`): iPhone krok za krokem s ikonami Sdílet / Přidat na plochu,
+     upozornění ve vnitřním prohlížeči (Gmail, Messenger, Facebook…) + Zkopírovat odkaz do Safari, Android ⋮, Samsung, Firefox.
+     Android s nabídkou instalace dál nativní dialog jedním klepnutím. Spodní lišta vypnutá (`data-lista="0"` – nezakrývat mapu).
+     SW cache florian-v256 (+ instalace.js).
+
 1. **Karta H – hydrodynamický tlak** (v1.203)
    - Řada dlaždic: průtok m³/h · průtok l/s · **hydrostatický tlak** · **hydrodynamický tlak** (MPa).
    - Přidáno i do editace (pole „Hydrodynamický tlak [MPa]"), do tisku karty a do hromadného importu.

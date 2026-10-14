@@ -1547,9 +1547,9 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.252';
+const APP_VERSION = '1.253';
 const APP_YEAR = 2026;
-const APP_UPDATED = '29. 9. 2026';
+const APP_UPDATED = '14. 10. 2026';
 
 // ---- ikony ----
 // oficiální značky požárních hydrantů (tenké čáry) v kolečku: nadzemní červeně, podzemní modře.
@@ -5280,6 +5280,9 @@ function flImport(files){ if(!files||!files.length) return;
       deferred.userChoice.then(function(c){ if(c&&c.outcome==='accepted') row.style.display='none'; deferred=null; }).catch(function(){ deferred=null; });
       return;
     }
+    // v1.253: hezký návod v okně (instalace.js – společný pro VHOS aplikace): iPhone krok za krokem s ikonami,
+    // upozorní na vnitřní prohlížeč (Gmail, Messenger…) a nabídne zkopírovat odkaz do Safari
+    if(window.instalaceNavod){ window.instalaceNavod(); return; }
     var msg;
     if(isIOS){
       msg='Instalace na iPadu / iPhonu:\n\n1. Otevři Floriána v Safari (v Chrome na iPadu jde taky přes ikonu Sdílet).\n2. Ťukni na ikonu Sdílet (čtvereček se šipkou nahoru) – na iPadu vpravo nahoře vedle adresy.\n3. Vyber „Přidat na plochu“ (případně sjeď níž).\n4. Potvrď „Přidat“.';
@@ -5305,5 +5308,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<script src="instalace.js" data-nazev="Florián" data-barva="#1565c0" data-lista="0" defer></script>
 </body>
 </html>
