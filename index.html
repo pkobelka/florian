@@ -1547,7 +1547,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.256';
+const APP_VERSION = '1.257';
 const APP_YEAR = 2026;
 const APP_UPDATED = '15. 10. 2026';
 
@@ -3108,6 +3108,17 @@ function rotatePhoto(h){
   reopenCard(h);
 }
 
+// Enter = Uložit ve formuláři „Upravit" – kdekoli v otevřené kartě (pole, výběr, nebo bez fokusu),
+// jen ne v poznámce/textu na více řádků, s modifikátorem nebo při psaní přes IME
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter' || e.repeat || e.isComposing || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  if(!card.classList.contains('open')) return;
+  var b=document.getElementById('edSave'); if(!b || !cardBody.contains(b)) return;
+  var t=e.target; if(t && t.tagName==='TEXTAREA') return;
+  if(t && t!==document.body && !card.contains(t)) return; // fokus mimo kartu (jiný panel) – nechat být
+  if(t && t.tagName==='BUTTON' && t!==b) return;           // Enter na jiném tlačítku (Zpět…) dělá jeho akci
+  e.preventDefault(); b.click();
+});
 function closeCard(){
   card.classList.remove('open'); setTimeout(function(){ if(!card.classList.contains('open')) card.classList.remove('full'); }, 240);
   setTimeout(()=>{ backdrop.classList.remove('open'); if(miniMap){miniMap.remove();miniMap=null;} }, 220);
@@ -3953,8 +3964,6 @@ function openEditForm(h){
     function _acCancel(){ clearTimeout(_acT); }
     card.addEventListener('pointerdown',_acCancel,{once:true});
   };
-  // Enter v libovolném poli formuláře = Uložit
-  cardBody.querySelectorAll('.sect input').forEach(function(_i){ _i.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); var b=document.getElementById('edSave'); if(b) b.click(); } }); });
 }
 try{ kandMarked=JSON.parse(localStorage.getItem('florian_kandidati')||'{}')||{}; }catch(e){ kandMarked={}; }
 function saveMarked(){ try{ localStorage.setItem('florian_kandidati', JSON.stringify(kandMarked)); }catch(e){} }
