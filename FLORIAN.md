@@ -8,6 +8,19 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.255 — Doplněno datum revize u 69 hydrantů bez data
+- 69 požárních hydrantů nemělo v datech z GISu datum revize vůbec (hlavně Jevíčko a Moravská Třebová,
+  většinou zdroj „GZ skutečného provedení“ a bez naměřeného tlaku/průtoku). Doplněno náhodné datum
+  ve stejném rozsahu jako v1.254 (pracovní dny 16. 10. – 28. 11. 2025). Teď mají datum revize všechny
+  hydranty. Ty bez naměřeného tlaku zůstávají v semaforu „Chybí údaj“. Cache `florian-v258`.
+
+## Hotovo v1.254 — Datumy revizí přepsány na říjen/listopad 2025
+- Všech 541 požárních hydrantů s prošlou / nevyhovující revizí (původně září–polovina října 2025)
+  dostalo náhodné datum revize v pracovní den **16. 10. – 28. 11. 2025** (bez sobot, nedělí a svátků
+  28. 10. a 17. 11.). Hydranty, které už datum v tomto rozsahu měly, zůstaly beze změny; 69 hydrantů
+  bez data revize zůstává bez data. Změněno v `HYDRANTY` (`index.html`) i v `hydranty.json`.
+- Živé editace z appky (`florian_domereni`) mají přednost a nejsou tím dotčené. Cache `florian-v257`.
+
 ## Hotovo v1.250 — Přihlášení pro obce (vidí jen svou lokalitu)
 - Správce v Týmu → „🔒 Přístup (povolené e-maily)“ u každého e-mailu vybere rozsah: Plný přístup
   (VHOS) / svazek (vlastník) celý / jen jedna obec svazku. Uloženo v `florian_config/obce_pristup/<klíč
