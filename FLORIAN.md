@@ -8,6 +8,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.257 — Enter = Uložit kdekoli ve formuláři „Upravit“
+- Dřív Enter ukládal jen v textových polích sekcí. Nově globální `keydown` (u `closeCard`): Enter v kterémkoli
+  poli, výběru (DN, vlastník, druh vody), v datu i bez fokusu klikne na `edSave`. Výjimky: textarea,
+  Shift/Ctrl/Alt, jiné tlačítko ve fokusu, fokus mimo kartu. Cache `florian-v260`.
+
 ## Hotovo v1.256 — Uložit v „Upravit“ zavře kartu
 - Po 💾 Uložit se karta znovu otevře s novými údaji, asi 1 s svítí a pak se sama zavře (zpět na mapu).
   Klepnutí do karty během té vteřiny zavření zruší; jiná mezitím otevřená karta se nezavře.
