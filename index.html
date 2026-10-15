@@ -1547,7 +1547,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.255';
+const APP_VERSION = '1.256';
 const APP_YEAR = 2026;
 const APP_UPDATED = '15. 10. 2026';
 
@@ -3943,7 +3943,15 @@ function openEditForm(h){
     if(_cv!=='' && _coll && !confirm('Číslo '+_cvN+' už v obci používá hydrant '+((_coll.upresneni||('#'+_coll.id)))+'.\n\nPřesto uložit se stejným číslem?')){ return; }
     d2.cislo=(_cv!=='')?_cv:((kandMarked[h.id]&&kandMarked[h.id].idx)||d2.cislo||'');
     d2.by=(typeof flMeName==='function'&&flMeName())||flMe()||d2.by||'';
-    domereni[h.id]=d2; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges(); reopenCard(h);
+    domereni[h.id]=d2; saveDomereni(); fbSaveDomereni(h.id); if(candOn)renderCand(); if(typeof updDomCount==='function')updDomCount(); if(typeof buildDomereniList==='function')buildDomereniList(); if(typeof rebuildMarkersBadges==='function')rebuildMarkersBadges();
+    if(typeof applyFilter==='function') applyFilter(true); // přepočti semafor (bez přeostření mapy)
+    // po uložení ukázat kartu s novými údaji ~1 s a pak ji zavřít (zpět na mapu);
+    // klepnutí do karty během té vteřiny zavření zruší (uživatel s ní chce dál pracovat)
+    reopenCard(h);
+    var _acEl=cardBody.firstElementChild; // když se mezitím otevře jiná karta, nezavírat ji
+    var _acT=setTimeout(function(){ card.removeEventListener('pointerdown',_acCancel); if(card.classList.contains('open') && cardBody.firstElementChild===_acEl) closeCard(); }, 1000);
+    function _acCancel(){ clearTimeout(_acT); }
+    card.addEventListener('pointerdown',_acCancel,{once:true});
   };
   // Enter v libovolném poli formuláře = Uložit
   cardBody.querySelectorAll('.sect input').forEach(function(_i){ _i.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); var b=document.getElementById('edSave'); if(b) b.click(); } }); });

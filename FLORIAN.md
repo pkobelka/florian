@@ -8,6 +8,11 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
 - `APP_VERSION` v `index.html` a `CACHE` v `sw.js` — **při každém nasazení obojí zvýšit**.
 - Nyní: **v1.152**, cache `florian-v159`. (Nasazuje se přes merge dev větve do `main`.)
 
+## Hotovo v1.256 — Uložit v „Upravit“ zavře kartu
+- Po 💾 Uložit se karta znovu otevře s novými údaji, asi 1 s svítí a pak se sama zavře (zpět na mapu).
+  Klepnutí do karty během té vteřiny zavření zruší; jiná mezitím otevřená karta se nezavře.
+  Po uložení se přepočítá i semafor (`applyFilter(true)`). Cache `florian-v259`.
+
 ## Hotovo v1.255 — Doplněno datum revize u 69 hydrantů bez data
 - 69 požárních hydrantů nemělo v datech z GISu datum revize vůbec (hlavně Jevíčko a Moravská Třebová,
   většinou zdroj „GZ skutečného provedení“ a bez naměřeného tlaku/průtoku). Doplněno náhodné datum
