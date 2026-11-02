@@ -1547,7 +1547,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.258';
+const APP_VERSION = '1.259';
 const APP_YEAR = 2026;
 const APP_UPDATED = '2. 11. 2026';
 
@@ -1822,9 +1822,8 @@ buildOwnerFilter();
 buildTownFilter();
 
 function renderLegend(){
-  const credit='<div class="credit">Apk <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka<br>'+
-    'verze '+APP_VERSION+' · akt. '+APP_UPDATED+'<br>'+
-    '<a href="https://www.petrkobelka.cz" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#1565c0">www.petrkobelka.cz</a></div>';
+  const credit='<div class="credit">Apk <b>Florián 2.0</b> · '+APP_YEAR+' · <a href="https://www.petrkobelka.cz" target="_blank" rel="noopener" title="www.petrkobelka.cz" onclick="event.stopPropagation()" style="color:inherit;text-decoration:underline">Petr Kobelka</a><br>'+
+    'verze '+APP_VERSION+' · akt. '+APP_UPDATED+'</div>';
   if(revMode){
     // spočítej stavy jen z aktuálně zobrazených (dle filtru), dle zvoleného rozměru (termín/ČSN)
     var _ord=dimOrder(), _col=dimColor(), _lbl=dimLabel();
