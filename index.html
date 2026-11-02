@@ -1822,8 +1822,9 @@ buildOwnerFilter();
 buildTownFilter();
 
 function renderLegend(){
-  const credit='<div class="credit">Apk <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka · <a href="https://www.petrkobelka.cz" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#1565c0">www.petrkobelka.cz</a><br>'+
-    'verze '+APP_VERSION+' · akt. '+APP_UPDATED+'</div>';
+  const credit='<div class="credit">Apk <b>Florián 2.0</b> · '+APP_YEAR+' · Petr Kobelka<br>'+
+    'verze '+APP_VERSION+' · akt. '+APP_UPDATED+'<br>'+
+    '<a href="https://www.petrkobelka.cz" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#1565c0">www.petrkobelka.cz</a></div>';
   if(revMode){
     // spočítej stavy jen z aktuálně zobrazených (dle filtru), dle zvoleného rozměru (termín/ČSN)
     var _ord=dimOrder(), _col=dimColor(), _lbl=dimLabel();
