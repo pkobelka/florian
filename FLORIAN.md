@@ -31,6 +31,14 @@ https://pkobelka.github.io/florian/ · repo `pkobelka/florian`, větev `main`.
   bez data revize zůstává bez data. Změněno v `HYDRANTY` (`index.html`) i v `hydranty.json`.
 - Živé editace z appky (`florian_domereni`) mají přednost a nejsou tím dotčené. Cache `florian-v257`.
 
+## Hotovo v1.260 — Přístup podle pracoviště (montéři Jevíčko)
+- V Týmu → „🔒 Přístup (povolené e-maily)“ nová volba **🏭 Pracoviště <název> (jen jeho obce)**. Uloží se do
+  `florian_config/obce_pristup/<klíč>` = `{stredisko, ts}` (hodnota `provozniStredisko`, např. `Jevíčko`).
+- Po přihlášení `flApplyObecScope({stredisko})`: zůstává **plná provozní verze P** (úkoly, poznámky, revize),
+  ale `flScopeOk` pustí jen hydranty toho pracoviště (i přes „Vše“, seznam obcí, svazků, pracovišť, nejbližší,
+  „k doměření“ přes `visibleObecSet`). Mapa se přiblíží na pracoviště. Omezení je jen v aplikaci (viz v1.250).
+  Cache `florian-v263`.
+
 ## Hotovo v1.250 — Přihlášení pro obce (vidí jen svou lokalitu)
 - Správce v Týmu → „🔒 Přístup (povolené e-maily)“ u každého e-mailu vybere rozsah: Plný přístup
   (VHOS) / svazek (vlastník) celý / jen jedna obec svazku. Uloženo v `florian_config/obce_pristup/<klíč
