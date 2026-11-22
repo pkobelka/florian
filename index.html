@@ -1547,7 +1547,7 @@ let COVERAGE_RADIUS = 200; // metrů, dle ČSN 73 0873 (přepínatelné selektor
 const PRUTOK_MIN = 4;        // l/s – min. odběr dle ČSN 73 0873 (rodinné domy / objekty do 120 m²)
 const PRUTOK_MIN_LMIN = PRUTOK_MIN*60; // totéž v l/min (240) – zobrazení na obrazovce
 const TLAK_STAT_MIN = 0.2;   // MPa – min. hydrostatický přetlak pro splnění ČSN (dohodnuto 0,2 MPa)
-const APP_VERSION = '1.259';
+const APP_VERSION = '1.260';
 const APP_YEAR = 2026;
 const APP_UPDATED = '2. 11. 2026';
 
@@ -1734,6 +1734,7 @@ let typeOff = {nad:false, pod:false}; // vyplé typy z legendy (klik na symbol v
    svazek / vlastníka, případně jen jednu obec. null = bez omezení (VHOS, hasiči, admin). */
 var FL_OBEC_SCOPE=null;
 function flScopeOk(h){ var sc=FL_OBEC_SCOPE; if(!sc) return true;
+  if(sc.stredisko && h.provozniStredisko!==sc.stredisko) return false; // montéři pracoviště: jen jeho obce
   if(sc.vlastnik && h.vlastnik!==sc.vlastnik) return false;
   if(sc.obec && filterTown(h)!==sc.obec) return false;
   return true; }
@@ -1935,7 +1936,7 @@ function pracLbl(){ var n=selectedStrediska.size; document.getElementById('stred
 function buildStrediskoFilter(){
   const counts={};
   HYDRANTY.forEach(h=>{ const st=h.provozniStredisko; if(!st) return; counts[st]=(counts[st]||0)+1; });
-  const list=PRAC_ORDER.filter(st=>counts[st]);
+  const list=PRAC_ORDER.filter(st=>counts[st] && !(FL_OBEC_SCOPE&&FL_OBEC_SCOPE.stredisko&&st!==FL_OBEC_SCOPE.stredisko));
   const panel=document.getElementById('stredPanel');
   panel.innerHTML='<div class="tp-head"><b>Vybrat pracoviště</b><button class="tp-clear" id="stredClr">Vše</button></div>'+
     '<div class="tp-sub">pracoviště · <b>hydrantů</b></div>'+
@@ -1949,7 +1950,7 @@ function buildOwnerFilter(){
   const counts={}, obce={};
   // „je svazek" = vlastník s více než jednou obcí (přes VŠECHNY hydranty, nezávisle na filtru pracoviště)
   const globObce={}; HYDRANTY.forEach(h=>{ const o0=h.vlastnik; if(!o0) return; const t0=townKey(h); if(t0){ (globObce[o0]||(globObce[o0]=new Set())).add(t0); } });
-  HYDRANTY.forEach(h=>{ if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return; const o=h.vlastnik; if(!o) return; counts[o]=(counts[o]||0)+1; const t=townKey(h); if(t){ (obce[o]||(obce[o]=new Set())).add(t); } });
+  HYDRANTY.forEach(h=>{ if(!flScopeOk(h)) return; if(selectedStrediska.size && !selectedStrediska.has(h.provozniStredisko)) return; const o=h.vlastnik; if(!o) return; counts[o]=(counts[o]||0)+1; const t=townKey(h); if(t){ (obce[o]||(obce[o]=new Set())).add(t); } });
   selectedOwners.forEach(o=>{ if(!counts[o]) selectedOwners.delete(o); });
   // v nabídce „Svazek" ukaž jen skutečné svazky (více než jedna obec); jednotlivé obce (Březinky, Jedlová…) sem nepatří
   const owners=Object.keys(counts).filter(o=>(globObce[o]?globObce[o].size:0)>1).sort((a,b)=>a.localeCompare(b,'cs'));
@@ -2704,6 +2705,15 @@ function rezAdminUI(){ var a=!!window._FL_ADMIN; document.body.classList.toggle(
 }
 /* přihlášená obec → režim M (zelená verze pro obec) omezený na její lokalitu; přepínač režimů jen admin */
 function flApplyObecScope(sc){
+  if(sc && sc.stredisko){ // pracoviště (např. montéři Jevíčko): plná provozní verze, ale jen obce toho pracoviště
+    FL_OBEC_SCOPE={stredisko:String(sc.stredisko)};
+    selectedStrediska=new Set([FL_OBEC_SCOPE.stredisko]); selectedOwners=new Set(); selectedTowns=new Set();
+    flPracDefaulted=true;
+    try{ pracLbl(); ownerLbl(); buildStrediskoFilter(); buildOwnerFilter(); buildTownFilter(); buildCovPanel(); if(typeof renderLegend==='function') renderLegend(); }catch(e){}
+    try{ applyFilter(); if(typeof renderMarked==='function') renderMarked(); if(typeof renderCand==='function') renderCand(); }catch(e){}
+    try{ var hs=HYDRANTY.filter(flScopeOk); if(hs.length) map.fitBounds(L.latLngBounds(hs.map(function(h){return [h.lat,h.lon];})),{padding:[20,20]}); }catch(e){}
+    return;
+  }
   if(!sc || !sc.vlastnik) return;
   FL_OBEC_SCOPE={vlastnik:String(sc.vlastnik), obec:sc.obec?String(sc.obec):''};
   FL_REZIM='M';
@@ -3791,7 +3801,7 @@ function markStred(id){ var m=kandMarked[id]||{}; if(m.stredisko) return m.stred
 /* obec (kód) označeného bodu: uložená → dohledání v KAND */
 function markObec(id){ var m=kandMarked[id]||{}; if(m.obec!=null&&m.obec!=='') return m.obec; if(typeof KAND!=='undefined'&&KAND){ for(var i=0;i<KAND.length;i++){ if(KAND[i].id===id) return KAND[i].obec; } } return null; }
 /* obec-kódy viditelných požárních H při aktivních filtrech (null = žádný filtr → vše) */
-function visibleObecSet(){ if(!((typeof selectedStrediska!=='undefined'&&selectedStrediska.size)||(typeof selectedOwners!=='undefined'&&selectedOwners.size)||(typeof selectedTowns!=='undefined'&&selectedTowns.size))) return null; var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)) s.add(it.h.obec); }); return s; }
+function visibleObecSet(){ if(!((typeof FL_OBEC_SCOPE!=='undefined'&&FL_OBEC_SCOPE)||(typeof selectedStrediska!=='undefined'&&selectedStrediska.size)||(typeof selectedOwners!=='undefined'&&selectedOwners.size)||(typeof selectedTowns!=='undefined'&&selectedTowns.size))) return null; var s=new Set(); allItems.forEach(function(it){ if(matches(it.h)) s.add(it.h.obec); }); return s; }
 /* „k doměření" bod se ukáže stejně jako požární H — dle výběru pracoviště/obce/vlastníka
    (tj. když je v jeho obci vidět aspoň jeden požární H). obecSet lze předat pro rychlost. */
 function markInSel(id,obecSet){ if(obecSet===undefined) obecSet=visibleObecSet(); if(!obecSet) return true; return obecSet.has(markObec(id)); }
@@ -4592,6 +4602,8 @@ function flAccessDel(key){ if(!window._FDB) return; _FDB.ref('florian_config/obc
 function _flScopeOpts(cur){
   var vl={}; HYDRANTY.forEach(function(h){ if(!h.vlastnik) return; var t=filterTown(h); (vl[h.vlastnik]||(vl[h.vlastnik]={}))[t||'']=1; });
   var o='<option value="">Plný přístup (VHOS)</option>';
+  PRAC_ORDER.forEach(function(st){ if(!HYDRANTY.some(function(h){return h.provozniStredisko===st;})) return; var val='prac:'+st;
+    o+='<option value="'+esc(val)+'"'+(cur===val?' selected':'')+'>🏭 Pracoviště '+esc(PRAC_NAME[st]||st)+' (jen jeho obce)</option>'; });
   Object.keys(vl).sort(function(a,b){return a.localeCompare(b,'cs');}).forEach(function(v){
     var val=v+'|'; o+='<option value="'+esc(val)+'"'+(cur===val?' selected':'')+'>🏘️ '+esc(v)+' – celý</option>';
     var ts=Object.keys(vl[v]).filter(Boolean).sort(function(a,b){return a.localeCompare(b,'cs');});
@@ -4599,15 +4611,16 @@ function _flScopeOpts(cur){
   });
   return o; }
 function flScopeSet(key,val){ if(!window._FDB) return; var ref=_FDB.ref('florian_config/obce_pristup/'+key);
-  var i=val.indexOf('|'); var p=(i<0)?null:ref.set({vlastnik:val.slice(0,i),obec:val.slice(i+1),ts:Date.now()});
-  (p||ref.remove()).then(function(){ flToast(val?'🏘️ Přístup omezen na '+val.replace('|',' ').trim():'✓ Plný přístup'); }).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); }); }
+  var i=val.indexOf('|'), pr=val.indexOf('prac:')===0;
+  var p=pr?ref.set({stredisko:val.slice(5),ts:Date.now()}):(i<0)?null:ref.set({vlastnik:val.slice(0,i),obec:val.slice(i+1),ts:Date.now()});
+  (p||ref.remove()).then(function(){ flToast(pr?'🏭 Přístup omezen na pracoviště '+(PRAC_NAME[val.slice(5)]||val.slice(5)):val?'🏘️ Přístup omezen na '+val.replace('|',' ').trim():'✓ Plný přístup'); }).catch(function(e){ alert('Chyba: '+(e&&e.message||e)); }); }
 function flRenderAccess(){
   var box=document.getElementById('flAccessBox'); if(!box||!window._FDB) return;
   Promise.all([_FDB.ref('florian_login_email').get(),_FDB.ref('florian_config/obce_pristup').get().catch(function(){ return null; })]).then(function(res){
     var sn=res[0], sc=(res[1]&&res[1].val())||{};
     var v=sn.val()||{}; var keys=Object.keys(v).sort();
     var rows=keys.length? keys.map(function(k){ var em=(typeof v[k]==='string'&&v[k].indexOf('@')>0)?v[k]:k.replace(/,/g,'.');
-      var cur=sc[k]&&sc[k].vlastnik?(sc[k].vlastnik+'|'+(sc[k].obec||'')):'';
+      var cur=sc[k]&&sc[k].stredisko?('prac:'+sc[k].stredisko):sc[k]&&sc[k].vlastnik?(sc[k].vlastnik+'|'+(sc[k].obec||'')):'';
       return '<div style="padding:6px 0;border-bottom:1px solid #f0f3f7">'+
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
         '<span style="font-size:14px;color:#26333f;word-break:break-all">'+esc(em)+'</span>'+
@@ -4615,7 +4628,7 @@ function flRenderAccess(){
         '<select class="acc-scope" data-k="'+esc(k)+'" title="Co uvidí: plný přístup, nebo jen svazek / obec" style="margin-top:4px;width:100%;font:inherit;font-size:12.5px;padding:3px 5px;border:1px solid #cdd6e0;border-radius:6px;background:'+(cur?'#e8f5e9':'#fff')+'">'+_flScopeOpts(cur)+'</select></div>';
     }).join('') : '<div class="tp-empty">Zatím žádné povolené e-maily.</div>';
     box.innerHTML='<div class="tp-sub" style="display:flex;align-items:center;gap:6px">🔒 Přístup (povolené e-maily) · jen správce</div>'+
-      '<div style="font-size:11.5px;color:#607d8b;margin:2px 0 4px">Pod e-mailem vyber, co uvidí: plný přístup, nebo jen svazek / jednu obec (zelená verze pro obec).</div>'+rows+
+      '<div style="font-size:11.5px;color:#607d8b;margin:2px 0 4px">Pod e-mailem vyber, co uvidí: plný přístup, jen pracoviště (např. montéři Jevíčko – jen obce toho pracoviště), nebo jen svazek / jednu obec (zelená verze pro obec).</div>'+rows+
       '<div class="ld-add"><input id="accNew" type="email" placeholder="email@firma.cz" autocomplete="off"><button id="accAddBtn">➕ Povolit</button></div>';
     box.querySelector('#accAddBtn').onclick=function(){ var inp=document.getElementById('accNew'); flAccessAdd(inp.value); };
     box.querySelector('#accNew').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); flAccessAdd(this.value); } });
